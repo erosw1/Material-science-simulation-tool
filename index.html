@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
-<title>Crucible Workbench</title>
+<title>Eros' Metallurgy Lab</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
@@ -199,6 +199,9 @@ body{display:flex;flex-direction:column;overflow:hidden}
 body.dragging{-webkit-user-select:none;user-select:none;cursor:grabbing}
 .wtop{display:flex;align-items:center;gap:8px 16px;padding:8px 16px;border-bottom:1px solid var(--line);background:var(--bg);flex-wrap:wrap;flex:none}
 .wtop .brand{margin-right:8px}
+.brand.lab b{display:flex;flex-direction:column;font-size:22px;letter-spacing:.05em;white-space:nowrap}
+.wtop .brand.lab .bn{display:block;font:inherit;letter-spacing:inherit;color:inherit;text-transform:inherit}
+.brand.lab b small{font-family:var(--f-cond);font-weight:600;font-size:11px;letter-spacing:.28em;color:var(--accent);margin-bottom:2px}
 @media (max-width:1560px){.wtop .brand span,.optool .sel{display:none}.tb .tl{display:none}.wtop .grp .lbl{display:none}.wtop{gap:8px 10px}}
 .status{-webkit-user-select:text}
 body.dragging .status{-webkit-user-select:none;user-select:none}
@@ -384,7 +387,7 @@ body.dragging .status{-webkit-user-select:none;user-select:none}
 
 <header class="wtop">
   <button class="btn" id="lib-toggle" aria-controls="lib">+ Materials</button>
-  <div class="brand"><b>Cruc<i>i</i>ble</b><span>workbench</span></div>
+  <div class="brand lab"><b><small>Eros'</small><span class="bn">Metallurgy <i>Lab</i></span></b></div>
   <nav class="optool" id="optool" role="toolbar" aria-label="Operations on the selected specimen"></nav>
   <div class="grp"><span class="lbl">Time</span><div class="seg" id="speed" role="group" aria-label="Simulation speed"><button data-v="0" aria-pressed="false">Pause</button><button data-v="1" aria-pressed="false">1×</button><button data-v="5" aria-pressed="true">5×</button><button data-v="25" aria-pressed="false">25×</button></div></div>
   <div class="unit" role="group" aria-label="Temperature unit"><button id="u-k" aria-pressed="true">K</button><button id="u-c" aria-pressed="false">°C</button></div>
