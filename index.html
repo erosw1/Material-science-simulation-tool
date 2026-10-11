@@ -2,7 +2,7 @@
 <title>Eros' Metallurgy Lab</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <style>
 /* Layout concept: an instrument bench — a top rail of benches (tabs); each bench is a rig of controls · specimen · readouts that folds to one column on phones. */
 :root{
@@ -386,12 +386,15 @@ body.dragging .status{-webkit-user-select:none;user-select:none}
 </style>
 
 <header class="wtop">
-  <button class="btn" id="lib-toggle" aria-controls="lib">+ Materials</button>
-  <div class="brand lab"><b><small>Eros'</small><span class="bn">Metallurgy <i>Lab</i></span></b></div>
-  <nav class="optool" id="optool" role="toolbar" aria-label="Operations on the selected specimen"></nav>
-  <div class="grp"><span class="lbl">Time</span><div class="seg" id="speed" role="group" aria-label="Simulation speed"><button data-v="0" aria-pressed="false">Pause</button><button data-v="1" aria-pressed="false">1×</button><button data-v="5" aria-pressed="true">5×</button><button data-v="25" aria-pressed="false">25×</button></div></div>
-  <div class="unit" role="group" aria-label="Temperature unit"><button id="u-k" aria-pressed="true">K</button><button id="u-c" aria-pressed="false">°C</button></div>
-  <button class="btn" id="clear" title="Remove everything from the bench">Clear</button>
+  <div class="titlebar"><span class="tbicon" aria-hidden="true"></span><span class="tbtext">Eros' Metallurgy Lab<span id="tb-doc"></span></span></div>
+  <nav class="menubar" id="menubar" role="menubar" aria-label="Main menu"></nav>
+  <div class="toolrow">
+    <button class="btn" id="lib-toggle" aria-controls="lib">Materials…</button>
+    <nav class="optool" id="optool" role="toolbar" aria-label="Operations on the selected specimen"></nav>
+    <div class="grp"><span class="lbl">Time:</span><div class="seg" id="speed" role="group" aria-label="Simulation speed"><button data-v="0" aria-pressed="false">Pause</button><button data-v="1" aria-pressed="false">1×</button><button data-v="5" aria-pressed="true">5×</button><button data-v="25" aria-pressed="false">25×</button></div></div>
+    <div class="unit" role="group" aria-label="Temperature unit"><button id="u-k" aria-pressed="true">K</button><button id="u-c" aria-pressed="false">°C</button></div>
+    <button class="btn" id="clear" title="Remove everything from the bench">Clear</button>
+  </div>
 </header>
 <div class="app">
   <aside class="lib" id="lib" aria-label="Material library">
@@ -413,8 +416,306 @@ body.dragging .status{-webkit-user-select:none;user-select:none}
   </div>
   <aside class="status" id="status" aria-label="Specimen status"></aside>
 </div>
+<footer class="statusbar" id="statusbar"><span class="sb" id="sb-msg">Ready</span><span class="sb" id="sb-spec"></span><span class="sb" id="sb-time"></span><span class="sb" id="sb-n"></span></footer>
 <div class="ghost" id="ghost" hidden></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+<style>
+/* Classic desktop-program skin: bevelled grey chrome, navy title bars, teal desktop bench, white sunken data fields. */
+:root{
+  --desk:#008080; --bg:#c0c0c0; --panel:#c0c0c0; --panel2:#ffffff; --ink:#000000; --muted:#4a4a4a; --line:#808080; --line2:#c4c4c4;
+  --hi:#ffffff; --lt:#dfdfdf; --lo:#808080; --dk:#0a0a0a;
+  --sel:#000080; --title1:#000080; --title2:#1084d0; --tin1:#808080; --tin2:#b5b5b5; --tip:#ffffe1;
+  --accent:#c24400; --accent-soft:rgba(194,68,0,.13); --cold:#0050a8; --cold-soft:rgba(0,80,168,.12);
+  --good:#007a1f; --warn:#8a6400; --crit:#b00000; --crit-soft:rgba(176,0,0,.12); --gold:#c98a00;
+  --chamber:#101418; --chamber-ink:#f2efe8; --chamber-mute:#a2a9b0;
+  --c-metal:#2f5f8a; --c-alloy:#8a6400; --c-polymer:#1e7a3e; --c-ceramic:#a8331f; --c-semi:#0d7a8a; --c-fiber:#5b3fae; --c-composite:#7a5226; --c-mine:#c24400;
+  --f-display:'Pixelify Sans',Tahoma,Verdana,sans-serif;
+  --f-body:Tahoma,'Segoe UI',Verdana,'DejaVu Sans',Geneva,sans-serif;
+  --f-cond:Tahoma,'Segoe UI',Verdana,'DejaVu Sans',Geneva,sans-serif;
+  --f-mono:'IBM Plex Mono','Courier New',ui-monospace,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --desk:#0c3b3b; --bg:#383838; --panel:#383838; --panel2:#1b1b1b; --ink:#ececec; --muted:#a9a9a9; --line:#6c6c6c; --line2:#303030;
+  --hi:#6a6a6a; --lt:#4a4a4a; --lo:#1f1f1f; --dk:#000000;
+  --sel:#2b56c6; --title1:#14246e; --title2:#3a6fd8; --tin1:#4a4a4a; --tin2:#666666; --tip:#3a3a26;
+  --accent:#ff8a3d; --accent-soft:rgba(255,138,61,.16); --cold:#6cb6ff; --cold-soft:rgba(108,182,255,.15);
+  --good:#6fd08c; --warn:#e8c050; --crit:#ff7a6a; --crit-soft:rgba(255,122,106,.15); --gold:#ffc940;
+  --chamber:#060809;
+  --c-metal:#8fb3d8; --c-alloy:#e6c050; --c-polymer:#66cc88; --c-ceramic:#f08a78; --c-semi:#52cbe0; --c-fiber:#ad96f5; --c-composite:#d1a273; --c-mine:#ff8a3d;
+  color-scheme:dark; } }
+:root[data-theme="dark"]{
+  --desk:#0c3b3b; --bg:#383838; --panel:#383838; --panel2:#1b1b1b; --ink:#ececec; --muted:#a9a9a9; --line:#6c6c6c; --line2:#303030;
+  --hi:#6a6a6a; --lt:#4a4a4a; --lo:#1f1f1f; --dk:#000000;
+  --sel:#2b56c6; --title1:#14246e; --title2:#3a6fd8; --tin1:#4a4a4a; --tin2:#666666; --tip:#3a3a26;
+  --accent:#ff8a3d; --accent-soft:rgba(255,138,61,.16); --cold:#6cb6ff; --cold-soft:rgba(108,182,255,.15);
+  --good:#6fd08c; --warn:#e8c050; --crit:#ff7a6a; --crit-soft:rgba(255,122,106,.15); --gold:#ffc940;
+  --chamber:#060809;
+  --c-metal:#8fb3d8; --c-alloy:#e6c050; --c-polymer:#66cc88; --c-ceramic:#f08a78; --c-semi:#52cbe0; --c-fiber:#ad96f5; --c-composite:#d1a273; --c-mine:#ff8a3d;
+  color-scheme:dark; }
+:root{
+  --raised:inset -1px -1px var(--dk),inset 1px 1px var(--hi),inset -2px -2px var(--lo),inset 2px 2px var(--lt);
+  --sunken:inset -1px -1px var(--hi),inset 1px 1px var(--lo),inset -2px -2px var(--lt),inset 2px 2px var(--dk);
+  --pressed:inset -1px -1px var(--hi),inset 1px 1px var(--dk),inset -2px -2px var(--lt),inset 2px 2px var(--lo);
+  --thin-up:inset -1px -1px var(--lo),inset 1px 1px var(--hi);
+  --thin-dn:inset -1px -1px var(--hi),inset 1px 1px var(--lo);
+  --dither:repeating-conic-gradient(var(--hi) 0 25%,var(--lt) 0 50%) 0 0/2px 2px;
+}
+html,body{margin:0}
+body{background:var(--bg);font-size:13px;line-height:1.4}
+:focus-visible{outline:1px dotted var(--ink);outline-offset:-4px}
+/* typography: sentence case everywhere */
+.btn,.chip,.lbl,label.f,.dcol h4,.wid>h3,.lib-top b,.lib-grp,.fhead .ft,.badge,.tag,.wchips .lbl,.ig,.idetail h4,.hrt th,.chemtab th,.pinlbl,.props .sec,.dhead .who,.bench-empty .drop,.seg button,.unit button,.dtab,.tb,.ph,.wghost,.optool .sel{text-transform:none!important;letter-spacing:0!important;font-family:var(--f-body)!important}
+.shead h2,.idetail h3.ih3,.bench-empty b,.insp-empty b{font-family:var(--f-display);text-transform:none;letter-spacing:.01em;font-weight:600}
+label.f{font-size:12.5px;color:var(--ink)}
+.dcol h4,.idetail h4{font-weight:700;color:var(--ink);font-size:12.5px}
+.idetail h4{color:var(--sel)} :root[data-theme="dark"] .idetail h4{color:var(--cold)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .idetail h4{color:var(--cold)}}
+.muted,.small.muted,.tiny.muted{color:var(--muted)}
+
+/* ---- controls ---- */
+.btn,.lib-min,.addrow button,.spec .qa button,.wtabs button,.fwin .ib,.wid>h3 .ib,.toplist .add{background:var(--panel);color:var(--ink);border:0!important;border-radius:0!important;box-shadow:var(--raised);font:12.5px var(--f-body);cursor:pointer}
+.btn{padding:4px 12px;min-height:24px;font-weight:400}
+.btn:hover{border:0}
+.btn:active,.lib-min:active,.toplist .add:active{box-shadow:var(--pressed)}
+.btn.on,.btn[aria-pressed="true"]{box-shadow:var(--pressed);background:var(--dither);color:var(--ink)}
+.btn.pri{background:var(--panel);color:var(--ink);box-shadow:0 0 0 1px var(--dk),var(--raised);font-weight:700}
+.btn:disabled{color:var(--lo);text-shadow:1px 1px var(--hi);cursor:default}
+.seg,.unit{border:0;border-radius:0;gap:0;overflow:visible}
+.seg button,.unit button{background:var(--panel);color:var(--ink);border:0!important;border-radius:0;box-shadow:var(--raised);padding:3px 9px;font:12px var(--f-body)}
+.seg button[aria-pressed="true"],.unit button[aria-pressed="true"]{box-shadow:var(--pressed);background:var(--dither);color:var(--ink);font-weight:700}
+.chip{background:var(--panel);color:var(--ink);border:0!important;border-radius:0;box-shadow:var(--raised);padding:2px 8px;font-size:12px}
+.chip:hover{border:0}
+.chip.on,.chip[aria-pressed="true"]{box-shadow:var(--pressed);background:var(--dither);color:var(--ink);font-weight:700}
+select,input[type=text],input[type=number],input[type=search]{background:var(--panel2);color:var(--ink);border:0;border-radius:0;box-shadow:var(--sunken);padding:4px 6px;font:12.5px var(--f-body)}
+input[type=number]{font-family:var(--f-mono)}
+input[type=checkbox]{accent-color:var(--sel)}
+input[type=range]{-webkit-appearance:none;appearance:none;background:transparent;height:22px;margin:2px 0}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:var(--panel2);box-shadow:var(--sunken)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:11px;height:20px;margin-top:-8px;background:var(--panel);box-shadow:var(--raised);border:0;border-radius:0}
+input[type=range]::-moz-range-track{height:4px;background:var(--panel2);box-shadow:var(--sunken)}
+input[type=range]::-moz-range-thumb{width:11px;height:20px;background:var(--panel);box-shadow:var(--raised);border:0;border-radius:0}
+input[type=range]:disabled{opacity:.5}
+::-webkit-scrollbar{width:16px;height:16px;background:var(--dither)}
+::-webkit-scrollbar-thumb{background:var(--panel);box-shadow:var(--raised)}
+::-webkit-scrollbar-corner{background:var(--panel)}
+*{scrollbar-color:var(--panel) var(--lt)}
+
+/* ---- window chrome ---- */
+.wtop{display:block;padding:0;border:0;background:var(--panel);box-shadow:none}
+.titlebar{display:flex;align-items:center;gap:6px;height:24px;padding:0 6px;background:linear-gradient(90deg,var(--title1),var(--title2));color:#fff;font:700 13px var(--f-body);white-space:nowrap;overflow:hidden}
+.tbicon{width:16px;height:16px;flex:none;background:linear-gradient(135deg,#ffcf6b,#e2731f 55%,#7a2b00);clip-path:polygon(15% 30%,85% 30%,72% 100%,28% 100%);box-shadow:inset 0 3px 0 rgba(255,255,255,.4)}
+.tbtext{overflow:hidden;text-overflow:ellipsis}
+#tb-doc{font-weight:400;opacity:.9}
+.menubar{display:flex;flex-wrap:wrap;gap:0;padding:2px 2px 1px;background:var(--panel);border-bottom:1px solid var(--lo);box-shadow:0 1px 0 var(--hi)}
+.mb{border:0;background:transparent;padding:3px 9px;font:13px var(--f-body);color:var(--ink);cursor:default}
+.mb:hover{box-shadow:var(--thin-up)}
+.mb.open{background:var(--sel);color:#fff;box-shadow:none}
+.mb u{text-decoration:underline;text-underline-offset:2px}
+.mdrop{position:fixed;z-index:700;background:var(--panel);box-shadow:var(--raised),3px 3px 0 rgba(0,0,0,.25);padding:3px;min-width:230px;max-height:calc(100vh - 40px);overflow:auto}
+.mi{display:grid;grid-template-columns:20px minmax(0,1fr) auto;gap:6px;align-items:center;width:100%;border:0;background:transparent;padding:4px 14px 4px 4px;font:13px var(--f-body);color:var(--ink);text-align:left;cursor:default;white-space:nowrap}
+.mi .ck{text-align:center;font-size:12px}
+.mi .sc{color:var(--muted);font-size:12px;padding-left:18px}
+.mi:hover:not(:disabled),.mi:focus-visible{background:var(--sel);color:#fff;outline:0}
+.mi:hover:not(:disabled) .sc{color:#fff}
+.mi:disabled{color:var(--lo);text-shadow:1px 1px var(--hi)}
+.mdrop hr{border:0;border-top:1px solid var(--lo);border-bottom:1px solid var(--hi);margin:3px 2px}
+.mhead{font:700 11.5px var(--f-body);color:var(--muted);padding:5px 8px 2px 28px}
+.toolrow{display:flex;align-items:center;gap:6px 8px;padding:3px 6px;flex-wrap:wrap;border-bottom:1px solid var(--lo);box-shadow:0 1px 0 var(--hi)}
+.toolrow .grp{display:flex;align-items:center;gap:5px}
+.toolrow .lbl{font-size:12px;color:var(--ink)}
+.optool{border:0;border-radius:0;background:transparent;padding:0;margin-right:auto;gap:1px}
+.tb{border:0!important;border-radius:0;padding:3px 7px;font-size:12.5px;color:var(--ink);background:transparent}
+.tb:hover{background:transparent;box-shadow:var(--thin-up)}
+.tb[aria-pressed="true"]{background:var(--dither);color:var(--ink);box-shadow:var(--thin-dn);font-weight:700}
+.tb:disabled{color:var(--lo);text-shadow:1px 1px var(--hi);background:transparent;opacity:1}
+.tb:disabled svg{filter:drop-shadow(1px 1px 0 var(--hi))}
+.tb svg{width:16px;height:16px}
+.optool .sep{width:2px;background:none;border-left:1px solid var(--lo);border-right:1px solid var(--hi);margin:2px 3px;align-self:stretch}
+.statusbar{display:flex;gap:3px;padding:3px;background:var(--panel);flex:none;border-top:1px solid var(--hi)}
+.sb{box-shadow:var(--thin-dn);padding:2px 8px;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+#sb-msg{flex:1} #sb-spec{max-width:40%} #sb-time,#sb-n{flex:none}
+
+/* ---- panes ---- */
+.app{gap:4px;padding:4px;background:var(--panel)}
+.lib{border:0;box-shadow:var(--raised);background:var(--panel);padding:3px}
+.lib-head{padding:0 0 6px;border:0;gap:6px}
+.lib-top{background:linear-gradient(90deg,var(--tin1),var(--tin2));padding:2px 3px 2px 6px;margin:0}
+.lib-top b{color:#fff;font-size:12.5px;font-weight:700}
+.lib-min{padding:0 6px;font-size:11px;height:18px;line-height:18px}
+.lib-head input,.lib-head .chips{margin:0 3px}
+.lib-list{background:var(--panel2);box-shadow:var(--sunken);padding:3px 3px 12px;margin:0}
+.lib-grp{font-weight:700;color:var(--ink);font-size:12px;padding:8px 4px 3px}
+.li{border:0;border-radius:0;padding:3px 4px;gap:7px}
+.li:hover{background:var(--sel);border:0}
+.li:hover .nm,.li:hover .fm{color:#fff}
+.li .sw{border-radius:0;box-shadow:inset -1px -1px rgba(0,0,0,.45),inset 1px 1px rgba(255,255,255,.5);width:22px;height:16px}
+.li .nm{font-size:12.5px;font-weight:400}
+.lib-rail{color:var(--ink)} .lib-rail:hover{background:var(--lt)}
+.center{gap:4px}
+.wbench{background:var(--desk);background-image:none;box-shadow:var(--sunken)}
+.wbench.over{box-shadow:var(--sunken),inset 0 0 0 3px #fff}
+.bench-empty,.bench-empty b{color:#fff}
+.bench-empty .drop{border:2px dashed rgba(255,255,255,.7);border-radius:0;color:#fff}
+.bench-tip{color:#e8ffff}
+.bench-tip span::before{background:#fff;border-radius:0}
+.spec{background:var(--panel);border:0;border-radius:0;box-shadow:var(--raised);padding:3px;width:164px}
+.spec:hover{box-shadow:var(--raised)}
+.spec canvas{border-radius:0;box-shadow:var(--sunken);height:92px}
+.spec .meta{padding:4px 3px 2px}
+.spec .nm{font-size:12.5px;font-weight:700;padding:0 3px;margin:0 -3px}
+.spec .st,.spec .t{font-size:11.5px}
+.spec.sel{border:0;box-shadow:var(--raised),0 0 0 1px var(--dk)}
+.spec.sel .nm{background:var(--sel);color:#fff}
+.spec.target{box-shadow:var(--raised),0 0 0 3px #fff}
+.spec.multi{border:0;box-shadow:var(--raised),0 0 0 2px var(--cold)}
+.spec .x{border-radius:0;width:16px;height:14px;line-height:12px;font-size:11px;font-weight:700;background:var(--panel);color:var(--ink);box-shadow:var(--raised);top:6px;right:6px}
+.spec .qa{top:23px;right:6px;gap:2px}
+.spec .qa button{width:20px;height:18px;font-size:12px}
+.spec .qa button:hover{color:var(--ink)}
+.spec .qa svg{width:12px;height:12px}
+.spec .chk{border-radius:0;background:var(--cold);box-shadow:var(--raised);width:18px;height:18px;line-height:18px;font-size:11px;left:-6px;top:-6px}
+.spec .heat{border-radius:0;top:74px;left:7px}
+.ghost{border-radius:0;border:1px dotted var(--ink);background:var(--panel);box-shadow:var(--raised)}
+.dock{border:0;box-shadow:var(--raised);background:var(--panel);padding:3px}
+.dhead{background:linear-gradient(90deg,var(--title1),var(--title2));border:0;padding:2px 3px 2px 6px;gap:6px}
+.dhead .who,.dhead .who b,.dhead .who .muted{color:#fff!important;font-size:12.5px}
+.dhead .who b{font-weight:700}
+.dhead .who svg{stroke:#fff!important}
+.dhead #d-min{padding:0 8px!important;min-height:18px;font-size:11.5px}
+.dbody{padding:8px 8px 10px}
+.dempty{color:var(--ink)}
+.stagebox,.stage{border-radius:0;box-shadow:var(--sunken);border:0}
+.status{border:0;box-shadow:var(--raised);background:var(--panel);padding:3px}
+.shead{padding:6px 8px;border:0;background:var(--panel2);box-shadow:var(--sunken);margin-bottom:3px}
+.shead h2{font-size:24px}
+.shead .bigT{font-family:var(--f-display);font-weight:600}
+.shead .state{font-size:13px;color:var(--ink)}
+.wchips{border:0;padding:4px 3px;gap:3px}
+.wchips .chip{font-size:11.5px;padding:1px 6px}
+.wchips .lbl{color:var(--ink);font-size:12px}
+.pinzone{background:var(--panel);border-bottom:2px solid var(--sel);padding:4px 3px}
+.pinlbl{color:var(--sel);font-weight:700;font-size:11.5px}
+.status.wdrag .pinzone:empty::before{border-radius:0;color:var(--ink);border-color:var(--sel)}
+.wlist{padding:4px 3px 20px;gap:6px}
+.wid{background:var(--panel);border:0;border-radius:0;box-shadow:var(--raised);padding:3px}
+.wid>h3{background:linear-gradient(90deg,var(--tin1),var(--tin2));color:#fff;margin:0 0 6px;padding:2px 2px 2px 4px;font-size:12px;font-weight:700;gap:5px}
+.pinzone .wid>h3{background:linear-gradient(90deg,var(--title1),var(--title2))}
+.wid .hdl{color:#fff;font-size:13px}
+.wid .hdl:hover{background:rgba(255,255,255,.2);color:#fff}
+.wid>h3 .ib,.fwin .ib{width:17px;height:15px;font:700 10px/1 var(--f-body);color:var(--ink);padding:0}
+.wid>h3 .ib:hover,.fwin .ib:hover{color:var(--ink);border:0}
+.wid>h3 .ib:active,.fwin .ib:active{box-shadow:var(--pressed)}
+.wid>h3 .ib:disabled{color:var(--lo)}
+.wid .ib.on{background:var(--dither);box-shadow:var(--pressed);color:var(--ink)}
+.wid>h3 .ii{background:var(--panel);color:var(--ink);border:0;box-shadow:var(--raised);border-radius:0}
+.wid .wbody{padding:2px 5px 6px}
+.wid .props,.fwin .props{background:var(--panel2);box-shadow:var(--sunken);padding:2px 8px}
+.ii{border-radius:0;border:0;background:var(--panel);box-shadow:var(--raised);color:var(--ink);width:14px;height:14px;font:700 9.5px/1 var(--f-body)}
+.ii:hover{background:var(--sel);color:#fff;box-shadow:var(--raised)}
+.cv,.cellbox,.diagbox,.ashbox{background:var(--panel2);box-shadow:var(--sunken);border-radius:0!important;border:0}
+.cellbox canvas,.diagbox canvas,.ashbox canvas{border-radius:0}
+.micro{border:2px solid var(--lo);box-shadow:0 0 0 1px var(--hi)}
+.legend{font-size:12px}
+.legend i{border-radius:0;border:1px solid rgba(0,0,0,.4)}
+.notes li{border-radius:0;background:var(--panel2);box-shadow:var(--thin-dn);font-size:12.5px}
+.badge{border-radius:0;border:1px solid var(--lo);background:var(--panel);font-size:11.5px}
+.tag{border-radius:0}
+.mbar{height:14px;border-radius:0;background:var(--panel2);box-shadow:var(--sunken);padding:2px}
+.mbar i{background:repeating-linear-gradient(90deg,var(--sel) 0 7px,transparent 7px 9px);height:100%}
+.kv{font-size:12.5px} .kv dd{font-size:12px}
+.props{font-size:12.5px}
+.chemtab td,.chemtab th{border-bottom:1px solid var(--line2)}
+.fbox{border:0;border-left:0;border-radius:0;background:var(--panel2);box-shadow:var(--sunken);font-size:12.5px}
+.flag{border-radius:0;box-shadow:var(--thin-dn);border:0}
+.match{border-radius:0}
+.pill{border-radius:0}
+.compbar{border-radius:0;box-shadow:var(--sunken)}
+.tip{background:var(--tip);color:var(--ink);border:1px solid var(--dk);border-radius:0;box-shadow:2px 2px 0 rgba(0,0,0,.2)}
+.toast{background:var(--tip);color:var(--ink);border:1px solid var(--dk);border-radius:0;bottom:calc(36px + env(safe-area-inset-bottom,0px));box-shadow:2px 2px 0 rgba(0,0,0,.25);font-size:12.5px}
+.cmenu{border:0;border-radius:0;box-shadow:var(--raised),3px 3px 0 rgba(0,0,0,.25);background:var(--panel);padding:3px}
+.cmenu button{border-radius:0;font-size:13px;padding:4px 10px}
+.cmenu button:hover{background:var(--sel);color:#fff} .cmenu button:hover span{color:#fff}
+.cmenu hr{border-top:1px solid var(--lo);border-bottom:1px solid var(--hi)}
+.wghost{border-radius:0;border:1px dotted var(--ink);background:var(--panel)}
+.dropline{background:var(--sel);border-radius:0}
+.insp-empty{color:var(--ink)}
+
+/* ---- floating windows ---- */
+.fwin{border:0;border-radius:0;background:var(--panel);box-shadow:var(--raised),3px 3px 0 rgba(0,0,0,.28);padding:3px}
+.fhead{background:linear-gradient(90deg,var(--tin1),var(--tin2));border:0;padding:2px 3px 2px 6px;cursor:default;gap:6px}
+.fwin.active .fhead{background:linear-gradient(90deg,var(--title1),var(--title2))}
+.fhead .ft{color:#fff;font-size:12.5px;font-weight:700}
+.fhead .fs{color:#eef;font-size:12px} .fhead .fs b{color:#fff} .fhead .fs .muted{color:#dde}
+.fhead .fb{gap:2px}
+.fbody{padding:6px 6px 8px;background:var(--panel)}
+.fwin[data-type="select"] .fbody{overflow:hidden;display:flex;flex-direction:column}
+.fwin[data-type="select"] .wbody{flex:1;min-height:0;display:flex;flex-direction:column}
+.ilist{background:var(--panel2);box-shadow:var(--sunken);padding:4px;border:0}
+.ie{border-radius:0;font-size:12.5px;padding:3px 6px}
+.ie:hover{background:var(--lt)} .ie[aria-current="true"]{background:var(--sel);color:#fff}
+.ig{color:var(--ink);font-weight:700;font-size:11.5px}
+.idetail h3.ih3{font-size:24px}
+
+/* ---- tab control ---- */
+.wtabs{display:flex;gap:0;padding:0 4px;position:relative;z-index:1;flex:none}
+.wtabs button{box-shadow:inset 1px 1px var(--hi),inset -1px 0 var(--dk),inset -2px 0 var(--lo);padding:4px 14px 3px;margin-top:3px;font-size:12.5px}
+.wtabs button[aria-selected="true"]{margin-top:0;padding-bottom:6px;margin-bottom:-2px;font-weight:700;position:relative;z-index:2}
+.wtabpane{box-shadow:var(--raised);padding:8px;flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+
+/* ---- selector ---- */
+.selgrid{display:grid;grid-template-columns:minmax(0,1fr) 272px;gap:10px;flex:1;min-height:0}
+.selchart{display:flex;flex-direction:column;gap:6px;min-height:0;min-width:0}
+.selchart .ashbox{flex:1;aspect-ratio:auto;min-height:260px;max-height:none}
+.selpick{min-height:40px;padding:4px 6px;box-shadow:var(--thin-dn);background:var(--panel2);display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center}
+.selpick .btn{padding:1px 8px;min-height:20px;font-size:12px}
+.selside{overflow:auto;display:flex;flex-direction:column;gap:6px;min-height:0;padding-right:2px}
+.selside>*{flex-shrink:0}
+.selside .toplist{background:var(--panel2);box-shadow:var(--sunken);padding:2px 4px}
+.toplist li{grid-template-columns:12px minmax(0,1fr) auto 18px;gap:6px;font-size:12.5px;padding:3px 2px}
+.toplist li .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.toplist li.on{background:var(--sel);color:#fff} .toplist li.on .v{color:#fff}
+.toplist li .dot{width:9px;height:9px;border-radius:0}
+.toplist .add{width:17px;height:15px;font:700 11px/1 var(--f-body);padding:0}
+/* ---- challenges ---- */
+.chgrid{display:grid;grid-template-columns:240px minmax(0,1fr);gap:10px;flex:1;min-height:0}
+.chlist{overflow:auto;background:var(--panel2);box-shadow:var(--sunken);padding:3px;min-height:0}
+.chi{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:6px;align-items:center;width:100%;border:0;background:transparent;padding:5px 4px;text-align:left;font:12.5px var(--f-body);color:var(--ink);cursor:pointer}
+.chi:hover{background:var(--lt)} .chi[aria-current="true"]{background:var(--sel);color:#fff}
+.chic{font-size:15px;text-align:center}
+.chs{color:var(--gold);font-size:12px;letter-spacing:1px} .chi[aria-current="true"] .chs{color:#ffd75a}
+.chdet{overflow:auto;min-height:0;padding-right:4px}
+.chdet p{margin:0 0 4px;max-width:70ch}
+.chscore{display:flex;gap:14px;align-items:center;padding:8px 10px;box-shadow:var(--sunken);background:var(--panel2);margin-top:10px}
+.chscore .big{font-size:26px;color:var(--gold);letter-spacing:2px;line-height:1}
+.chscore.bad .big{color:var(--crit)}
+.chbars .cb{display:grid;grid-template-columns:minmax(0,170px) minmax(0,1fr) 72px;gap:8px;align-items:center;font-size:12px;margin:4px 0}
+.cbn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cbt{height:14px;background:var(--panel2);box-shadow:var(--sunken);padding:2px}
+.cbt i{display:block;height:100%}
+.cb.you .cbn{font-weight:700}
+.cbv{text-align:right}
+
+@media (max-width:1180px){.selgrid{grid-template-columns:minmax(0,1fr) 230px}}
+@media (max-width:900px){
+  body{display:block}
+  .statusbar{position:sticky;bottom:0;z-index:40}
+  .app{padding:3px}
+  .lib{padding:3px}
+  .optool{order:5;width:100%}
+  #sb-spec{display:none}
+}
+@media (max-width:700px){
+  .selgrid,.chgrid{grid-template-columns:minmax(0,1fr)}
+  .selchart .ashbox{min-height:300px}
+  .chlist{max-height:180px}
+  .fwin[data-type="select"] .fbody{overflow:auto;display:block}
+  .wtabpane{overflow:visible}
+  .mb{padding:3px 6px}
+  .titlebar{font-size:12px}
+  #sb-time{display:none}
+}
+</style>
 <script>
 /* ============ CRUCIBLE · DATA ============ */
 /* Units: rho g/cm3, E GPa, ys/uts MPa, el %, temps K, k W/m·K, cte µm/m·K, cp J/kg·K, re Ω·m, lf kJ/kg, a Å, M g/mol */
@@ -1336,6 +1637,7 @@ function propsAt(m,T,st){
   if(m.ht&&st.micro){const r=steelMicroProps(m,st.micro); if(r){ys0=r.ys;uts0=r.uts;el0=r.el;hv0=r.HV;p.micro=r;}}
   if(m.ppt&&st.over){ys0=m.ppt.ys;uts0=m.ppt.uts;el0=m.ppt.el;}
   if(m.Emart){E0=(S.s==='B2')?m.E:m.Emart;}
+  if(k==='met'&&(st.cw>0||(st.d_&&Math.abs(st.d_-D0(m))>0.5))&&workable(m)){const uo=uts0; const w=workMod(m,ys0,uts0,el0,st.cw||0,st.d_||D0(m)); ys0=w.ys; uts0=w.uts; el0=w.el; if(hv0) hv0*=uts0/uo; p.cw=st.cw||0; p.gd=st.d_;}
   /* thermal */
   p.cte=cteAt(m,T); p.cp=cpAt(m,T,f>=1);
   /* density */
@@ -1915,7 +2217,7 @@ const C={};
 function refreshColors(){
   const cs=getComputedStyle(document.documentElement);
   ['bg','panel','panel2','ink','muted','line','line2','accent','cold','good','warn','crit','chamber','chamber-ink','chamber-mute',
-   'c-metal','c-alloy','c-polymer','c-ceramic','c-semi','c-fiber','c-composite','c-mine','accent-soft','cold-soft'].forEach(k=>C[k]=cs.getPropertyValue('--'+k).trim());
+   'c-metal','c-alloy','c-polymer','c-ceramic','c-semi','c-fiber','c-composite','c-mine','accent-soft','cold-soft','crit-soft','sel'].forEach(k=>C[k]=cs.getPropertyValue('--'+k).trim());
   C.mono=cs.getPropertyValue('--f-mono').trim(); C.cond=cs.getPropertyValue('--f-cond').trim();
 }
 function clsColor(m){return m.mine?C['c-mine']:C['c-'+m.c]||C.muted;}
@@ -1996,7 +2298,7 @@ function drawChart(cv,o){
   (o.marks||[]).forEach((mk,i)=>{ if(mk.x<x0||mk.x>x1) return; const x=X(mk.x); ctx.strokeStyle=mk.color||C.muted; ctx.setLineDash([3,3]); ctx.beginPath(); ctx.moveTo(x,pad.t); ctx.lineTo(x,pad.t+ph); ctx.stroke(); ctx.setLineDash([]);
     if(mk.label){ctx.save();ctx.translate(x+3,pad.t+4+(i%2)*0);ctx.rotate(Math.PI/2);ctx.fillStyle=mk.color||C.muted;ctx.textAlign='left';ctx.textBaseline='top';ctx.font=`10.5px ${C.mono}`;ctx.fillText(mk.label,0,-2-10);ctx.restore();}});
   (o.hmarks||[]).forEach(mk=>{ if(mk.y<y0||mk.y>y1) return; const y=Y(mk.y); ctx.strokeStyle=mk.color||C.muted; ctx.setLineDash([3,3]); ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(pad.l+pw,y); ctx.stroke(); ctx.setLineDash([]);
-    if(mk.label){ctx.fillStyle=mk.color||C.muted;ctx.textAlign='right';ctx.textBaseline='bottom';ctx.font=`10.5px ${C.mono}`;ctx.fillText(mk.label,pad.l+pw-4,y-2);}});
+    if(mk.label){ctx.fillStyle=mk.color||C.muted;ctx.textAlign=mk.align==='left'?'left':'right';ctx.textBaseline=mk.align==='left'?'top':'bottom';ctx.font=`10.5px ${C.mono}`;ctx.fillText(mk.label,mk.align==='left'?pad.l+4:pad.l+pw-4,mk.align==='left'?y+2:y-2);}});
   // series
   (o.series||[]).forEach(s=>{
     if(!s.pts||s.pts.length<1) return;
@@ -2289,10 +2591,10 @@ function renderMicro(cv,parts,o={}){
   gparts.forEach((p,pi)=>{acc+=p.frac/tot; const lim=pi===gparts.length-1?nS:Math.round(acc*nS); for(;idx<lim;idx++) sorted[idx].part=p;});
   seeds.forEach(s=>{if(!s.part) s.part=gparts[0]||{type:'grain',col:'a'};});
   const bw=0.8+(net?net.frac*16:0);
-  const lamF=o.lamFreq||0.9;
+  const lamF=o.lamFreq||0.9, st=o.stretch||1, cwv=o.cw||0;
   for(let y=0;y<N;y++)for(let x=0;x<N;x++){
     let d1=1e9,d2=1e9,i1=0;
-    for(let i=0;i<nS;i++){const s=seeds[i];let dx=Math.abs(x-s.x),dy=Math.abs(y-s.y);if(dx>N/2)dx=N-dx;if(dy>N/2)dy=N-dy;const d=dx*dx+dy*dy;if(d<d1){d2=d1;d1=d;i1=i;}else if(d<d2)d2=d;}
+    for(let i=0;i<nS;i++){const s=seeds[i];let dx=Math.abs(x-s.x),dy=Math.abs(y-s.y);if(dx>N/2)dx=N-dx;if(dy>N/2)dy=N-dy;dx/=st;dy*=st;const d=dx*dx+dy*dy;if(d<d1){d2=d1;d1=d;i1=i;}else if(d<d2)d2=d;}
     const s=seeds[i1], p=s.part; let col;
     const edge=Math.sqrt(d2)-Math.sqrt(d1);
     const liquidish=p.type==='liquid';
@@ -2320,6 +2622,7 @@ function renderMicro(cv,parts,o={}){
     else { col=MCOL[p.col||'a']; if(p.col==='g'){const u=x*Math.cos(s.ang)+y*Math.sin(s.ang); if(Math.abs(Math.sin(u*0.08+s.ph))>0.985) col=[186,176,156];} col=col.map(v=>v*s.sh);
       if(p.dend){const ang=Math.atan2(y-s.y,x-s.x);const rr=Math.sqrt(d1);const arm=Math.abs(Math.cos(2*(ang-s.ang)));if(rr>N*0.06*(0.35+0.65*arm)*(0.6+p.frac)){col=MCOL.L;}}
       if(p.ppt&&((x*31+y*17)%29===0)) col=[90,82,70]; }
+    if(cwv>0.03&&p.type!=='liquid'&&!(!liquidish&&edge<bw)){const u1=x*Math.cos(s.ang*0.4+0.5)+y*Math.sin(s.ang*0.4+0.5); if(Math.abs(Math.sin(u1*0.9+s.ph))>1-0.06*Math.min(1,cwv*2.2)) col=col.map(v=>v*0.62);}
     if(parts.find(q=>q.type==='pores')&&((x-s.x)**2+(y-s.y)**2<3)) col=[40,36,30];
     const k=(y*N+x)*4; D[k]=col[0];D[k+1]=col[1];D[k+2]=col[2];D[k+3]=255;
   }
@@ -2352,9 +2655,9 @@ function newSpec(m,x,y){
 function resetSpec(s,T){
   s.tab=buildH(s.m); s.T=T; s.H=HatT(s.tab,T); s.frac=TfromH(s.tab,s.H); s.hist=[[0,T]]; s.t=0;
   s.micro={type:'asis'}; s.aust=0; s.over=false; s.overT=0; s.grain=1; s.tA1=null; s.rate=null; s.P=0; s.loss=0; s.dTdt=0; s.last={}; s.ptCache=null; s._full=false;
-  s.p293=propsAt(s.m,293,{});
+  procInit(s); s.p293=propsAt(s.m,293,{});
 }
-function specState(s){const st={f:s.frac.f,b:s.frac.b,d:s.frac.d,over:s.over}; if(s.m.ht&&s.aust<=0) st.micro=s.micro; return st;}
+function specState(s){const st={f:s.frac.f,b:s.frac.b,d:s.frac.d,over:s.over,cw:s.cw||0,d_:s.d}; if(s.m.ht&&s.aust<=0) st.micro=s.micro; return st;}
 function slog(s,msg){s.log.push({t:s.t,T:s.T,msg}); if(s.log.length>60) s.log.shift(); if(W.sel===s.id) INS.dirtyLog=true;}
 function simSpec(s,dtReal){
   const m=s.m, dt=dtReal*W.speed; if(dt<=0) return;
@@ -2386,8 +2689,7 @@ function simSpec(s,dtReal){
         slog(s,`Cooled at ${num(rate,2)} K/s (critical ${num(si.Rc,2)} K/s) → ${pr.label}, ${pr.HV} HV.`); s.p293=propsAt(m,293,specState(s)); s.ptCache=null; } }
     if(s.micro.fM>0&&s.aust<=0&&s.dTdt>0&&s.T>423&&s.T<si.A1&&s.T>(s.micro.tempT||0)+5){ if(!s.micro.tempT) slog(s,'Tempering: carbides precipitate, hardness falls, toughness rises.'); s.micro.tempT=s.T; s.p293=propsAt(m,293,specState(s)); s.ptCache=null; }
   }
-  const hom=s.T/(m.tm||9e9); if(kind(m)==='met'&&hom>0.5&&s.frac.f<1){const g0=s.grain; s.grain=Math.min(3.2,s.grain*(1+dt*0.025*Math.exp(14*(hom-0.92)))); if(g0<1.5&&s.grain>=1.5) slog(s,'Grain growth: boundaries migrate to cut their total area.');}
-  if(s.frac.f>=1) s.grain=1.3;
+  procTick(s,dt);
 }
 function specEvents(s,p){
   const sname=p.struct.name,ph=p.phase,mg=p.mag?p.mag.state:'';
@@ -2708,15 +3010,15 @@ function microParts(s,p){
     else if(s.micro.type==='mart'){const t=s.micro.tempT?U.clamp((s.micro.tempT-423)/400,0,1):0; parts=[{type:'needles',frac:s.micro.fM,tempered:t}]; if(s.micro.fM<0.98) parts.push({type:'needles',bainite:true,frac:1-s.micro.fM});}
     else parts=feC(Math.min(C_,2),20).micro;
     cap=s.aust>0?'Austenite grains; straight lines are annealing twins.':(s.micro.type==='mart'?'Quenched: carbon trapped in needle-shaped martensite.':(s.micro.type==='fine'?'Normalised: closely spaced pearlite.':'Slow-cooled: ferrite grains and pearlite colonies.'));
-    return {parts,cap,names,opt:{seed:7,grains:40/s.grain,lamFreq:s.micro.type==='fine'?1.6:(s.micro.type==='coarse'?0.55:0.9)}};
+    return {parts,cap,names,opt:{seed:7,grains:grainsFor(s),stretch:1+2.2*(s.cw||0),cw:s.cw||0,lamFreq:s.micro.type==='fine'?1.6:(s.micro.type==='coarse'?0.55:0.9)}};
   }
   if(k==='met'){
     const dg=m.comp&&m.base?findDiagram(m.base,Object.entries(m.comp).map(([el,w])=>({el,w}))):null;
     if(dg&&!dg.approx){const q=phaseAt(dg.D,dg.cB,s.T-273.15); parts=q.micro; names=dg.D.type==='fec'?{a:'ferrite (α-Fe)',g:'austenite (γ-Fe)',c:'cementite (Fe₃C)'}:{a:dg.D.names.a,b:dg.D.names.b}; cap=`From the ${dg.D.title} diagram at ${fT(s.T)}.`;}
     else { const fcc=p.struct.s==='FCC'; parts=f>0?[{type:'grain',col:'a',frac:1-f,dend:true},{type:'liquid',frac:f}]:[{type:'grain',col:fcc?'g':'a',frac:1}]; names={a:`${m.n} grains (${(STRUCT[p.struct.s]||{}).name||'solid solution'})`,g:`${m.n} grains (FCC, with twins)`}; }
     if(m.id==='castiron'){parts=[{type:'lamellar',cols:['a','c'],ratio:0.12,frac:0.85,desc:'pearlite matrix'},{type:'plates',frac:0.15,label:'graphite flakes'}]; names={a:'ferrite',c:'cementite'};}
-    cap=cap||(f>0?'Solid dendrites growing into the melt.':`Polished and etched. Grain size ×${num(s.grain,2)} of the starting size.`);
-    return {parts,cap,names,opt:{seed:U.hash(m.id)%1000,grains:40/s.grain}};
+    cap=cap||(f>0?'Solid dendrites growing into the melt.':(s.cw>0.02?`Cold-worked ${Math.round(s.cw*100)}%: grains flattened along the rolling direction, dark slip bands inside.`:`Polished and etched.`)+(f>0?'':` Mean grain size ${fmtD(s.d)} (ASTM ${num(astmG(s.d),2)}).`));
+    return {parts,cap,names,opt:{seed:U.hash(m.id)%1000,grains:grainsFor(s),stretch:1+2.2*(s.cw||0),cw:s.cw||0}};
   }
   if(m.s==='COMP') return {comp:true,cap:'Reinforcement (dark) embedded in the matrix (light).',parts:[]};
   if(k==='glass'||m.s==='AMO') return {parts:[{type:'glass',frac:1}],cap:'A glass has no crystals and no grain boundaries.',names:{},opt:{grains:3}};
@@ -2825,7 +3127,7 @@ const WIDGETS={
     tick:(s,el,p,dt)=>{el._mt=(el._mt||0)+dt; if(el._mt<0.4) return; el._mt=0; const r=microParts(s,p); const cv=el.querySelector('canvas');
       if(r.none){const c=cv.getContext('2d');c.fillStyle='#1c1a18';c.fillRect(0,0,cv.width,cv.height);el.querySelector('.ml').innerHTML='';}
       else if(r.comp){drawCompSection(cv,s.m,true);el.querySelector('.ml').innerHTML=`<div class="mlegend"><span class="sw" style="background:${s.m.fcol||'#2b2d30'}"></span><span>reinforcement</span><span class="pc">${num((s.m.fv||0.5)*100,2)}%</span><span class="sw" style="background:${s.m.mcol||'#d8c48f'}"></span><span>matrix</span><span class="pc">${num((1-(s.m.fv||0.5))*100,2)}%</span></div>`;}
-      else { renderMicro(cv,r.parts,r.opt||{}); const sig=JSON.stringify(r.parts.map(q=>[q.type,q.col,q.cols,Math.round(q.frac*100),q.tempered>0.2,q.bainite]))+JSON.stringify(r.names); if(sig!==el._msig){el._msig=sig; el.querySelector('.ml').innerHTML=microLegend(r.parts,r.names||{});} }
+      else { renderMicro(cv,r.parts,r.opt||{}); { const sb=el.querySelector('.scalebar'); if(sb) sb.lastChild.textContent=s.d&&workable(s.m)?'≈ '+fmtD(s.d*Math.sqrt(grainsFor(s))*0.2):'≈ 20 µm'; } const sig=JSON.stringify(r.parts.map(q=>[q.type,q.col,q.cols,Math.round(q.frac*100),q.tempered>0.2,q.bainite]))+JSON.stringify(r.names); const cwf=(s.cw||0)>0.03; if(sig+cwf!==el._msig){el._msig=sig+cwf; let lg=microLegend(r.parts,r.names||{}); if(cwf) lg=lg.replace(/<\/div>$/,`<span class="sw" style="background:repeating-linear-gradient(30deg,rgb(140,132,118) 0 2px,rgb(216,207,187) 2px 6px)"></span><span>slip bands</span><span class="pc"></span><span class="d">dense dislocation tangles from cold work; they vanish on recrystallisation</span></div>`); el.querySelector('.ml').innerHTML=lg;} }
       el.querySelector('.mc').textContent=r.cap||''; }},
   atoms:{n:'Crystal structure',render:(s,el)=>{
       el.innerHTML=`<div class="cellbox"><canvas></canvas><div class="cap"></div></div><div class="row" style="justify-content:space-between;flex-wrap:wrap;margin-top:8px"><div class="legend lg" style="margin:0"></div><div class="seg co"><button data-o="spheres" aria-pressed="false">Hard spheres</button><button data-o="super" aria-pressed="false">2×2×2</button></div></div><div class="row pls" style="margin-top:8px;flex-wrap:wrap;gap:6px"><span class="tiny muted">Miller plane${ib('miller')}</span><div class="seg pl"><button data-p="" aria-pressed="true">none</button><button data-p="100" aria-pressed="false">(100)</button><button data-p="110" aria-pressed="false">(110)</button><button data-p="111" aria-pressed="false">(111)</button></div><span class="tiny mono pd"></span></div><dl class="kv facts" style="margin-top:10px"></dl>`;
@@ -2878,8 +3180,8 @@ function drawCurve(s,cv){
   if(s.m.tc) marks.push({y:toDisp(s.m.tc),label:'Curie',color:C.cold}); if(s.m.tg) marks.push({y:toDisp(s.m.tg),label:'Tg',color:C.cold}); if(s.m.ht) marks.push({y:toDisp(s.m.si.Ms),label:'Ms',color:C.cold}); if(s.heater) marks.push({y:toDisp(s.target),label:'setpoint',color:C.muted});
   drawChart(cv,{xr:[t0,t1],yr:[toDisp(Math.max(0,lo-pad)),toDisp(hi+pad)],series:[{pts:H.map(([t,T])=>[t,toDisp(T)]),color:C.accent,width:2.2,fill:'auto',name:'T'}],xunit:'s',yunit:uT(),hmarks:marks,points:[{x:H[H.length-1][0],y:toDisp(s.T),color:C.accent}],xlabel:'time (s)',ylabel:uT(),padL:50});
 }
-function ptSeries(s,key,Tmax){ const m=s.m; const st=specState(s); const ck=m.id+key+Tmax+JSON.stringify(st.micro||'')+s.over; s.ptc=s.ptc||{};
-  if(!s.ptc[key]||s.ptc[key].k!==ck){const pts=[];for(let i=0;i<=200;i++){const T=1+(Tmax-1)*i/200;pts.push([T,propsAt(m,T,{micro:st.micro,over:st.over})[key]]);}s.ptc[key]={k:ck,pts};} return s.ptc[key].pts; }
+function ptSeries(s,key,Tmax){ const m=s.m; const st=specState(s); const ck=m.id+key+Tmax+JSON.stringify(st.micro||'')+s.over+'|'+(s.cw||0).toFixed(3)+'|'+Math.round(s.d||0); s.ptc=s.ptc||{};
+  if(!s.ptc[key]||s.ptc[key].k!==ck){const pts=[];for(let i=0;i<=200;i++){const T=1+(Tmax-1)*i/200;pts.push([T,propsAt(m,T,{micro:st.micro,over:st.over,cw:st.cw,d_:st.d_})[key]]);}s.ptc[key]={k:ck,pts};} return s.ptc[key].pts; }
 function tmaxOf(s){const m=s.m;return Math.min(s.tab.Tmax,m.tb?m.tb+300:(m.td?m.td+150:(m.tm?(m.tm+(m.fr||0))*1.25+150:(m.tg?m.tg*2:2000))));}
 function drawPT(s,p,cv,key,overlay){
   key=key||ST.prop; const m=s.m,def=PD[key]; const others=overlay?W.items.filter(q=>q!==s).slice(0,5):[];
@@ -3230,6 +3532,160 @@ function derived(m,p){
   return rows;
 }
 const PDENS={SC:{'100':1,'110':0.707,'111':0.577},BCC:{'100':1,'110':1.414,'111':0.577},FCC:{'100':2,'110':1.414,'111':2.309},DC:{'100':2,'110':1.414,'111':2.309},ZB:{'100':2,'110':1.414,'111':2.309},RS:{'100':2,'110':1.414,'111':2.309},L12:{'100':2,'110':1.414,'111':2.309},B2:{'100':1,'110':1.414,'111':0.577},BCT:{'100':1,'110':1.414,'111':0.577}};
+/* ============ PROCESSING (cold work · anneal · grain size) · FATIGUE · CREEP ============ */
+function D0(m){ return m.d0||(['castiron','a356'].includes(m.id)?120:30); }
+function workable(m){ return kind(m)==='met'&&(m.c==='metal'||m.c==='alloy')&&(m.tm||0)>450&&m.s!=='COMP'; }
+const KHP={BCC:0.6,BCT:0.6,FCC:0.15,HCP:0.35,B2:0.3,B19:0.3,L12:0.3};
+/* Hall–Petch + work hardening applied to the room-temperature base properties */
+function workMod(m,ys,uts,el,cw,d){
+  const d0=D0(m), k=KHP[m.s]||0.25;
+  const hp=k*(1/Math.sqrt(d*1e-6)-1/Math.sqrt(d0*1e-6)); // MPa
+  let y=ys!=null?ys:uts*0.6, u=uts, e=el;
+  y=Math.max(y*0.35,y+hp); u=Math.max(u*0.45,u+hp*0.7);
+  if(d>d0) e=e*(1-0.12*Math.min(1,Math.log10(d/d0)));
+  if(cw>0){ const f=1-Math.exp(-cw/0.22), cap=Math.max(u*1.15,y*1.6); y=y+(cap-y)*f; u=u*(1+0.45*(1-Math.exp(-cw/0.3))); e=Math.max(1.5,e*(0.22+0.78*Math.exp(-cw/0.14))); }
+  if(u<y*1.03) u=y*1.03;
+  return {ys:ys!=null?y:null,uts:u,el:e,hp};
+}
+function trx(m,cw){ return m.tm*(0.5-0.18*Math.min(1,(cw||0.3)/0.6)); }
+function astmG(d){ return -6.6457*Math.log10(d/1000)-3.298; }
+function grainsFor(s){ return U.clamp(40*Math.pow(D0(s.m)/(s.d||D0(s.m)),1.5),4,190); }
+function fmtD(d){ return d>=1000?num(d/1000,3)+' mm':num(d,3)+' µm'; }
+
+function procInit(s){ s.cw=0; s.cw0=0; s.rxt=0; s.rx=0; s.d=D0(s.m); s.dDef=s.d; s.h=20; s.fat=[]; s.crp=[]; }
+function procTick(s,dt){
+  const m=s.m; if(!workable(m)) return;
+  if(s.d==null) procInit(s);
+  if(s.frac.f>=1){ if(s.cw>0){s.cw=0;s.cw0=0;s.rx=0;s.rxt=0;} if(s.d<120){s.d=120;s.dDef=120;s._pchg=true;} return; }
+  if(s.frac.f>0) return;
+  if(m.ht&&s.aust>0&&s.cw0>0){ s.cw=0; s.cw0=0; s.rx=0; s.rxt=0; s._pchg=true; slog(s,'Austenite formed: the cold-worked structure is wiped out by the phase change.'); }
+  const hom=s.T/m.tm;
+  if(s.cw0>0.005){
+    const Tr=trx(m,s.cw0);
+    if(s.T>0.75*Tr){
+      s.rxt+=dt*Math.exp(22*(s.T/Tr-1))/60; const X=1-Math.exp(-0.693*s.rxt*s.rxt);
+      if(s.rx<0.05&&X>=0.05) slog(s,`Recrystallisation starts (T_rx ≈ ${fT(Tr)}): strain-free grains nucleate inside the deformed ones.`);
+      const drx=U.clamp(7*Math.pow(Math.max(s.cw0,0.03),-0.75),4,Math.max(4,s.dDef));
+      s.rx=X; s.cw=s.cw0*(1-X); s.d=U.lerp(s.dDef,drx,X); s._pchg=true;
+      if(X>0.995){ s.cw=0; s.cw0=0; s.rx=1; s.rxt=0; s.d=drx; s.dDef=drx; slog(s,`Recrystallised: new equiaxed grains, d ≈ ${fmtD(drx)}. The cold-work hardening is gone.`); }
+    }
+  } else if(hom>0.5){
+    const K=300*Math.exp(16*(hom-0.9)), d0=s.d; s.d=Math.min(800,Math.sqrt(s.d*s.d+K*dt)); s.dDef=s.d; s._pchg=true;
+    if(d0<2*D0(m)&&s.d>=2*D0(m)) slog(s,'Grain growth: boundaries migrate to cut their total area; strength drops a little (Hall–Petch).');
+  }
+  if(s._pchg&&s.t-(s._p293t||-9)>1){ s._pchg=false; s._p293t=s.t; s.p293=propsAt(m,293,specState(s)); s.ptc=null; }
+}
+function rollPass(s,r){
+  const m=s.m, p=s.p;
+  if(p.phase!=='solid'){ toast('It has to be solid to roll it'); return; }
+  const Tr=trx(m,0.3), hot=s.T>Tr;
+  const e293=s.p293.el;
+  if(!hot&&(p.el==null||p.el<3)){ toast(`Cracked! At ${num(p.el||0,2)}% elongation it is too brittle to cold-roll. Anneal it first.`); slog(s,'Rolling pass failed: the specimen cracked (too little ductility left).'); return; }
+  s.h=s.h*(1-r);
+  s._roll={t:0,hin:s.h/(1-r),hout:s.h};
+  if(hot){ const d0=s.d; s.d=Math.max(5,s.d*Math.pow(1-r,1.2)); s.dDef=s.d; s.cw=0; s.cw0=0; s.rx=1; slog(s,`Hot rolled ${Math.round(r*100)}% above T_rx: recrystallises as it deforms, no hardening; grains refined ${fmtD(d0)} → ${fmtD(s.d)}.`); }
+  else { const tot=1-(1-s.cw)*(1-r); s.cw=Math.min(0.92,tot); s.cw0=s.cw; s.rxt=0; s.rx=0; s.dDef=s.d; slog(s,`Cold rolled ${Math.round(r*100)}% (stored cold work now ${Math.round(s.cw*100)}%): dislocations multiply and tangle.`); }
+  s.p293=propsAt(m,293,specState(s)); s.ptc=null; INS.dirty=true;
+}
+
+/* ---------- FATIGUE ---------- */
+function ironish(m){ return m.id==='fe'||m.steel||m.ht||/^(st|ss|duplex|ph174|castiron)/.test(m.id)||m.base==='Fe'; }
+function tiish(m){ return m.id==='ti'||m.id==='ti64'||m.base==='Ti'; }
+const FINISH=[['polished','Mirror polished',1],['ground','Ground',0.9],['machined','Machined',0.76],['rolled','Hot-rolled skin',0.6],['forged','As forged',0.45]];
+function fatigueModel(m,p,ka){
+  const k=kind(m), uts=Math.max(1,p.uts); let sf,b,Se=null;
+  if(m.c==='composite'||m.c==='fiber'){ sf=uts*1.0; b=-0.07; }
+  else if(k==='met'){ sf=uts+345*Math.min(1,uts/300); b=-0.085; if(ironish(m)||tiish(m)) Se=Math.min(0.5*uts,700); }
+  else if(k==='poly'){ sf=uts*1.05; b=-0.09; }
+  else { sf=uts*1.1; b=-0.035; }
+  const kaN=N=>1-(1-ka)*U.clamp((Math.log10(Math.max(N,1))-3)/3,0,1);
+  const S=N=>{ const v=kaN(N)*sf*Math.pow(2*N,b); return Se!=null?Math.max(v,ka*Se):v; };
+  const life=sa=>{ if(sa>=uts) return 1; if(Se!=null&&sa<=ka*Se*1.0001) return Infinity; let lo=0,hi=12; for(let i=0;i<50;i++){const mid=(lo+hi)/2; if(S(Math.pow(10,mid))>sa) lo=mid; else hi=mid;} const N=Math.pow(10,(lo+hi)/2); return N>=1e12?Infinity:Math.max(1,N); };
+  return {sf,b,Se,S,life,uts,ka};
+}
+function goodman(sa,sm,uts){ return sm>=uts?Infinity:sa/(1-sm/uts); }
+const FTG={sa:null,sm:0,fin:'machined',run:null};
+const fmtN=N=>N===Infinity?'∞':(N<1e4?Math.round(N).toLocaleString('en-US'):sci(N,2));
+
+/* ---------- CREEP ---------- */
+const CREEPK={in718:1e-3,waspaloy:3e-4,stellite:3e-3,ni3al:1e-3,c276:1e-2,nichrome:2e-2,monel:0.1,ss304:0.05,ss316:0.04,duplex:0.06,ph174:0.1,h13:0.1,m2:0.08,d2:0.1,ti64:0.2,w:0.3,mo:0.3,re:0.2,ta:0.4,sic:1e-2,si3n4:1e-2,sicsic:1e-3,al2o3:0.05,zro2:0.2,cc:1e-3};
+function creepTm(m){ return m.tm||m.td||m.tb||(m.tg?m.tg*1.6:2500); }
+function creepModel(m,Tc,sig,st){
+  const k=kind(m), Tm=creepTm(m), p0=propsAt(m,293,st||{}), pT=propsAt(m,Tc,st||{});
+  const sref=Math.max(1,p0.uts), n=k==='met'?5:(k==='poly'?3.2:3), Qr=k==='poly'?14:18;
+  let A=2e10*(CREEPK[m.id]||m.creepK||1); if(k==='cer') A*=0.02; if(m.c==='composite'&&k!=='poly') A*=0.05;
+  if(k==='poly'&&m.tg&&Tc>m.tg&&!m.xl) A*=300;
+  const hom=Tc/Tm;
+  const rate=A*Math.pow(sig/sref,n)*Math.exp(-Qr/Math.max(hom,0.01));
+  const E=Math.max(1e-3,pT.E||0.001), eps_e=sig/(E*1000);
+  const er=U.clamp((pT.el!=null?pT.el:1)/100*0.8,0.01,k==='poly'?2:0.5);
+  const broke=pT.uts<=sig||pT.phase==='liquid';
+  const C=0.35*er, tr=broke?0:C/Math.max(rate,1e-40);
+  const ep=Math.min(0.15*C,0.05), tp=0.08*tr, eter=Math.max(0,er-eps_e-ep-C), q=8;
+  const strain=t=>{ if(broke) return eps_e; const tt=Math.min(t,tr); return eps_e+ep*(1-Math.exp(-tt/Math.max(tp,1e-30)))+rate*tt+eter*(Math.exp(q*tt/tr)-1)/(Math.exp(q)-1); };
+  const regime=hom<0.3?'negligible creep (below 0.3 T_m)':(sig/sref<0.02?'diffusional creep (n≈1)':'power-law dislocation creep');
+  return {rate,tr,eps_e,er,strain,hom,n,Tm,regime,broke,uts:pT.uts,E,LMP:tr>0?Tc*(20+Math.log10(Math.max(tr/3600,1e-30))):null};
+}
+const fmtTime=s=>{ if(!isFinite(s)||s>3.15e15) return '> 100 million years'; if(s<1) return num(s,2)+' s'; if(s<120) return num(s,3)+' s'; if(s<7200) return num(s/60,3)+' min'; if(s<2*86400) return num(s/3600,3)+' h'; if(s<3.15e7*2) return num(s/86400,3)+' days'; return num(s/3.15e7,3)+' years'; };
+const CRP={T:null,sig:null};
+
+/* ---------- glossary additions ---------- */
+GLOSS_CATS.push('Processing','Fatigue & creep','Design');
+Object.assign(GLOSS,{
+ hp:{t:'Grain size & Hall–Petch',sym:'d, k_y',unit:'µm · MPa·m^½',cat:'Processing',
+  what:'Grain size d is the average width of the crystals in a polycrystalline metal. The Hall–Petch relation links it to yield strength.',
+  means:'Grain boundaries block dislocations, so smaller grains mean more obstacles and a stronger metal. Grain refinement is the only strengthening mechanism that also improves toughness.',
+  formula:['σ_y = σ₀ + k_y / √d','k_y ≈ 0.6 MPa·m^½ (BCC steels) · 0.15 (FCC Cu, Al, Ni) · 0.35 (HCP)','ASTM grain size number: G = −6.646·log₁₀(d / mm) − 3.298'],
+  model:'Each specimen carries a mean grain size (30 µm as supplied, 120 µm once cast from the melt). Recrystallisation after cold work sets d from the strain; holding above 0.5 T_m grows grains parabolically (d² − d₀² = K·t).',
+  range:'Nanocrystalline 0.01–0.1 µm · fine-grained steel 5–10 µm · typical wrought 20–60 µm · castings 100 µm–mm'},
+ cw:{t:'Cold work (work hardening)',sym:'%CW',unit:'% reduction',cat:'Processing',
+  what:'Plastic deformation below the recrystallisation temperature: rolling, drawing, bending, hammering.',
+  means:'Deformation multiplies dislocations (from ~10¹⁰ to ~10¹⁵ m⁻²). They tangle and block each other, so strength and hardness rise while ductility falls, until the metal cracks.',
+  formula:['%CW = (A₀ − A_d) / A₀ × 100   (for rolling: (h₀ − h) / h₀)','True strain ε = −ln(1 − %CW/100)','Taylor: Δσ = M·α·G·b·√ρ   (ρ = dislocation density)'],
+  model:'Each rolling pass multiplies the remaining thickness by (1 − r). Yield rises toward ~1.15× the original tensile strength with an exponential approach; elongation decays toward ~22% of its annealed value as e^(−CW/0.14). Rolling is refused when elongation falls below 3%.',
+  range:'Annealed copper: 70 MPa yield, 45% elongation · 50% cold-rolled copper: ~280 MPa, ~6%'},
+ rx:{t:'Recrystallisation & annealing',sym:'T_rx',unit:'K',cat:'Processing',
+  what:'Heating a cold-worked metal lets new strain-free grains nucleate and consume the deformed ones. The temperature where this takes about an hour is T_rx.',
+  means:'Annealing restores ductility so the metal can be worked again. Three stages: recovery (dislocations rearrange), recrystallisation (new grains), grain growth (grains coarsen).',
+  formula:['T_rx ≈ 0.3–0.5 T_m (lower for heavier prior cold work)','JMAK kinetics: X = 1 − exp(−k·tⁿ)','Grain growth: d² − d₀² = K₀·exp(−Q/RT)·t'],
+  model:'T_rx = T_m·(0.5 − 0.18·min(1, CW/0.6)). The recrystallised fraction follows Avrami kinetics with a rate that rises ~e^(22·(T/T_rx − 1)). New grain size ≈ 7·CW^(−0.75) µm, so heavier deformation gives finer grains. Rolling above T_rx is hot working: no hardening, just refinement.',
+  range:'Lead and tin recrystallise at room temperature · copper ~470 K · iron ~720 K · tungsten ~1500 K'},
+ fatigue:{t:'Fatigue (S–N curve)',sym:'σ_a, N_f',unit:'MPa · cycles',cat:'Fatigue & creep',
+  what:'Failure under repeated loading at stresses well below the tensile strength. About 90% of mechanical service failures are fatigue.',
+  means:'A crack starts at a surface flaw, grows a tiny step each cycle (leaving striations), then the part snaps when the remaining section is too small. Life depends on the stress amplitude, the mean stress and the surface finish.',
+  formula:['Basquin: σ_a = σ_f′·(2N_f)^b   (b ≈ −0.085 for metals)','σ_f′ ≈ σ_UTS + 345 MPa (steels)','Paris crack growth: da/dN = C·(ΔK)^m'],
+  model:'σ_f′ = UTS + 345·min(1, UTS/300) MPa for metals, b = −0.085; polymers b = −0.09; ceramics −0.035. A surface-finish (Marin) factor blends in between 10³ and 10⁶ cycles. Mean stress uses the Goodman correction.',
+  range:'Typical fatigue strength at 10⁷ cycles: 0.35–0.5 of UTS for steels, 0.3–0.4 for aluminium, 0.2–0.3 for polymers'},
+ endur:{t:'Endurance limit',sym:'S_e',unit:'MPa',cat:'Fatigue & creep',
+  what:'A stress amplitude below which a material never fails by fatigue, however many cycles.',
+  means:'Steels and titanium have one (interstitial atoms pin dislocations). Aluminium, copper and magnesium do not: they eventually fail at any stress, so designers quote a fatigue strength at 10⁷–5×10⁸ cycles.',
+  formula:['Steels: S_e ≈ 0.5·σ_UTS (up to ~700 MPa)','Marin: S_e = k_a·k_b·k_c·… · S_e′','k_a (surface) ≈ 1 polished · 0.76 machined · 0.45 as-forged'],
+  model:'Given to iron-based alloys and titanium; others have no floor in this simulator.',range:'Mild steel ~220 MPa · 4140 Q&T ~550 MPa · Ti-6Al-4V ~500 MPa'},
+ goodman:{t:'Mean stress (Goodman)',sym:'σ_m',unit:'MPa',cat:'Fatigue & creep',
+  what:'A steady tensile stress on top of the cycling (a bolt preload, a pressurised pipe).',
+  means:'Tensile mean stress opens cracks and shortens life; compressive mean stress (from shot peening) lengthens it.',
+  formula:['Goodman: σ_a / S_N + σ_m / σ_UTS = 1','Equivalent fully reversed amplitude: σ_ar = σ_a / (1 − σ_m/σ_UTS)','Stress ratio R = σ_min / σ_max'],
+  model:'The test converts amplitude and mean stress to an equivalent fully reversed amplitude, then reads life off the S–N curve.'},
+ creep:{t:'Creep',sym:'ε̇_ss',unit:'s⁻¹',cat:'Fatigue & creep',
+  what:'Slow, continuous deformation under a constant load at high temperature (above ~0.4 T_m for metals; room temperature for many polymers and for lead).',
+  means:'Three stages: primary (the rate falls as dislocations tangle), secondary or steady state (hardening balances recovery), tertiary (voids and necking accelerate it to rupture). Turbine blades, boiler tubes and solder joints are designed against it.',
+  formula:['Norton power law: ε̇_ss = A·σⁿ·exp(−Q / RT)   (n ≈ 3–8 dislocation creep, n = 1 diffusional)','Monkman–Grant: ε̇_ss · t_r ≈ constant','Q ≈ activation energy for self-diffusion ≈ 18·R·T_m'],
+  model:'ε̇ = A·(σ/σ_UTS)ⁿ·exp(−18·T_m/T), n = 5 for metals. Superalloys, stainless steels and refractory metals get a much smaller A (γ′ precipitates and solutes resist climb). Rupture time from Monkman–Grant; the curve adds elastic, primary and tertiary strain.',
+  range:'Lead pipes creep at 293 K · steel above ~700 K · nickel superalloys survive 1300 K for years'},
+ lmp:{t:'Larson–Miller parameter',sym:'LMP',unit:'K',cat:'Fatigue & creep',
+  what:'Combines temperature and rupture time into one number so short, hot tests can predict long, cooler service.',
+  means:'For a given stress, many (T, t_r) pairs give the same LMP. Plotting stress against LMP collapses all creep-rupture tests onto one master curve.',
+  formula:['LMP = T · (C + log₁₀ t_r)   (T in K, t_r in hours, C ≈ 20)'],model:'Each creep test reports its LMP and plots it on the stress-rupture chart.'},
+ index:{t:'Performance index (Ashby)',sym:'M',unit:'—',cat:'Design',
+  what:'A combination of properties that measures how well a material does one job, derived from the function, objective and constraints of a component.',
+  means:'On a log–log property chart, every material with the same index lies on one straight line. Slide the line up and only the best materials remain above it.',
+  formula:['Light, stiff tie: M = E/ρ (slope 1)','Light, stiff beam: M = E^½/ρ (slope 2)','Light, stiff panel: M = E^⅓/ρ (slope 3)','Light, strong beam: M = σ_y^⅔/ρ (slope 1.5)','Spring: M = σ_y²/E · Leak-before-break: M = K_IC²/σ_y','General: line y = C·x^s, index M = y^(1/s) / x'],
+  model:'The selector draws the line through the point you drag to and ranks every material by its index. Your own alloys and composites are included.'},
+ cost:{t:'Price per kilogram',sym:'C_m',unit:'$/kg',cat:'Design',prop:'cost',
+  what:'Approximate bulk price of the raw material (2020s market, order-of-magnitude).',
+  means:'Cost per unit of function, not per kilogram, is what matters: multiply by density for cost per volume, then build it into an index like E^½/(C_m·ρ).',
+  formula:['Cost per volume: C_v = C_m · ρ','Cheap stiff beam: M = E^½ / (C_m·ρ)'],model:'Rough reference prices; alloys and composites you make are priced from their ingredients.',range:'Concrete 0.05 · steel 0.8 · aluminium 2.5 · copper 9 · titanium 25 · CFRP 40 · gold 60 000'}
+});
 /* ============ CRUCIBLE · FLOATING WINDOWS, INFO, COMPARE, CONVENIENCES ============ */
 const FW={wins:[],z:300,n:0};
 function fwSave(){ try{localStorage.setItem('crucible.floats.v1',JSON.stringify(FW.wins.map(f=>({type:f.o.type,key:f.o.key,entry:f.o.entry,x:f.x,y:f.y,w:f.el.offsetWidth,h:f.el.offsetHeight}))));}catch(e){} }
@@ -3237,11 +3693,11 @@ function fwLoad(){ try{const a=JSON.parse(localStorage.getItem('crucible.floats.
 function openFloat(o,restoring){
   if(o.type==='info'){ const ex=FW.wins.find(f=>f.o.type==='info'); if(ex){ ex.o.entry=o.entry||ex.o.entry; renderInfo(ex); front(ex); return ex; } }
   if(o.type==='compare'){ const ex=FW.wins.find(f=>f.o.type==='compare'); if(ex){ ex.dirty=true; front(ex); return ex; } }
-  const id='fw'+(++FW.n); const el=document.createElement('div'); el.className='fwin'; el.id=id; el.setAttribute('role','dialog');
-  const W0=o.w||(o.type==='info'?620:o.type==='compare'?640:380), H0=o.h||(o.type==='info'?540:o.type==='compare'?560:420);
+  const id='fw'+(++FW.n); const el=document.createElement('div'); el.className='fwin'; el.id=id; el.dataset.type=o.type; el.setAttribute('role','dialog');
+  const W0=o.w||(o.type==='info'?620:o.type==='compare'?640:o.type==='select'?960:380), H0=o.h||(o.type==='info'?540:o.type==='compare'?560:o.type==='select'?620:420);
   const off=(FW.wins.length%6)*28;
   const x=o.x!=null?o.x:Math.max(10,innerWidth/2-W0/2+off-60), y=o.y!=null?o.y:Math.max(60,110+off);
-  const title=o.type==='info'?'Info: what every parameter means':o.type==='compare'?'Compare specimens':WIDGETS[o.key].n;
+  const title=o.type==='info'?'Info: what every parameter means':o.type==='compare'?'Compare specimens':o.type==='select'?'Material selector':o.type==='help'?(o.key==='about'?'About':'Keyboard shortcuts'):WIDGETS[o.key].n;
   el.innerHTML=`<div class="fhead"><span class="ft">${title}</span><span class="fs"></span><span class="fb">${o.type==='w'?`<button class="ib fl" title="Lock this window to the current specimen" aria-label="Lock to specimen">🔓</button><button class="ib fd" title="Put back in the status column" aria-label="Dock back">⇲</button>`:''}<button class="ib fx" title="Close" aria-label="Close window">×</button></span></div><div class="fbody"><div class="wbody"></div></div>`;
   el.style.width=W0+'px'; el.style.height=H0+'px'; document.body.appendChild(el);
   const f={id,el,o:{...o},x,y,body:el.querySelector('.wbody'),sid:null,dirty:true};
@@ -3263,8 +3719,8 @@ function openFloat(o,restoring){
   return f;
 }
 function place(f){ const W0=f.el.offsetWidth||300; f.x=U.clamp(f.x,-W0+80,innerWidth-80); f.y=U.clamp(f.y,0,innerHeight-40); f.el.style.left=f.x+'px'; f.el.style.top=f.y+'px'; }
-function front(f){ f.el.style.zIndex=++FW.z; }
-function closeFloat(f){ f.el.remove(); FW.wins=FW.wins.filter(q=>q!==f); fwSave(); }
+function front(f){ f.el.style.zIndex=++FW.z; FW.wins.forEach(q=>q.el.classList.toggle('active',q===f)); }
+function closeFloat(f){ f.el.remove(); FW.wins=FW.wins.filter(q=>q!==f); fwSave(); const t=FW.wins.slice().sort((a,b)=>(+b.el.style.zIndex)-(+a.el.style.zIndex))[0]; if(t) front(t); }
 function floatTick(dt,tick){
   for(const f of FW.wins){
     if(f.o.type==='w'){
@@ -3275,6 +3731,8 @@ function floatTick(dt,tick){
       const W_=WIDGETS[f.o.key]; if(W_.tick&&(f.o.key==='atoms'||f.o.key==='micro'||tick)) W_.tick(s,f.body,s.p||propsAt(s.m,s.T,specState(s)),dt,tick);
     } else if(f.o.type==='compare'){ if(f.dirty||tick){ const full=f.dirty; f.dirty=false; renderCompare2(f,full); } }
     else if(f.o.type==='info'&&f.dirty){ f.dirty=false; renderInfo(f); }
+    else if(f.o.type==='select'&&f.dirty){ f.dirty=false; renderSelect(f); }
+    else if(f.o.type==='help'&&f.dirty){ f.dirty=false; renderHelp(f); }
   }
 }
 
@@ -3287,7 +3745,7 @@ function rangeChart(cv,key){
   if(!rows.length){cv.hidden=true;return;}
   const all=rows.flatMap(r=>r.v); let lo=Math.floor(Math.log10(Math.min(...all))), hi=Math.ceil(Math.log10(Math.max(...all))); if(hi-lo<2) hi=lo+2;
   cv.style.height=(rows.length*24+42)+'px'; const {ctx,w,h}=fit(cv); ctx.clearRect(0,0,w,h);
-  const pl=118,pr=12,X=v=>pl+(Math.log10(v)-lo)/(hi-lo)*(w-pl-pr);
+  const pl=130,pr=12,X=v=>pl+(Math.log10(v)-lo)/(hi-lo)*(w-pl-pr);
   ctx.strokeStyle=C.line2; ctx.fillStyle=C.muted; ctx.font=`10px ${C.mono}`; ctx.textAlign='center'; ctx.textBaseline='top';
   for(let e=lo;e<=hi;e++){const x=X(Math.pow(10,e));ctx.beginPath();ctx.moveTo(x,6);ctx.lineTo(x,h-22);ctx.stroke();ctx.fillText(e>=-2&&e<=4?num(Math.pow(10,e)):sci(Math.pow(10,e),1).replace(/^1\.0×|^1×/,''),x,h-18);}
   const sel=spec(W.sel); const sv=sel?get(sel.m):null;
@@ -3354,11 +3812,11 @@ function toggleMulti(id){ if(W.multi.has(id)) W.multi.delete(id); else W.multi.a
 function doOp(s,op){ select(s.id); W.op=op; DK.min=false; if(op==='alloy')FGX.forSpec=null; if(op==='composite')CPX.forSpec=null; INS.dirty=true; }
 function ctxMenu(x,y,s){
   closeMenu(); const m=document.createElement('div'); m.className='cmenu'; m.id='cmenu'; m.setAttribute('role','menu');
-  const items=[['heat','Heat / cool','H'],['alloy','Alloy','A'],['composite','Make composite','C'],['test','Tensile test','T'],['-'],['cmp',W.multi.has(s.id)?'Remove from comparison':'Add to comparison','X'],['pop','Pop out properties',''],['info','Explain the properties','I'],['-'],['dup','Duplicate','D'],['rm','Remove','Del']];
-  m.innerHTML=items.map(([k,n,sc])=>k==='-'?'<hr>':`<button role="menuitem" data-k="${k}" ${['alloy','composite'].includes(k)&&!opAllowed(k,s.m)?'disabled':''}>${n}<span>${sc}</span></button>`).join('');
+  const items=[['heat','Heat / cool','H'],['work','Roll / anneal','R'],['alloy','Alloy','A'],['composite','Make composite','C'],['-'],['test','Tensile test','T'],['fatigue','Fatigue test','F'],['creep','Creep test','K'],['-'],['cmp',W.multi.has(s.id)?'Remove from comparison':'Add to comparison','X'],['pop','Pop out properties',''],['info','Explain the properties','I'],['-'],['dup','Duplicate','D'],['rm','Remove','Del']];
+  m.innerHTML=items.map(([k,n,sc])=>k==='-'?'<hr>':`<button role="menuitem" data-k="${k}" ${['alloy','composite','work','creep'].includes(k)&&!opAllowed(k,s.m)?'disabled':''}>${n}<span>${sc}</span></button>`).join('');
   document.body.appendChild(m); m.style.left=Math.min(x,innerWidth-230)+'px'; m.style.top=Math.min(y,innerHeight-m.offsetHeight-8)+'px';
   m.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const k=b.dataset.k; closeMenu();
-    if(['heat','alloy','composite','test'].includes(k)) doOp(s,k);
+    if(['heat','alloy','composite','test','work','fatigue','creep'].includes(k)) doOp(s,k);
     if(k==='cmp') toggleMulti(s.id); if(k==='pop'){select(s.id);openFloat({type:'w',key:'props',lock:s.id});}
     if(k==='info') openInfo('E'); if(k==='dup'){addSpec(s.m,s.x+24,s.y+24);} if(k==='rm') removeSpec(s.id); });
   setTimeout(()=>addEventListener('pointerdown',closeOnOut),0);
@@ -3379,9 +3837,9 @@ function initConveniences(){
   // shortcuts
   addEventListener('keydown',e=>{ if(e.target.closest('input,select,textarea')||e.metaKey||e.ctrlKey||e.altKey) return; const s=spec(W.sel); const k=e.key.toLowerCase();
     if(k==='escape'){closeMenu(); if(!DK.min){DK.min=true;INS.dirty=true;} return;}
-    if(k==='i'){openInfo(); return;} if(k==='?'){openInfo('E');return;}
+    if(k==='i'){openInfo(); return;} if(k==='m'){openSelector('sel');return;} if(k==='g'){openSelector('chal');return;} if(k==='?'){openInfo('E');return;}
     if(!s) return;
-    const map={h:'heat',a:'alloy',c:'composite',t:'test'}; if(map[k]&&opAllowed(map[k],s.m)){doOp(s,map[k]);e.preventDefault();}
+    const map={h:'heat',a:'alloy',c:'composite',t:'test',r:'work',f:'fatigue',k:'creep'}; if(map[k]&&opAllowed(map[k],s.m)){doOp(s,map[k]);e.preventDefault();}
     if(k==='x') toggleMulti(s.id); if(k==='d') addSpec(s.m,s.x+24,s.y+24); if(k==='delete'||k==='backspace'){removeSpec(s.id);e.preventDefault();} });
 }
 /* ============ CRUCIBLE · OPERATIONS DOCK + SHELL ============ */
@@ -3392,16 +3850,19 @@ const DICON={
   heat:'<svg viewBox="0 0 24 24"><path d="M12 3c1 4 5 6 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 1-9z"/></svg>',
   alloy:'<svg viewBox="0 0 24 24"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3"/><path d="M7.5 14h9"/></svg>',
   composite:'<svg viewBox="0 0 24 24"><path d="M3 8l9-4 9 4-9 4z"/><path d="M3 12l9 4 9-4M3 16l9 4 9-4"/></svg>',
-  test:'<svg viewBox="0 0 24 24"><path d="M3 20c3-1 4-10 7-12s5 1 7 0 3-3 4-4"/><path d="M3 20h18M3 20V3"/></svg>'
+  test:'<svg viewBox="0 0 24 24"><path d="M3 20c3-1 4-10 7-12s5 1 7 0 3-3 4-4"/><path d="M3 20h18M3 20V3"/></svg>',
+  work:'<svg viewBox="0 0 24 24"><circle cx="12" cy="6" r="3.5"/><circle cx="12" cy="18" r="3.5"/><path d="M2 12h20"/><path d="M2 10.5h7M15 13.5h7"/></svg>',
+  fatigue:'<svg viewBox="0 0 24 24"><path d="M2 12c2-6 3-6 5 0s3 6 5 0 3-6 5 0 3 6 5 0"/></svg>',
+  creep:'<svg viewBox="0 0 24 24"><path d="M3 20c2-8 6-10 10-10s5-1 8-7"/><path d="M3 20h18M3 20V3"/></svg>'
 };
-const DOPS=[['heat','Heat / cool'],['alloy','Alloy'],['composite','Composite'],['test','Tensile test']];
+const DOPS=[['heat','Heat / cool'],['work','Roll / anneal'],['alloy','Alloy'],['composite','Composite'],['test','Tensile'],['fatigue','Fatigue'],['creep','Creep']];
 const DK={min:false,acc:0};
-function opAllowed(op,m){ if(op==='alloy') return isAlloyable(m); if(op==='composite') return isMatrix(m)||isReinf(m); return true; }
-const OPDESC={heat:'Set a temperature, choose the surroundings, quench.',alloy:'Mix elements into this metal and cast a new specimen.',composite:'Combine a matrix with fibres or particles.',test:'Pull the specimen to failure at its current temperature.'};
+function opAllowed(op,m){ if(op==='work') return workable(m); if(op==='creep') return m.c!=='fiber'; if(op==='alloy') return isAlloyable(m); if(op==='composite') return isMatrix(m)||isReinf(m); return true; }
+const OPDESC={heat:'Set a temperature, choose the surroundings, quench.',alloy:'Mix elements into this metal and cast a new specimen.',composite:'Combine a matrix with fibres or particles.',test:'Pull the specimen to failure at its current temperature.',work:'Cold- or hot-roll it, then anneal: work hardening, recrystallisation, grain size.',fatigue:'Cycle it on a rotating-beam rig and build its S–N curve.',creep:'Hang a dead weight on it in a furnace and time the rupture.'};
 function renderToolbar(){
   const s=spec(W.sel), tb=$('#optool');
   tb.innerHTML=`<span class="sel">${s?`Selected: <b>${esc(s.m.n)}</b>`:'Nothing selected'}</span>`+DOPS.map(([k,n])=>`<button class="tb" data-op="${k}" aria-pressed="${!!s&&k===W.op&&!DK.min}" ${s&&opAllowed(k,s.m)?'':'disabled'} title="${s&&!opAllowed(k,s.m)?'Not available for this material':OPDESC[k]}">${DICON[k]}${n}</button>`).join('')+
-    `<span class="sep"></span><button class="tb" data-act="dup" ${s?'':'disabled'} title="Place a copy on the bench">${'<svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V6a2 2 0 0 1 2-2h10"/></svg>'}<span class="tl">Duplicate</span></button><button class="tb" data-act="rm" ${s?'':'disabled'} title="Remove from the bench">${'<svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>'}<span class="tl">Remove</span></button><span class="sep"></span><button class="tb" data-act="cmp" title="Compare specimens (shift-click cards to choose)"><svg viewBox="0 0 24 24"><path d="M3 21h18M3 21V3"/><path d="M7 15l4-5 3 3 5-7"/></svg>Compare${W.multi&&W.multi.size?` (${W.multi.size})`:''}</button><button class="tb" data-act="info" title="What every parameter means (I)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>Info</button><button class="tb" data-act="tidy" title="Arrange the bench in a grid"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg><span class="tl">Tidy</span></button>`;
+    `<span class="sep"></span><button class="tb" data-act="dup" ${s?'':'disabled'} title="Place a copy on the bench">${'<svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V6a2 2 0 0 1 2-2h10"/></svg>'}<span class="tl">Duplicate</span></button><button class="tb" data-act="rm" ${s?'':'disabled'} title="Remove from the bench">${'<svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>'}<span class="tl">Remove</span></button><span class="sep"></span><button class="tb" data-act="cmp" title="Compare specimens (shift-click cards to choose)"><svg viewBox="0 0 24 24"><path d="M3 21h18M3 21V3"/><path d="M7 15l4-5 3 3 5-7"/></svg>Compare${W.multi&&W.multi.size?` (${W.multi.size})`:''}</button><button class="tb" data-act="sel" title="Material selector: Ashby charts with index lines (M)"><svg viewBox="0 0 24 24"><path d="M3 21V3M3 21h18"/><circle cx="8" cy="14" r="1.6"/><circle cx="12" cy="9" r="1.6"/><circle cx="17" cy="11" r="1.6"/><path d="M5 19L20 5" stroke-dasharray="3 2"/></svg>Selector</button><button class="tb" data-act="chal" title="Design challenges (G)"><svg viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4"/></svg>Challenges</button><button class="tb" data-act="info" title="What every parameter means (I)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>Info</button><button class="tb" data-act="tidy" title="Arrange the bench in a grid"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg><span class="tl">Tidy</span></button>`;
 }
 function renderDock(){
   renderToolbar();
@@ -3411,7 +3872,7 @@ function renderDock(){
   box.classList.toggle('min',DK.min);
   box.innerHTML=`<div class="dhead"><span class="who">${DICON[W.op].replace('<svg','<svg style="width:16px;height:16px;vertical-align:-3px;stroke:currentColor;fill:none;stroke-width:1.7"')} <b>${DOPS.find(o=>o[0]===W.op)[1]}</b> · ${esc(s.m.n)} <span class="muted">— ${OPDESC[W.op]}</span></span><button class="btn" id="d-min" style="padding:3px 8px;margin-left:auto" aria-expanded="${!DK.min}">${DK.min?'Show panel':'Hide panel'}</button></div><div class="dbody" id="d-body"></div>`;
   $('#d-min').addEventListener('click',()=>{DK.min=!DK.min;box.classList.toggle('min',DK.min);$('#d-min').textContent=DK.min?'Show panel':'Hide panel';$('#d-min').setAttribute('aria-expanded',!DK.min);renderToolbar();});
-  ({heat:dHeat,alloy:dAlloy,composite:dComp,test:dTest})[W.op](s,$('#d-body'));
+  ({heat:dHeat,alloy:dAlloy,composite:dComp,test:dTest,work:dWork,fatigue:dFat,creep:dCreep})[W.op](s,$('#d-body'));
   dockTick(0,true);
 }
 function dockTick(dt,force){
@@ -3419,6 +3880,9 @@ function dockTick(dt,force){
   DK.acc+=dt; const tick=force||DK.acc>0.22; if(tick) DK.acc=0;
   if(W.op==='heat'){ const cv=$('#d-stage'); if(cv) drawSpec(cv,s,p,true); if(tick) heatTick(s,p); }
   if(W.op==='test'&&tick) testTick(s,p);
+  if(W.op==='work') workTick(s,p,dt,tick);
+  if(W.op==='fatigue') fatTick(s,p,dt,tick);
+  if(W.op==='creep') crpTick(s,p,dt,tick);
 }
 
 /* ---------- HEAT / COOL ---------- */
@@ -3644,14 +4108,14 @@ function setSpeed(v){W.speed=v;$$('#speed button').forEach(b=>b.setAttribute('ar
 function setUnit(u){APP.unit=u;$('#u-k').setAttribute('aria-pressed',u==='K');$('#u-c').setAttribute('aria-pressed',u==='C');W.items.forEach(s=>s.ptCache=null);INS.dirty=true;}
 function boot(){
   refreshColors(); stLoad(); loadMine(); initLib();
-  $('#optool').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||b.disabled)return; if(b.dataset.act==='cmp'){if(W.items.length<1){toast('Put some specimens on the bench first');return;} openFloat({type:'compare'});return;} if(b.dataset.act==='info'){openInfo();return;} if(b.dataset.act==='tidy'){tidyBench();return;} const s=spec(W.sel);if(!s)return;
+  $('#optool').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||b.disabled)return; if(b.dataset.act==='cmp'){if(W.items.length<1){toast('Put some specimens on the bench first');return;} openFloat({type:'compare'});return;} if(b.dataset.act==='info'){openInfo();return;} if(b.dataset.act==='sel'){openSelector('sel');return;} if(b.dataset.act==='chal'){openSelector('chal');return;} if(b.dataset.act==='tidy'){tidyBench();return;} const s=spec(W.sel);if(!s)return;
     if(b.dataset.op){ if(W.op===b.dataset.op&&!DK.min){DK.min=true;} else {W.op=b.dataset.op;DK.min=false;if(W.op==='alloy')FGX.forSpec=null;if(W.op==='composite')CPX.forSpec=null;} INS.dirty=true; }
     if(b.dataset.act==='dup'){addSpec(s.m,s.x+24,s.y+24);toast(`Duplicated ${s.m.n}`);}
     if(b.dataset.act==='rm'){removeSpec(s.id);} });
   $('#speed').addEventListener('click',e=>{const b=e.target.closest('button');if(b)setSpeed(+b.dataset.v);});
   $('#u-k').addEventListener('click',()=>setUnit('K')); $('#u-c').addEventListener('click',()=>setUnit('C'));
   let armed=false; $('#clear').addEventListener('click',e=>{ if(!W.items.length) return; if(!armed){armed=true;e.target.textContent='Sure?';setTimeout(()=>{armed=false;e.target.textContent='Clear';},2500);return;} armed=false; e.target.textContent='Clear'; W.items.slice().forEach(s=>removeSpec(s.id)); toast('Bench cleared'); });
-  initConveniences();
+  initConveniences(); initShell();
   if(!loadBench()||!W.items.length) addSpec(MAT.fe,null,null,{select:false});
   fwLoad();
   benchEmpty(); select(W.items.length?W.items[0].id:null);
@@ -3670,6 +4134,503 @@ function boot(){
   requestAnimationFrame(loop);
 }
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
+/* ============ OPERATIONS: ROLL / ANNEAL · FATIGUE · CREEP ============ */
+const WK={r:0.2};
+function annealPresets(s){ const m=s.m,Tm=m.tm; return [['Stress relieve',Math.round(0.3*Tm)],['Recrystallise',Math.round(trx(m,s.cw0||0.3)+40)],['Grow grains',Math.round(0.75*Tm)]]; }
+function dWork(s,body){
+  const m=s.m; if(!s.p) s.p=propsAt(m,s.T,specState(s));
+  if(!workable(m)){ body.innerHTML='<div class="dempty">Only solid metals and alloys can be rolled and annealed.</div>'; return; }
+  body.innerHTML=`<div class="dgrid">
+   <div class="dcol"><div class="stagebox"><canvas id="w-mill"></canvas><div class="tags" id="w-tags"></div><div class="foot" id="w-foot"></div></div>
+     <label class="f" for="w-r" style="margin:0">Reduction per pass <span class="mono" id="w-rv" style="float:right;text-transform:none"></span></label><input type="range" id="w-r" min="0.05" max="0.5" step="0.01" value="${WK.r}">
+     <div class="btns"><button class="btn pri" id="w-roll">Roll one pass</button><button class="btn" id="w-fresh">Fresh sample</button></div>
+     <p class="tiny muted" style="margin:0">Below T<sub>rx</sub> rolling cold-works and hardens the metal; above it (hot rolling) the grains recrystallise as they deform.</p></div>
+   <div class="dcol"><h4>Anneal${ib('rx')}</h4><div class="chips" id="w-ann"></div><div class="btns"><button class="btn" id="w-q">Water quench</button><button class="btn" id="w-air">Cool in air</button></div>
+     <div class="small" id="w-rxl"></div><div class="mbar"><i id="w-rxb" style="width:0"></i></div>
+     <h4 style="margin-top:6px">Strength vs cold work${ib('cw')}</h4><canvas class="cv chart" id="w-cwc"></canvas><div class="legend" style="margin:0"><span><i style="background:var(--accent)"></i>yield</span><span><i style="background:var(--cold)"></i>tensile</span><span><i style="background:var(--crit-soft)"></i>too brittle to roll</span></div></div>
+   <div class="dcol"><h4>Hall–Petch: grain size${ib('hp')}</h4><canvas class="cv chart" id="w-hpc"></canvas><dl class="kv" id="w-kv"></dl></div>
+  </div>`;
+  const r=$('#w-r'); const sr=()=>{WK.r=+r.value;$('#w-rv').textContent=Math.round(WK.r*100)+'%';}; r.addEventListener('input',sr); sr();
+  $('#w-roll').addEventListener('click',()=>rollPass(s,WK.r));
+  $('#w-fresh').addEventListener('click',()=>{s.heater=false;s.env='air';s.ramp=null;s.target=293;resetSpec(s,293);s.log=[];s.tests=[];slog(s,'Fresh annealed sample, 20 mm thick');INS.dirty=true;});
+  $('#w-ann').innerHTML=annealPresets(s).map(([n,T])=>`<button class="chip" data-t="${T}">${n} <span class="mono" style="opacity:.7">${fT(T,false)}</span></button>`).join('');
+  $('#w-ann').addEventListener('click',e=>{const b=e.target.closest('[data-t]');if(!b)return;s.target=+b.dataset.t;s.heater=true;s.env='air';s.ramp=null;slog(s,`Annealing furnace set to ${fT(s.target)}`); if(W.speed<25) setSpeed(25); toast('Furnace on. Time set to 25× so annealing finishes quickly');});
+  $('#w-q').addEventListener('click',()=>{s.heater=false;s.env='water';s.ramp=null;slog(s,'Quenched in water');});
+  $('#w-air').addEventListener('click',()=>{s.heater=false;s.env='air';s.ramp=null;slog(s,'Cooling in still air');});
+  WK.sig=''; workTick(s,s.p,0,true);
+}
+function drawMill(cv,s){
+  const {ctx,w,h}=fit(cv); if(w<40) return; ctx.fillStyle=C.chamber; ctx.fillRect(0,0,w,h);
+  const R=s._roll; let prog=1; if(R){R.t+=1/60; prog=Math.min(1,R.t/0.9); if(prog>=1) s._roll=null;}
+  const cx=w*0.5, cy=h*0.42, scale=h*0.22/20, hout=(R?R.hout:s.h)*scale, hin=(R?R.hin:s.h)*scale, rad=Math.min(h*0.17,w*0.11);
+  const g=glowInfo(s.T); const base=hexRGB(s.m.col||'#888888'); const col=base.map((v,i)=>Math.round(U.lerp(v,g.rgb[i],0.85*g.I)));
+  const slabC=`rgb(${col.join(',')})`;
+  // slab
+  const L=w*0.62, x0=R?cx-L*(1-prog)-4:cx+2, x1=x0+L;
+  ctx.fillStyle=slabC;
+  if(R){ const bite=cx; if(x0<bite){ctx.fillRect(x0,cy-hin/2,Math.min(bite,x1)-x0,hin);} if(x1>bite){ctx.fillRect(Math.max(bite,x0),cy-hout/2,x1-Math.max(bite,x0),hout);} }
+  else { ctx.fillRect(x0,cy-hout/2,L*0.8,hout); }
+  ctx.fillStyle='rgba(255,255,255,0.15)'; ctx.fillRect(R?x0:x0,cy-(R?hin:hout)/2,(R?L:L*0.8),2);
+  // rolls
+  const ang=(R?prog*6:0)+(s._rang||0); if(R) s._rang=ang;
+  [-1,1].forEach(sg=>{ const ry=cy+sg*(hout/2+rad); const gr=ctx.createLinearGradient(cx-rad,0,cx+rad,0); gr.addColorStop(0,'#5b6168'); gr.addColorStop(0.5,'#c9ced3'); gr.addColorStop(1,'#4a4f55');
+    ctx.fillStyle=gr; ctx.beginPath(); ctx.arc(cx,ry,rad,0,7); ctx.fill(); ctx.strokeStyle='rgba(0,0,0,0.45)'; ctx.lineWidth=1.5; ctx.stroke();
+    ctx.strokeStyle='rgba(0,0,0,0.35)'; for(let i=0;i<4;i++){const a=ang*sg+i*Math.PI/2; ctx.beginPath(); ctx.moveTo(cx,ry); ctx.lineTo(cx+Math.cos(a)*rad*0.8,ry+Math.sin(a)*rad*0.8); ctx.stroke();}
+    ctx.fillStyle='#2a2f34'; ctx.beginPath(); ctx.arc(cx,ry,rad*0.14,0,7); ctx.fill(); });
+  // thickness callout
+  ctx.fillStyle=C['chamber-ink']; ctx.font=`600 13px ${C.mono}`; ctx.textAlign='left'; ctx.textBaseline='top';
+  ctx.fillText(`h = ${num(s.h,3)} mm`,10,8); ctx.fillStyle=C['chamber-mute']; ctx.font=`11px ${C.mono}`; ctx.fillText(`started at 20 mm`,10,26);
+  if(R&&prog<1){ctx.fillStyle=C['chamber-ink'];ctx.textAlign='right';ctx.fillText('→ rolling',w-10,8);}
+}
+function workTick(s,p,dt,tick){
+  const cv=$('#w-mill'); if(!cv) return; drawMill(cv,s); if(!tick) return;
+  const m=s.m, Tr=trx(m,s.cw0||0.3), hot=s.T>trx(m,0.3);
+  const tags=[]; if(hot&&p.phase==='solid') tags.push(['hot','hot working']); if(s.cw>0.02) tags.push(['cold','cold-worked '+Math.round(s.cw*100)+'%']); if(s.rx>0&&s.rx<0.995) tags.push(['warn','recrystallising']); if(p.el!=null&&p.el<3&&!hot) tags.push(['warn','too brittle to roll']);
+  $('#w-tags').innerHTML=tags.map(([c,t])=>`<span class="tag ${c}">${esc(t)}</span>`).join('');
+  $('#w-foot').textContent=`${fT(s.T)} · total reduction ${Math.round((1-s.h/20)*100)}% · ${s.heater?'furnace → '+fT(s.target):(s.env==='air'?'in air':ENV[s.env].n.split(' ·')[0].toLowerCase())}`;
+  const rxTxt=s.cw0>0.005?(s.T>0.75*Tr?`Recrystallised ${Math.round(s.rx*100)}% at ${fT(s.T)} (T<sub>rx</sub> ≈ ${fT(Tr)})`:`Recrystallisation needs ≈ ${fT(Tr)} for this much cold work`):(s.T/m.tm>0.5?`Fully recrystallised · grains growing at ${fT(s.T)}`:'Strain-free (annealed) grains');
+  $('#w-rxl').innerHTML=rxTxt; $('#w-rxb').style.width=(s.cw0>0.005?s.rx*100:100)+'%';
+  const r=s.p293;
+  $('#w-kv').innerHTML=[['Thickness',`${num(s.h,3)} mm`],['Stored cold work',`${Math.round(s.cw*100)}%${s.cw>0?' · ε = '+num(-Math.log(1-s.cw),2):''}`],['Grain size',`${fmtD(s.d)} · ASTM ${num(astmG(s.d),2)}`],['T<sub>rx</sub> (this cold work)',fT(Tr)],['Yield at 293 K',r.ys!=null?num(r.ys)+' MPa':'—'],['Tensile at 293 K',num(r.uts)+' MPa'],['Elongation',num(r.el)+' %'],['Hardness',r.hv?Math.round(r.hv)+' HV':'—']].map(([a,b])=>`<dt>${a}</dt><dd>${b}</dd>`).join('');
+  const sig=m.id+'|'+s.cw.toFixed(3)+'|'+Math.round(s.d)+'|'+JSON.stringify(s.micro||'')+C.accent; if(sig===WK.sig) return; WK.sig=sig;
+  const st=specState(s), base={micro:st.micro,over:st.over};
+  const cws=[],ys=[],us=[]; let crack=null;
+  for(let c=0;c<=0.85;c+=0.025){ const q=propsAt(m,293,{...base,cw:c,d_:s.d}); cws.push(c*100); ys.push([c*100,q.ys!=null?q.ys:q.uts*0.8]); us.push([c*100,q.uts]); if(crack==null&&q.el<3) crack=c*100; }
+  const ymax=Math.max(...us.map(q=>q[1]))*1.12;
+  drawChart($('#w-cwc'),{xr:[0,85],yr:[0,ymax],series:[{pts:us,color:C.cold,width:2,name:'tensile'},{pts:ys,color:C.accent,width:2.4,name:'yield'}],bands:crack!=null?[{x0:crack,x1:85,color:C['crit-soft']||'rgba(200,0,0,.12)'}]:[],points:[{x:s.cw*100,y:r.ys!=null?r.ys:r.uts*0.8,color:C.accent,r:5},{x:s.cw*100,y:r.uts,color:C.cold,r:4}],xlabel:'% cold work',ylabel:'MPa',xunit:'%CW',yunit:'MPa'});
+  const hp=[]; for(let x=0.6;x<=16;x+=0.4){ const d=1000/(x*x); const q=propsAt(m,293,{...base,cw:s.cw,d_:d}); hp.push([x,q.ys!=null?q.ys:q.uts*0.8]); }
+  const xd=1/Math.sqrt(s.d/1000);
+  drawChart($('#w-hpc'),{xr:[0,16],yr:[0,Math.max(...hp.map(q=>q[1]))*1.15],series:[{pts:hp,color:C.accent,width:2.4,name:'yield'}],marks:[{x:1,label:'1 mm'},{x:3.16,label:'100 µm'},{x:10,label:'10 µm'}],points:[{x:Math.min(16,xd),y:r.ys!=null?r.ys:r.uts*0.8,color:C.ink,r:5}],xlabel:'d^-½ (mm^-½)',ylabel:'yield MPa',xunit:'mm^-½',yunit:'MPa'});
+}
+
+/* ---------- FATIGUE ---------- */
+function fset(s){ if(!s.fset){ const u=s.p?s.p.uts:s.m.uts; s.fset={sa:Math.round(u*0.4),sm:0,fin:'machined'}; } return s.fset; }
+function dFat(s,body){
+  if(!s.p) s.p=propsAt(s.m,s.T,specState(s));
+  const p=s.p, F=fset(s), u=Math.max(1,p.uts);
+  if(p.phase!=='solid'||!p.uts){ body.innerHTML='<div class="dempty">Nothing solid to cycle at this temperature.</div>'; return; }
+  body.innerHTML=`<div class="dgrid">
+   <div class="dcol"><div class="stagebox"><canvas id="f-rig"></canvas><div class="tags" id="f-tags"></div><div class="foot" id="f-foot"></div></div>
+     <label class="f" for="f-sa" style="margin:0">Stress amplitude σ<sub>a</sub> <span class="mono" id="f-sav" style="float:right;text-transform:none"></span></label><input type="range" id="f-sa" min="1" max="${Math.round(u*1.05)}" step="1" value="${Math.min(F.sa,u)}">
+     <label class="f" for="f-sm" style="margin:0">Mean stress σ<sub>m</sub>${ib('goodman')} <span class="mono" id="f-smv" style="float:right;text-transform:none"></span></label><input type="range" id="f-sm" min="0" max="${Math.round(u*0.8)}" step="1" value="${Math.min(F.sm,u*0.8)}">
+     <label class="f" style="margin:0">Surface finish<select id="f-fin" style="margin-top:4px">${FINISH.map(([k,n,ka])=>`<option value="${k}" ${k===F.fin?'selected':''}>${n} (k_a ${ka})</option>`).join('')}</select></label>
+     <div class="btns"><button class="btn pri" id="f-run">Run test</button><button class="btn" id="f-clr">Clear tests</button></div></div>
+   <div class="dcol"><h4>S–N curve at ${fT(s.T)}${ib('fatigue')}</h4><canvas class="cv tall" id="f-sn"></canvas><div class="legend" id="f-leg" style="margin:0"></div></div>
+   <div class="dcol"><h4>Prediction${ib('endur')}</h4><dl class="kv" id="f-kv"></dl><ul class="notes" id="f-notes" style="margin-top:8px"></ul></div>
+  </div>`;
+  const upd=()=>{F.sa=+$('#f-sa').value;F.sm=+$('#f-sm').value;F.fin=$('#f-fin').value;$('#f-sav').textContent=F.sa+' MPa';$('#f-smv').textContent=F.sm+' MPa';fatTick(s,s.p,0,true);};
+  ['f-sa','f-sm'].forEach(id=>$('#'+id).addEventListener('input',upd)); $('#f-fin').addEventListener('change',upd);
+  $('#f-run').addEventListener('click',()=>{ if(s.frun) return; const ka=FINISH.find(f=>f[0]===F.fin)[2], M=fatigueModel(s.m,s.p,ka); const eq=goodman(F.sa,F.sm,M.uts); let N=F.sa+F.sm>=M.uts?1:M.life(eq); const run=N===Infinity||N>1e7; if(run) N=1e7;
+    s.frun={t:0,dur:N<10?0.8:2.6,N,run,sa:F.sa,sm:F.sm,eq:Math.min(eq,M.uts*1.05),fin:F.fin,T:s.T}; });
+  $('#f-clr').addEventListener('click',()=>{s.fat=[];fatTick(s,s.p,0,true);});
+  upd();
+}
+function drawRig(cv,s){
+  const {ctx,w,h}=fit(cv); if(w<40) return; ctx.fillStyle=C.chamber; ctx.fillRect(0,0,w,h);
+  const R=s.frun; const t=performance.now()/1000; let frac=0,broken=false,Nnow=0;
+  if(R){ frac=Math.min(1,R.t/R.dur); Nnow=Math.pow(R.N,frac); broken=frac>=1&&!R.run; }
+  else if(s.fat&&s.fat.length){ const L=s.fat[s.fat.length-1]; Nnow=L.N; broken=!L.run; frac=1; }
+  const cy=h*0.4, x0=w*0.14, x1=w*0.86, cx=(x0+x1)/2, th=Math.max(6,h*0.07);
+  // chucks + motor
+  ctx.fillStyle='#4a5057'; ctx.fillRect(x0-34,cy-th*1.8,30,th*3.6); ctx.fillRect(x1+4,cy-th*1.8,30,th*3.6);
+  ctx.fillStyle='#6b737b'; ctx.fillRect(x0-8,cy-th,12,th*2); ctx.fillRect(x1-4,cy-th,12,th*2);
+  // bar with neck
+  const sag=broken?0:(R&&frac<1?3:0)+2; const gap=broken?10:0; const base=hexRGB(s.m.col||'#9aa0a6');
+  const crack=R&&!R.run?U.clamp((frac-0.8)/0.2,0,1):(broken?1:0);
+  ctx.fillStyle=`rgb(${base.join(',')})`;
+  const half=(xa,xb,dy)=>{ctx.beginPath();ctx.moveTo(xa,cy-th/2+dy);ctx.quadraticCurveTo((xa+xb)/2,cy-th/2+dy+sag,xb,cy-th/2+dy);ctx.lineTo(xb,cy+th/2+dy);ctx.quadraticCurveTo((xa+xb)/2,cy+th/2+dy+sag,xa,cy+th/2+dy);ctx.closePath();ctx.fill();};
+  if(broken){ half(x0,cx-gap/2,0); half(cx+gap/2,x1,0); } else half(x0,x1,0);
+  // rotation stripes
+  if(!broken){ const sp=(R&&frac<1)?t*40:0; ctx.strokeStyle='rgba(0,0,0,0.18)'; ctx.lineWidth=2; for(let x=x0+((sp)%14);x<x1;x+=14){ctx.beginPath();ctx.moveTo(x,cy-th/2+sag*0.5);ctx.lineTo(x-4,cy+th/2+sag*0.5);ctx.stroke();} }
+  if(crack>0&&!broken){ ctx.strokeStyle='#111'; ctx.lineWidth=1.6; ctx.beginPath(); ctx.moveTo(cx,cy-th/2+sag); ctx.lineTo(cx+1,cy-th/2+sag+th*crack); ctx.stroke(); }
+  // load hanger
+  const ly=broken?h*0.66:cy+th/2+sag+4; ctx.strokeStyle='#9aa3ab'; ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(cx,broken?h*0.7:cy+th/2+sag); ctx.lineTo(cx,ly+12); ctx.stroke();
+  ctx.fillStyle='#3d4349'; ctx.fillRect(cx-16,Math.min(h-40,ly+12),32,16);
+  // counter
+  ctx.fillStyle=C['chamber-ink']; ctx.font=`600 15px ${C.mono}`; ctx.textAlign='left'; ctx.textBaseline='top';
+  ctx.fillText(`N = ${fmtN(Nnow)}`,10,8); ctx.font=`11px ${C.mono}`; ctx.fillStyle=C['chamber-mute'];
+  ctx.fillText(R?(frac<1?'cycling…':(R.run?'run-out: no failure':'fractured')):(s.fat&&s.fat.length?(s.fat[s.fat.length-1].run?'last test: run-out':'last test: fractured'):'rotating-beam test rig'),10,28);
+}
+function drawSN(cv,s,showPreview){
+  const p=s.p; if(!p||!p.uts){drawChart(cv,{xr:[1e2,1e9],yr:[0,1],xlog:true,empty:'Nothing solid to test'});return;}
+  const F=fset(s), ka=FINISH.find(f=>f[0]===F.fin)[2], M=fatigueModel(s.m,p,ka), M1=fatigueModel(s.m,p,1);
+  const curve=[],c1=[]; for(let e=0;e<=9.01;e+=0.1){const N=Math.pow(10,e); curve.push([N,M.S(N)]); c1.push([N,M1.S(N)]);}
+  const T=s.fat||[]; const ymax=Math.max(M1.S(1),...T.map(q=>q.eq))*1.08;
+  const pts=T.map(q=>({x:Math.max(1,q.N),y:q.eq,color:q.col,r:q.run?3:5})).filter(()=>true);
+  const series=[{pts:c1,color:C.muted,width:1.2,dash:[4,4],name:'polished'},{pts:curve,color:C.accent,width:2.4,name:'this finish'}];
+  T.filter(q=>q.run).forEach(q=>series.push({pts:[[q.N,q.eq],[q.N*4,q.eq]],color:q.col,width:2,nohover:true}));
+  const hm=M.Se!=null?[{y:ka*M.Se,label:`endurance limit ${num(ka*M.Se)} MPa`,color:C.cold,align:'left'}]:[];
+  if(showPreview){ const eq=goodman(F.sa,F.sm,M.uts); if(isFinite(eq)) hm.push({y:Math.min(eq,ymax*0.98),label:`σ_a,eq ${num(eq)} MPa`,color:C.ink}); }
+  drawChart(cv,{xr:[1,1e9],yr:[0,ymax],xlog:true,series,points:pts,hmarks:hm,xlabel:'cycles to failure N',ylabel:'σa MPa',xunit:'cycles',yunit:'MPa',xfmt:v=>sci(v,1).replace(/^1\.0×|^1×/,'')});
+}
+function fatTick(s,p,dt,tick){
+  if(s.frun) s.frun.t+=dt;
+  const cv=$('#f-rig'); if(cv) drawRig(cv,s);
+  if(s.frun&&s.frun.t>=s.frun.dur){ const R=s.frun; s.frun=null; s.fat=s.fat||[]; if(s.fat.length>=8) s.fat.shift();
+    s.fat.push({N:R.N,run:R.run,sa:R.sa,sm:R.sm,eq:R.eq,fin:R.fin,T:R.T,col:TEST_COLS[(s.fatN=(s.fatN||0)+1)%TEST_COLS.length]});
+    slog(s,R.run?`Fatigue: σa ${R.sa} MPa survived 10⁷ cycles (run-out)`:`Fatigue: σa ${R.sa} MPa${R.sm?` + σm ${R.sm}`:''} failed after ${fmtN(R.N)} cycles`); tick=true;
+    if(!ST.on.has('sn')){ST.on.add('sn');stSave();INS.dirty=true;} }
+  if(!tick||!$('#f-sn')) return;
+  const F=fset(s), ka=FINISH.find(f=>f[0]===F.fin)[2], M=fatigueModel(s.m,p,ka), eq=goodman(F.sa,F.sm,M.uts);
+  const N=F.sa+F.sm>=M.uts?1:M.life(eq);
+  drawSN($('#f-sn'),s,true);
+  $('#f-leg').innerHTML=`<span><i style="background:var(--accent)"></i>S–N, ${esc(FINISH.find(f=>f[0]===F.fin)[1].toLowerCase())}</span><span><i style="background:var(--muted)"></i>polished</span>`+(s.fat||[]).map(q=>`<span><i style="background:${q.col}"></i>${q.sa}${q.sm?'+'+q.sm:''} MPa → ${q.run?'run-out':fmtN(q.N)}</span>`).join('');
+  $('#f-kv').innerHTML=[['Fatigue coefficient σ<sub>f</sub>′',num(M.sf)+' MPa'],['Basquin exponent b',num(M.b,2)],['Endurance limit',M.Se!=null?`${num(ka*M.Se)} MPa (×k_a ${ka})`:'none (no true limit)'],['Strength at 10⁷ cycles',num(M.S(1e7))+' MPa'],['Equivalent amplitude',isFinite(eq)?num(eq)+' MPa':'σm ≥ UTS'],['Predicted life',N===Infinity?'infinite (below S_e)':(N<=1?'fails on the first cycle':fmtN(N)+' cycles')]].map(([a,b])=>`<dt>${a}</dt><dd>${b}</dd>`).join('');
+  const notes=[]; if(F.sa+F.sm>=M.uts) notes.push(['crit','<b>Above the tensile strength:</b> breaks on the first cycle.']); else if(p.ys&&F.sa+F.sm>p.ys) notes.push(['warn','<b>Above yield:</b> every cycle deforms it plastically (low-cycle fatigue).']);
+  notes.push(M.Se!=null?['good','<b>Has an endurance limit.</b> Keep σ<sub>a</sub> below it and it lasts forever.']:['warn','<b>No endurance limit.</b> Aluminium, copper and polymers eventually fail at any stress; design for a finite life.']);
+  if(ka<0.8) notes.push(['','<b>Rough surface:</b> scratches start cracks. Polishing or shot peening raises long-life strength.']);
+  $('#f-notes').innerHTML=notes.map(([c,t])=>`<li class="${c}">${t}</li>`).join('');
+  $('#f-foot').textContent=`at ${fT(s.T)} · UTS ${num(p.uts)} MPa · ${esc(FINISH.find(f=>f[0]===F.fin)[1].toLowerCase())}`;
+}
+
+/* ---------- CREEP ---------- */
+function cset(s){ const m=s.m, Tm=creepTm(m); if(!s.cset){ const T=Math.round(Math.max(293,Math.min(Tm*0.55,Tm-20))); const pT=propsAt(m,T,specState(s)); s.cset={T,sig:Math.max(1,Math.round((pT.uts||m.uts)*0.3))}; } return s.cset; }
+function dCreep(s,body){
+  if(!s.p) s.p=propsAt(s.m,s.T,specState(s));
+  const m=s.m, Tm=creepTm(m), Cs=cset(s), Tmax=Math.round(Math.max(320,Tm*0.97));
+  if(m.c==='fiber'){ body.innerHTML='<div class="dempty">Creep-test fibres inside a composite instead.</div>'; return; }
+  body.innerHTML=`<div class="dgrid">
+   <div class="dcol"><div class="stagebox"><canvas id="k-rig"></canvas><div class="tags" id="k-tags"></div><div class="foot" id="k-foot"></div></div>
+     <label class="f" for="k-T" style="margin:0">Test temperature <span class="mono" id="k-Tv" style="float:right;text-transform:none"></span></label><input type="range" id="k-T" min="250" max="${Tmax}" step="1" value="${Math.min(Cs.T,Tmax)}">
+     <div class="chips" id="k-pre">${[0.3,0.4,0.5,0.6,0.7].filter(f=>f*Tm>250).map(f=>`<button class="chip" data-f="${f}">${f} T<sub>m</sub></button>`).join('')}</div>
+     <label class="f" for="k-s" style="margin:0">Stress <span class="mono" id="k-sv" style="float:right;text-transform:none"></span></label><input type="range" id="k-s" min="0" max="3" step="0.01">
+     <div class="btns"><button class="btn pri" id="k-run">Run test</button><button class="btn" id="k-clr">Clear tests</button></div></div>
+   <div class="dcol"><h4>Creep curves${ib('creep')}</h4><canvas class="cv tall" id="k-cc"></canvas><div class="legend" id="k-leg" style="margin:0"></div></div>
+   <div class="dcol"><h4>Prediction${ib('lmp')}</h4><dl class="kv" id="k-kv"></dl><h4 style="margin-top:8px">Stress–rupture (Larson–Miller)</h4><canvas class="cv chart" id="k-lmp"></canvas></div>
+  </div>`;
+  const sl=$('#k-s');
+  const smax=()=>Math.max(2,propsAt(m,Cs.T,specState(s)).uts||1);
+  const setS=()=>{const mx=smax(); sl.min=Math.log10(Math.max(0.5,mx*0.01)); sl.max=Math.log10(mx*1.02); Cs.sig=U.clamp(Cs.sig,Math.pow(10,+sl.min),mx*1.02); sl.value=Math.log10(Cs.sig);};
+  const upd=()=>{$('#k-Tv').textContent=fT(Cs.T)+` · ${num(Cs.T/Tm,2)} T_m`;$('#k-sv').textContent=num(Cs.sig,3)+' MPa';crpTick(s,s.p,0,true);};
+  $('#k-T').addEventListener('input',e=>{Cs.T=+e.target.value;setS();upd();});
+  $('#k-pre').addEventListener('click',e=>{const b=e.target.closest('[data-f]');if(!b)return;Cs.T=Math.round(+b.dataset.f*Tm);$('#k-T').value=Cs.T;setS();upd();});
+  sl.addEventListener('input',()=>{Cs.sig=Math.pow(10,+sl.value);upd();});
+  $('#k-run').addEventListener('click',()=>{ if(s.crun) return; const M=creepModel(m,Cs.T,Cs.sig,specState(s)); s.crun={t:0,dur:M.broke?0.6:3,M,T:Cs.T,sig:Cs.sig}; });
+  $('#k-clr').addEventListener('click',()=>{s.crp=[];crpTick(s,s.p,0,true);});
+  setS(); upd();
+}
+function creepPts(M,tEnd){ const pts=[]; const t1=Math.max(M.tr,1e-6), te=tEnd!=null?tEnd:t1; const a=Math.log10(Math.max(t1*1e-5,0.36)), b=Math.log10(Math.max(te,0.37)); for(let i=0;i<=80;i++){const t=Math.pow(10,a+(b-a)*i/80); pts.push([t/3600,M.strain(t)*100]);} return pts; }
+function drawCreepCurves(cv,s,preview){
+  const T=s.crp||[]; const series=[]; let tmax=1, smax=1;
+  if(preview){ if(!preview.broke&&preview.tr<3.15e15){ const pts=creepPts(preview); series.push({pts,color:C.muted,width:1.4,dash:[4,4],name:'preview'}); tmax=Math.max(tmax,preview.tr/3600); smax=Math.max(smax,...pts.map(q=>q[1])); } }
+  T.forEach(q=>{ if(!q.pts.length) return; const n=Math.max(2,Math.round(q.pts.length*(q.prog==null?1:q.prog))); series.push({pts:q.pts.slice(0,n),color:q.col,width:2.4,endX:!q.run&&(q.prog==null||q.prog>=1),name:`${num(q.sig,3)} MPa`}); tmax=Math.max(tmax,q.pts[q.pts.length-1][0]); smax=Math.max(smax,...q.pts.map(r=>r[1])); });
+  if(!series.length){ drawChart(cv,{xr:[1e-3,1e6],yr:[0,1],xlog:true,empty:preview&&preview.broke?'Stress above the tensile strength at this temperature: it would break immediately':'No measurable creep at this stress and temperature (rupture would take > 100 million years)'}); return; }
+  drawChart(cv,{xr:[1e-4,Math.min(1e9,Math.pow(10,Math.ceil(Math.log10(tmax*2))))],yr:[0,Math.min(smax*1.1,250)],xlog:true,series,xlabel:'time (h)',ylabel:'strain %',xunit:'h',yunit:'%',xfmt:v=>v>=0.01&&v<=100?num(v):sci(v,1).replace(/^1\.0×|^1×/,'')});
+}
+function drawLMP(cv,s){
+  const m=s.m, Cs=cset(s), st=specState(s), u=Math.max(1,propsAt(m,293,st).uts); const curve=[];
+  for(let e=-1.7;e<=0;e+=0.05){ const sig=u*Math.pow(10,e); const M=creepModel(m,Cs.T,sig,st); if(M.LMP&&M.tr<3e15&&M.tr>1) curve.push([M.LMP/1000,sig]); }
+  const pts=(s.crp||[]).filter(q=>q.LMP&&(q.prog==null||q.prog>=1)).map(q=>({x:q.LMP/1000,y:q.sig,color:q.col,r:5}));
+  const xs=[...curve.map(q=>q[0]),...pts.map(q=>q.x)]; if(!xs.length){drawChart(cv,{xr:[0,1],yr:[1,10],empty:'No rupture data in range yet'});return;}
+  drawChart(cv,{xr:[Math.min(...xs)*0.95,Math.max(...xs)*1.05],yr:[u*0.015,u*1.3],ylog:true,series:[{pts:curve,color:C.accent,width:2,name:`at ${fT(Cs.T)}`}],points:pts,xlabel:'LMP ×1000 (K)',ylabel:'σ MPa',xunit:'×10³ K',yunit:'MPa',padL:52});
+}
+function drawCreepRig(cv,s,M){
+  const {ctx,w,h}=fit(cv); if(w<40) return; ctx.fillStyle=C.chamber; ctx.fillRect(0,0,w,h);
+  const R=s.crun, Cs=cset(s); const T=R?R.T:Cs.T; const g=glowInfo(T);
+  let frac=0, strain=M?M.eps_e:0, tNow=0, broken=false;
+  if(R){ frac=Math.min(1,R.t/R.dur); const M2=R.M; if(M2.broke){broken=frac>=1;strain=M2.eps_e;} else { const tEnd=Math.min(M2.tr,3.15e15); tNow=Math.pow(10,Math.log10(0.36)+(Math.log10(Math.max(tEnd,0.37))-Math.log10(0.36))*frac); strain=M2.strain(tNow); broken=frac>=1&&M2.tr<3.15e15; } }
+  else if(s.crp&&s.crp.length){ const L=s.crp[s.crp.length-1]; broken=!L.run; strain=L.pts.length?L.pts[L.pts.length-1][1]/100:0; tNow=L.tr; }
+  // furnace
+  const fx=w*0.3, fw=w*0.4, fy=h*0.1, fh=h*0.5;
+  ctx.fillStyle='#3a3f45'; ctx.fillRect(fx-6,fy-6,fw+12,fh+12);
+  const gl=ctx.createLinearGradient(0,fy,0,fy+fh); const a=0.25+0.75*g.I; gl.addColorStop(0,`rgba(${g.rgb.join(',')},${g.I>0.01?a:0.08})`); gl.addColorStop(1,`rgba(${g.rgb.join(',')},${g.I>0.01?a*0.6:0.04})`);
+  ctx.fillStyle=g.I>0.01?gl:'#262a2e'; ctx.fillRect(fx,fy,fw,fh);
+  // specimen (stretches)
+  const cx=w*0.5, L0=fh*0.55, Lnow=L0*(1+Math.min(strain,1.2)*0.35), top=fy+fh*0.12, sw=Math.max(5,w*0.025*(1-Math.min(0.5,strain*0.3)));
+  const base=hexRGB(s.m.col||'#9aa0a6').map((v,i)=>Math.round(U.lerp(v,g.rgb[i],0.8*g.I)));
+  ctx.strokeStyle='#8a939b'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(cx,4); ctx.lineTo(cx,top); ctx.stroke();
+  ctx.fillStyle=`rgb(${base.join(',')})`;
+  if(broken){ ctx.fillRect(cx-sw/2,top,sw,Lnow*0.5-4); ctx.fillRect(cx-sw/2,top+Lnow*0.5+8,sw,Lnow*0.5); } else ctx.fillRect(cx-sw/2,top,sw,Lnow);
+  const wy=top+Lnow+(broken?30:0); ctx.strokeStyle='#8a939b'; ctx.beginPath(); ctx.moveTo(cx,top+Lnow+(broken?8:0)); const ky=Math.min(h-44,wy+10); ctx.lineTo(cx,ky); ctx.stroke();
+  ctx.fillStyle='#4a5057'; ctx.fillRect(cx-18,ky,36,18); ctx.fillStyle='#c8ccd0'; ctx.font=`10px ${C.mono}`; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('kg',cx,ky+9);
+  ctx.fillStyle=C['chamber-ink']; ctx.font=`600 15px ${C.mono}`; ctx.textAlign='left'; ctx.textBaseline='top'; ctx.fillText(`ε = ${num(strain*100,3)} %`,10,8);
+  ctx.font=`11px ${C.mono}`; ctx.fillStyle=C['chamber-mute']; ctx.fillText(R?(frac<1?`t = ${fmtTime(tNow)}`:(broken?`ruptured at ${fmtTime(tNow)}`:'no rupture: test stopped')):(s.crp&&s.crp.length?(broken?`last: ruptured at ${fmtTime(tNow)}`:'last: run-out'):'dead-weight creep frame'),10,28);
+}
+function crpTick(s,p,dt,tick){
+  if(s.crun) s.crun.t+=dt;
+  const Cs=cset(s), M=creepModel(s.m,Cs.T,Cs.sig,specState(s));
+  const cv=$('#k-rig'); if(cv) drawCreepRig(cv,s,M);
+  if(s.crun){ const R=s.crun; const q=R._rec; if(!q){ const run=!R.M.broke&&R.M.tr>=3.15e15; R._rec={T:R.T,sig:R.sig,tr:R.M.tr,LMP:R.M.LMP,run,pts:R.M.broke?[]:creepPts(R.M,run?3.6e9:null),col:TEST_COLS[(s.crpN=(s.crpN||0)+1)%TEST_COLS.length],prog:0}; s.crp=s.crp||[]; if(s.crp.length>=6) s.crp.shift(); s.crp.push(R._rec); }
+    R._rec.prog=Math.min(1,R.t/R.dur); tick=true;
+    if(R.t>=R.dur){ s.crun=null; slog(s,R.M.broke?`Creep: ${num(R.sig,3)} MPa at ${fT(R.T)} exceeds the strength: instant fracture`:(R._rec.run?`Creep: ${num(R.sig,3)} MPa at ${fT(R.T)}: no rupture (would take > 10⁸ years)`:`Creep: ${num(R.sig,3)} MPa at ${fT(R.T)} ruptured after ${fmtTime(R.M.tr)} (LMP ${Math.round(R.M.LMP)})`)); if(!ST.on.has('crp')){ST.on.add('crp');stSave();INS.dirty=true;} } }
+  if(!tick||!$('#k-cc')) return;
+  drawCreepCurves($('#k-cc'),s,M); drawLMP($('#k-lmp'),s);
+  $('#k-leg').innerHTML=`<span><i style="background:var(--muted)"></i>preview (dashed)</span>`+(s.crp||[]).map(q=>`<span><i style="background:${q.col}"></i>${num(q.sig,3)} MPa · ${fT(q.T)}</span>`).join('');
+  $('#k-kv').innerHTML=[['Homologous T',num(M.hom,2)+' T/T<sub>m</sub>'],['Regime',esc(M.regime)],['Steady creep rate',M.broke?'—':sci(M.rate,2)+' s⁻¹'],['Time to rupture',M.broke?'instant (σ > UTS)':fmtTime(M.tr)],['Larson–Miller',M.LMP&&M.tr<3e15?Math.round(M.LMP).toLocaleString('en-US'):'—'],['Strain at rupture',num(M.er*100,3)+' %'],['UTS at test T',num(M.uts)+' MPa']].map(([a,b])=>`<dt>${a}</dt><dd>${b}</dd>`).join('');
+  const tags=[]; if(M.hom>0.4) tags.push(['hot','above 0.4 Tm']); if(M.broke) tags.push(['warn','σ > UTS']); $('#k-tags').innerHTML=tags.map(([c,t])=>`<span class="tag ${c}">${t}</span>`).join('');
+  $('#k-foot').textContent=`${fT(Cs.T)} · ${num(Cs.sig,3)} MPa · n = ${M.n}`;
+}
+
+/* ---------- status widgets for the new tests ---------- */
+WIDGETS.sn={n:'Fatigue S–N',render:(s,el)=>{el.innerHTML='<canvas class="cv tall"></canvas><p class="tiny muted" style="margin:6px 0 0">Run fatigue tests from <b>Fatigue</b> in the toolbar. Points sit at the Goodman-equivalent amplitude; short bars are run-outs.</p>';},tick:(s,el)=>drawSN(el.firstChild,s,false)};
+WIDGETS.crp={n:'Creep curves',render:(s,el)=>{el.innerHTML='<canvas class="cv tall"></canvas><canvas class="cv chart" style="margin-top:8px"></canvas>';},tick:(s,el)=>{const c=el.querySelectorAll('canvas');drawCreepCurves(c[0],s,null);drawLMP(c[1],s);}};
+WIDGETS.proc={n:'Processing state',render:(s,el)=>{el.innerHTML='<dl class="kv"></dl>';},tick:(s,el)=>{ if(!workable(s.m)){el.firstChild.innerHTML='<dt>—</dt><dd>Not a workable metal</dd>';return;} el.firstChild.innerHTML=[['Thickness',num(s.h,3)+' mm'],['Stored cold work',Math.round(s.cw*100)+'%'],['Grain size',fmtD(s.d)+' · ASTM '+num(astmG(s.d),2)],['Recrystallised',s.cw0>0.005?Math.round(s.rx*100)+'%':'—'],['T<sub>rx</sub>',fT(trx(s.m,s.cw0||0.3))]].map(([a,b])=>`<dt>${a}</dt><dd>${b}</dd>`).join(''); }};
+ST.order.push('proc','sn','crp'); Object.assign(WINFO,{sn:'fatigue',crp:'creep',proc:'hp'});
+/* ============ MATERIAL SELECTOR (Ashby index lines) + DESIGN CHALLENGES ============ */
+const COST={fe:2,al:2.5,cu:9,ti:25,ni:18,mg:4,zn:3,sn:28,pb:2.2,au:60000,ag:800,pt:30000,w:40,mo:45,cr:12,co:35,v:30,nb:45,ta:300,zr:30,li:70,gd:60,hg:40,be:900,ir:150000,os:400000,re:2000,hf:1200,pd:40000,in:300,ga:250,bi:8,sb:10,cd:3,na:3,
+ si:3,ge:1200,gaas:500,zno:3,gan:2000,inp:1500,cdte:300,
+ al2o3:20,sic:30,si3n4:50,zro2:40,mgo:5,nacl:0.1,wc:45,tio2:3,batio3:30,diamond:5e6,graphite:10,soda:1.5,silica:8,boro:4,aln:80,hbn:60,cbn:3000,b4c:60,tic:40,tin_n:60,quartz:15,mullite:10,cordierite:8,hap:300,zerodur:200,porcelain:3,
+ st1018:0.8,st1045:0.9,st1095:1.1,st4140:1.5,ss304:3,ss316:4,ss430:2.2,castiron:0.5,al6061:3,al7075:5,al2024:5,a356:2.8,ti64:30,brass:7,bronze:10,cuni:15,in718:45,invar:25,monel:30,nitinol:300,sn63:25,sac305:40,sterling:740,gold18:45000,ni3al:40,duplex:5,ph174:6,h13:6,d2:7,m2:12,c276:50,stellite:60,waspaloy:50,cube:30,az31:5,al5083:3,al6063:2.8,zry4:50,kovar:35,constantan:20,nichrome:25,
+ hdpe:1.5,ldpe:1.5,uhmwpe:6,pp:1.4,ps:1.8,pvc:1.3,pmma:3,pc:4,pet:1.6,pa66:4,ptfe:15,peek:90,abs:2.5,pla:2.5,pom:3,epoxy:6,nr:2.5,pdms:12,tpu:5,pei:20,kapton:150,pps:10,pvdf:20,pa6:3.5,pbt:3.5,hips:2,sbr:2.2,epdm:3,neoprene:5,bakelite:3,upr:3,
+ cf_t300:30,cf_hm:120,eglass:2.5,sglass:15,kevlar:35,dyneema:50,basalt:4,boronf:800,sicf:2000,cnt:200,nextel:500,zylon:150,flax:1.5,steelwire:2.5,
+ cfrp:45,gfrp:8,wccomp:60,concrete:0.06,oak:1.5,bone:100,cc:400,sicsic:2000,almmc:25,kfrp:60,glare:80,plywood:0.9};
+const CLSCOST={metal:10,alloy:8,polymer:4,ceramic:30,semi:100,fiber:30,composite:40};
+function costOf(m){
+  if(m.cost!=null) return m.cost; let c=COST[m.id];
+  if(c==null&&m.comp&&m.base){ const el=Object.entries(m.comp); let tot=0,w=0; const bm=MAT[(ELEM[m.base]||{}).mid]; const bc=bm?costOf(bm):5; const rest=100-el.reduce((a,[,v])=>a+v,0); tot+=bc*rest; w+=rest; el.forEach(([e,v])=>{const em=MAT[(ELEM[e]||{}).mid]; tot+=(em?costOf(em):10)*v; w+=v;}); c=tot/w*1.3; }
+  if(c==null&&m.c==='composite'&&m.fv!=null){ c=CLSCOST.composite; }
+  if(c==null) c=CLSCOST[m.c]||10; m.cost=c; return c;
+}
+MATS.forEach(costOf);
+Object.assign(AXES,{cost:{n:'Price',u:'$/kg',f:m=>costOf(m)},cpv:{n:'Price per volume',u:'k$/m³',f:m=>costOf(m)*m.rho},k1c:{n:'Fracture toughness',u:'MPa√m',f:m=>k1cOf(m)}});
+
+const IDX=[
+ {k:'tie',n:'Light, stiff tie (rod in tension)',x:'rho',y:'E',s:1,f:'E / ρ'},
+ {k:'beam',n:'Light, stiff beam',x:'rho',y:'E',s:2,f:'E^½ / ρ'},
+ {k:'plate',n:'Light, stiff panel',x:'rho',y:'E',s:3,f:'E^⅓ / ρ'},
+ {k:'stie',n:'Light, strong tie',x:'rho',y:'str',s:1,f:'σ_y / ρ'},
+ {k:'sbeam',n:'Light, strong beam',x:'rho',y:'str',s:1.5,f:'σ_y^⅔ / ρ'},
+ {k:'spring',n:'Spring (most elastic energy per volume)',x:'E',y:'str',s:0.5,f:'σ_y² / E'},
+ {k:'hinge',n:'Elastic hinge / flexure',x:'E',y:'str',s:1,f:'σ_y / E'},
+ {k:'lbb',n:'Pressure vessel: leak before break',x:'str',y:'k1c',s:0.5,f:'K_IC² / σ_y'},
+ {k:'dist',n:'Low thermal distortion',x:'cte',y:'k',s:1,f:'k / α'},
+ {k:'cheap',n:'Cheap, stiff beam',x:'cpv',y:'E',s:2,f:'E^½ / (C·ρ)'},
+ {k:'cheaps',n:'Cheap, strong tie',x:'cpv',y:'str',s:1,f:'σ_y / (C·ρ)'},
+ {k:'free',n:'Free choice of axes (no index)',x:null,y:null,s:null,f:''}];
+const SEL={idx:'beam',x:'rho',y:'E',s:2,logM:null,cls:new Set(['metal','alloy','polymer','ceramic','semi','composite','mine']),tmin:0,cmax:1e6,pick:null,pts:[],tab:'sel',chal:'bike',cand:null,res:null};
+const IDXV=(m,ax,ay,s)=>{const xv=AXES[ax].f(m),yv=AXES[ay].f(m); if(!(xv>0&&yv>0)) return null; return Math.pow(yv,1/s)/xv;};
+function selMats(){ return allMats().filter(m=>{ const c=m.mine?'mine':m.c; if(c==='fiber') return SEL.cls.has('fiber'); if(!SEL.cls.has(c)) return false; if(SEL.tmin>0&&matrixLimitT(m)<SEL.tmin) return false; if(costOf(m)>SEL.cmax) return false; return true; }); }
+function openSelector(tab){ const ex=FW.wins.find(f=>f.o.type==='select'); if(ex){ if(tab){SEL.tab=tab;} ex.dirty=true; front(ex); return ex; } if(tab) SEL.tab=tab; const w=Math.min(innerWidth-20,980),h=Math.min(innerHeight-90,640); return openFloat({type:'select',w,h,x:Math.max(10,(innerWidth-w)/2),y:Math.max(60,(innerHeight-h)/2)}); }
+function renderSelect(f){
+  const b=f.body;
+  b.innerHTML=`<div class="wtabs" role="tablist"><button role="tab" data-t="sel" aria-selected="${SEL.tab==='sel'}">Selector chart</button><button role="tab" data-t="chal" aria-selected="${SEL.tab==='chal'}">Design challenges</button></div><div class="wtabpane"></div>`;
+  b.querySelector('.wtabs').addEventListener('click',e=>{const t=e.target.closest('[data-t]');if(!t)return;SEL.tab=t.dataset.t;renderSelect(f);});
+  const pane=b.querySelector('.wtabpane'); if(SEL.tab==='sel') renderSelPane(pane,f); else renderChalPane(pane,f);
+}
+function renderSelPane(pane,f){
+  const I=IDX.find(q=>q.k===SEL.idx)||IDX[0];
+  const axo=k=>Object.entries(AXES).map(([a,v])=>`<option value="${a}" ${a===k?'selected':''}>${v.n}</option>`).join('');
+  const clsChips=[['metal','Metals'],['alloy','Alloys'],['polymer','Polymers'],['ceramic','Ceramics'],['semi','Semis'],['composite','Composites'],['fiber','Fibres'],['mine','Mine']];
+  pane.innerHTML=`<div class="selgrid"><div class="selchart"><div class="ashbox"><canvas aria-label="Material selection chart"></canvas><div class="tip" hidden></div></div><div class="small selpick"></div></div>
+   <div class="selside"><label class="f" style="margin:0">Design goal${ib('index')}<select class="sidx" style="margin-top:4px">${IDX.map(q=>`<option value="${q.k}" ${q.k===I.k?'selected':''}>${q.n}</option>`).join('')}</select></label>
+     ${I.s?`<div class="fbox" style="margin-top:6px"><div>Maximise  M = ${esc(I.f)}</div><div class="tiny muted">guide line slope ${I.s} · drag on the chart to move it</div></div>`:`<div class="combo" style="grid-template-columns:1fr 1fr;margin-top:6px"><label class="f" style="margin:0">Y<select class="sy">${axo(SEL.y)}</select></label><label class="f" style="margin:0">X<select class="sx">${axo(SEL.x)}</select></label></div>`}
+     <div class="ig">Include</div><div class="chips scls">${clsChips.map(([k,n])=>`<button class="chip" data-c="${k}" aria-pressed="${SEL.cls.has(k)}">${n}</button>`).join('')}</div>
+     <label class="f">Min. service temperature <span class="mono stv" style="float:right;text-transform:none"></span><input type="range" class="stmin" min="0" max="2000" step="10" value="${SEL.tmin}"></label>
+     <label class="f" style="margin-top:2px">Max. price <span class="mono scv" style="float:right;text-transform:none"></span><input type="range" class="scmax" min="-1" max="6" step="0.05" value="${Math.log10(SEL.cmax)}"></label>
+     <div class="ig">${I.s?'Best by index':'Materials shown'}</div><ol class="toplist srank"></ol></div></div>`;
+  const cv=pane.querySelector('canvas'),tip=pane.querySelector('.tip');
+  pane.querySelector('.sidx').addEventListener('change',e=>{SEL.idx=e.target.value;const q=IDX.find(z=>z.k===SEL.idx);if(q.s){SEL.x=q.x;SEL.y=q.y;SEL.s=q.s;}else SEL.s=null;SEL.logM=null;renderSelPane(pane,f);});
+  const sx=pane.querySelector('.sx'),sy=pane.querySelector('.sy'); if(sx){sx.addEventListener('change',e=>{SEL.x=e.target.value;selDraw(pane);});sy.addEventListener('change',e=>{SEL.y=e.target.value;selDraw(pane);});}
+  pane.querySelector('.scls').addEventListener('click',e=>{const c=e.target.closest('[data-c]');if(!c)return;const k=c.dataset.c;SEL.cls.has(k)?SEL.cls.delete(k):SEL.cls.add(k);c.setAttribute('aria-pressed',SEL.cls.has(k));selDraw(pane);});
+  const st=pane.querySelector('.stmin'),sc=pane.querySelector('.scmax');
+  const lab=()=>{pane.querySelector('.stv').textContent=SEL.tmin>0?'≥ '+fT(SEL.tmin):'any';pane.querySelector('.scv').textContent=SEL.cmax>=1e6?'any':'≤ $'+num(SEL.cmax,2)+'/kg';};
+  st.addEventListener('input',()=>{SEL.tmin=+st.value;lab();selDraw(pane);}); sc.addEventListener('input',()=>{SEL.cmax=+sc.value>=5.95?1e6:Math.pow(10,+sc.value);lab();selDraw(pane);}); lab();
+  const near=e=>{const r=cv.getBoundingClientRect();const x=e.clientX-r.left,y=e.clientY-r.top;let best=null,bd=100;SEL.pts.forEach(p=>{const d=(p.x-x)**2+(p.y-y)**2;if(d<bd){bd=d;best=p;}});return {best,x,y};};
+  let drag=null;
+  cv.addEventListener('pointerdown',e=>{ const {best}=near(e); drag={sx:e.clientX,sy:e.clientY,best,moved:false}; cv.setPointerCapture(e.pointerId); });
+  cv.addEventListener('pointermove',e=>{ const {best,x,y}=near(e);
+    if(drag&&SEL.s&&(Math.abs(e.clientX-drag.sx)+Math.abs(e.clientY-drag.sy)>4)){ drag.moved=true; const inv=selInv(cv); if(inv){ const xv=inv.x(x), yv=inv.y(y); SEL.logM=Math.log10(Math.pow(yv,1/SEL.s)/xv); selDraw(pane);} tip.hidden=true; return; }
+    if(!best){tip.hidden=true;return;} tip.hidden=false; const ax=AXES[SEL.x],ay=AXES[SEL.y];
+    tip.innerHTML=`<b>${esc(best.m.n)}</b><div class="mono tiny">${ay.n}: ${num(ay.f(best.m))} ${ay.u}<br>${ax.n}: ${num(ax.f(best.m))} ${ax.u}${SEL.s?`<br>M = ${num(IDXV(best.m,SEL.x,SEL.y,SEL.s),3)}`:''}</div>`;
+    const r=cv.getBoundingClientRect(); tip.style.left=Math.min(x+12,r.width-180)+'px'; tip.style.top=Math.max(4,y-60)+'px'; });
+  cv.addEventListener('pointerup',e=>{ if(drag&&!drag.moved&&drag.best){ SEL.pick=drag.best.m.id; selDraw(pane); } drag=null; });
+  cv.addEventListener('pointerleave',()=>tip.hidden=true);
+  pane.querySelector('.srank').addEventListener('click',e=>{const li=e.target.closest('[data-id]');if(!li)return; if(e.target.closest('.add')){addSpec(MAT[li.dataset.id],null,null,{select:false});toast(`Placed ${MAT[li.dataset.id].n} on the bench`);return;} SEL.pick=li.dataset.id; selDraw(pane);});
+  pane.querySelector('.selpick').addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b)return;const m=MAT[SEL.pick];if(!m)return; if(b.dataset.act==='add'){addSpec(m,null,null,{select:true});toast(`Placed ${m.n} on the bench`);} if(b.dataset.act==='use'){SEL.cand=m.id;SEL.tab='chal';renderSelect(f);} });
+  requestAnimationFrame(()=>selDraw(pane));
+}
+function selInv(cv){ return cv._inv||null; }
+function selDraw(pane){
+  const cv=pane.querySelector('canvas'); if(!cv) return; const {ctx,w,h}=fit(cv); if(w<80) return; ctx.clearRect(0,0,w,h);
+  const ax=AXES[SEL.x],ay=AXES[SEL.y]; const benchIds=new Set(W.items.map(s=>s.m.id));
+  const all=allMats().map(m=>({m,xv:ax.f(m),yv:ay.f(m)})).filter(q=>q.xv>0&&q.yv>0&&isFinite(q.xv)&&isFinite(q.yv));
+  const shown=new Set(selMats().map(m=>m.id)); const mats=all.filter(q=>shown.has(q.m.id));
+  const L=all.length?all:[{xv:1,yv:1}];
+  const lx=L.map(q=>Math.log10(q.xv)),ly=L.map(q=>Math.log10(q.yv));
+  const x0=Math.floor(Math.min(...lx)-0.15),x1=Math.ceil(Math.max(...lx)+0.15),y0=Math.floor(Math.min(...ly)-0.15),y1=Math.ceil(Math.max(...ly)+0.15);
+  const pad={l:50,r:12,t:22,b:30},pw=w-pad.l-pad.r,ph=h-pad.t-pad.b;
+  const X=v=>pad.l+(Math.log10(v)-x0)/(x1-x0)*pw,Y=v=>pad.t+ph-(Math.log10(v)-y0)/(y1-y0)*ph;
+  cv._inv={x:px=>Math.pow(10,x0+(px-pad.l)/pw*(x1-x0)),y:py=>Math.pow(10,y0+(pad.t+ph-py)/ph*(y1-y0))};
+  ctx.fillStyle=C.panel2; ctx.fillRect(pad.l,pad.t,pw,ph);
+  ctx.strokeStyle=C.line2; ctx.fillStyle=C.muted; ctx.font=`10.5px ${C.mono}`; ctx.lineWidth=1;
+  const lab=e=>e>=-2&&e<=4?num(Math.pow(10,e)):sci(Math.pow(10,e),1).replace(/^1\.0×|^1×/,'');
+  const stx=Math.max(1,Math.ceil((x1-x0)/(pw/50))),sty=Math.max(1,Math.ceil((y1-y0)/(ph/26)));
+  for(let e=x0;e<=x1;e++){const x=X(Math.pow(10,e));ctx.beginPath();ctx.moveTo(x,pad.t);ctx.lineTo(x,pad.t+ph);ctx.stroke();if((e-x0)%stx===0){ctx.textAlign='center';ctx.textBaseline='top';ctx.fillText(lab(e),x,pad.t+ph+5);}}
+  for(let e=y0;e<=y1;e++){const y=Y(Math.pow(10,e));ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(pad.l+pw,y);ctx.stroke();if((e-y0)%sty===0){ctx.textAlign='right';ctx.textBaseline='middle';ctx.fillText(lab(e),pad.l-5,y);}}
+  ctx.strokeStyle=C.line; ctx.strokeRect(pad.l+0.5,pad.t+0.5,pw,ph);
+  ctx.fillStyle=C.ink; ctx.textAlign='right'; ctx.textBaseline='bottom'; ctx.fillText(`${ax.n} (${ax.u}) →`,pad.l+pw,h-1); ctx.textAlign='left'; ctx.textBaseline='top'; ctx.fillText(`↑ ${ay.n} (${ay.u})`,pad.l,3);
+  // class envelopes
+  const byC={}; mats.forEach(q=>{const c=q.m.mine?'mine':q.m.c;(byC[c]=byC[c]||[]).push([X(q.xv),Y(q.yv)]);});
+  ctx.save(); ctx.beginPath(); ctx.rect(pad.l,pad.t,pw,ph); ctx.clip();
+  Object.entries(byC).forEach(([c,P])=>{if(P.length<3)return;const Hh=hull(P);const cx=Hh.reduce((s,p)=>s+p[0],0)/Hh.length,cy=Hh.reduce((s,p)=>s+p[1],0)/Hh.length;ctx.beginPath();Hh.forEach((p,i)=>{const dx=p[0]-cx,dy=p[1]-cy,d=Math.hypot(dx,dy)||1;const x=p[0]+dx/d*10,y=p[1]+dy/d*10;i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.closePath();ctx.fillStyle=C['c-'+c];ctx.globalAlpha=0.1;ctx.fill();ctx.globalAlpha=0.5;ctx.strokeStyle=C['c-'+c];ctx.stroke();ctx.globalAlpha=1;
+    ctx.fillStyle=C['c-'+c]; ctx.font=`600 11px ${C.cond}`; ctx.textAlign='center'; ctx.textBaseline='middle'; const top=Hh.reduce((a,p)=>p[1]<a[1]?p:a,Hh[0]); ctx.fillText(c==='mine'?'yours':(CLASSES[c]?CLASSES[c].label:c),top[0],Math.max(pad.t+8,top[1]-16));});
+  // index line + region
+  let rank=[];
+  if(SEL.s){
+    const vals=mats.map(q=>({m:q.m,M:Math.pow(q.yv,1/SEL.s)/q.xv,xv:q.xv,yv:q.yv})).filter(q=>isFinite(q.M)&&q.M>0).sort((a,b)=>b.M-a.M);
+    if(SEL.logM==null&&vals.length) SEL.logM=Math.log10(vals[Math.min(vals.length-1,Math.floor(vals.length*0.12))].M);
+    const Mth=Math.pow(10,SEL.logM); const yAt=xv=>Math.pow(Mth*xv,SEL.s);
+    const xa=Math.pow(10,x0),xb=Math.pow(10,x1);
+    ctx.beginPath(); ctx.moveTo(X(xa),Y(yAt(xa))); ctx.lineTo(X(xb),Y(yAt(xb))); ctx.lineTo(X(xb),pad.t-10); ctx.lineTo(X(xa),pad.t-10); ctx.closePath(); ctx.fillStyle=C['accent-soft']; ctx.fill();
+    ctx.strokeStyle=C.accent; ctx.lineWidth=2.5; ctx.setLineDash([8,5]); ctx.beginPath(); ctx.moveTo(X(xa),Y(yAt(xa))); ctx.lineTo(X(xb),Y(yAt(xb))); ctx.stroke(); ctx.setLineDash([]);
+    // parallel guide lines (×10 steps)
+    ctx.strokeStyle=C.line; ctx.lineWidth=1; ctx.globalAlpha=0.6; [-2,-1,1,2].forEach(k=>{const M2=Mth*Math.pow(10,k/2);const ya=Math.pow(M2*xa,SEL.s),yb=Math.pow(M2*xb,SEL.s);ctx.setLineDash([2,4]);ctx.beginPath();ctx.moveTo(X(xa),Y(ya));ctx.lineTo(X(xb),Y(yb));ctx.stroke();}); ctx.setLineDash([]); ctx.globalAlpha=1;
+    rank=vals.filter(q=>q.M>=Mth*0.9999);
+    SEL._vals=vals; SEL._Mth=Mth;
+  } else { SEL._vals=null; }
+  // dots
+  SEL.pts=[]; const above=new Set(rank.map(q=>q.m.id));
+  all.forEach(q=>{ if(!shown.has(q.m.id)) return; const x=X(q.xv),y=Y(q.yv); SEL.pts.push({x,y,m:q.m}); const on=benchIds.has(q.m.id), hi=!SEL.s||above.has(q.m.id);
+    ctx.globalAlpha=hi?1:0.28; ctx.fillStyle=clsColor(q.m); ctx.beginPath(); ctx.arc(x,y,on?5:(hi?4:3),0,7); ctx.fill(); if(hi&&SEL.s){ctx.strokeStyle=C.ink;ctx.lineWidth=0.8;ctx.stroke();} ctx.globalAlpha=1;
+    if(on){ctx.strokeStyle=C.ink;ctx.lineWidth=1.6;ctx.beginPath();ctx.arc(x,y,8.5,0,7);ctx.stroke();}
+    if(q.m.id===SEL.pick){ctx.strokeStyle=C.accent;ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(x,y,11,0,7);ctx.stroke();} });
+  // labels for top few
+  ctx.font=`600 11.5px ${C.cond}`; ctx.textBaseline='middle'; const placed=[];
+  const labelSet=SEL.s?rank.slice(0,6).map(q=>q.m.id):[...benchIds]; if(SEL.pick&&!labelSet.includes(SEL.pick)) labelSet.push(SEL.pick);
+  SEL.pts.filter(p=>labelSet.includes(p.m.id)).forEach(p=>{ const t=p.m.n.length>22?p.m.n.slice(0,21)+'…':p.m.n, tw=ctx.measureText(t).width; let tx=p.x+10+tw>pad.l+pw?p.x-10-tw:p.x+10, ty=p.y; let g=0; while(placed.some(q=>Math.abs(q[1]-ty)<13&&tx<q[0]+q[2]&&tx+tw>q[0])&&g++<12) ty+=13; placed.push([tx,ty,tw]);
+    ctx.fillStyle=C.panel2; ctx.globalAlpha=0.85; ctx.fillRect(tx-2,ty-7,tw+4,14); ctx.globalAlpha=1; ctx.fillStyle=p.m.id===SEL.pick?C.accent:C.ink; ctx.textAlign='left'; ctx.fillText(t,tx,ty); });
+  ctx.restore();
+  // rank list
+  const ref=MAT.st1018; const refM=SEL.s?IDXV(ref,SEL.x,SEL.y,SEL.s):null;
+  const list=SEL.s?rank.slice(0,14):mats.slice().sort((a,b)=>b.yv-a.yv).slice(0,14).map(q=>({m:q.m,M:q.yv}));
+  pane.querySelector('.srank').innerHTML=list.map((q,i)=>`<li data-id="${q.m.id}" class="${q.m.id===SEL.pick?'on':''}"><span class="dot" style="background:${clsColor(q.m)}"></span><span class="nm">${i+1}. ${esc(q.m.n)}</span><span class="v">${SEL.s&&refM?'×'+num(q.M/refM,2):num(q.M,3)}</span><button class="add" title="Place on bench" aria-label="Place ${esc(q.m.n)} on the bench">+</button></li>`).join('')||'<li class="muted">Nothing passes these filters.</li>';
+  if(SEL.s) pane.querySelector('.srank').insertAdjacentHTML('beforebegin','');
+  const pk=MAT[SEL.pick]; const sp=pane.querySelector('.selpick');
+  sp.innerHTML=pk?`<b>${esc(pk.n)}</b> · ${esc(CLASSES[pk.c]?CLASSES[pk.c].label:'')} · ${num(ay.f(pk))} ${ay.u} · ${num(ax.f(pk))} ${ax.u}${SEL.s?` · M = ${num(IDXV(pk,SEL.x,SEL.y,SEL.s),3)} (${refM?'×'+num(IDXV(pk,SEL.x,SEL.y,SEL.s)/refM,2)+' mild steel':''})`:''} · ~$${num(costOf(pk),2)}/kg <button class="btn" data-act="add">Place on bench</button> <button class="btn" data-act="use">Use in a challenge</button>`:`<span class="muted">${SEL.s?`${rank.length} of ${mats.length} materials lie above the line. Click a dot to inspect it. Ranking shows the index relative to mild steel.`:'Click a dot to inspect it.'}</span>`;
+}
+
+/* ---------- DESIGN CHALLENGES ---------- */
+const at=(m,T)=>propsAt(m,T,{});
+const CHAL=[
+ {k:'bike',n:'Bicycle frame tube',icon:'🚲',brief:'A frame tube must not flex under a rider (fixed bending stiffness) and should be as light as possible. It takes knocks, so it must not be brittle, and it has to be affordable.',
+  obj:{n:'Tube mass (vs steel)',u:'× steel',dir:'min',f:m=>(m.rho/Math.sqrt(m.E))/(MAT.st4140.rho/Math.sqrt(MAT.st4140.E))},
+  cons:[{n:'Fracture toughness',u:'MPa√m',op:'>=',v:15,f:m=>k1cOf(m)},{n:'Price',u:'$/kg',op:'<=',v:60,f:m=>costOf(m)}],hint:'Light, stiff beam: M = E^½/ρ',idx:'beam'},
+ {k:'spring',n:'Engine valve spring',icon:'🌀',brief:'Store as much elastic energy per volume as possible without yielding, at an operating temperature of 450 K.',
+  obj:{n:'Elastic energy stored',u:'kJ/m³',dir:'max',f:m=>{const p=at(m,450);return p.ys&&p.E?p.ys*p.ys/(2*p.E*1000)*1000:0;}},
+  cons:[{n:'Service temperature',u:'K',op:'>=',v:450,f:m=>matrixLimitT(m)},{n:'Has a yield point (metal or polymer)',u:'',op:'>=',v:1,f:m=>m.ys!=null?1:0,bool:true}],hint:'Spring: M = σ_y²/E',idx:'spring'},
+ {k:'vessel',n:'Pressure vessel that leaks before it breaks',icon:'🛢',brief:'A crack should grow right through the wall and leak, so it is found, before it reaches the critical length that makes the vessel burst. The wall must also be strong.',
+  obj:{n:'Leak-before-break index K²/σ',u:'MPa·m',dir:'max',f:m=>{const k=k1cOf(m),s=m.ys!=null?m.ys:m.uts;return k&&s?k*k/s:0;}},
+  cons:[{n:'Yield strength',u:'MPa',op:'>=',v:250,f:m=>m.ys!=null?m.ys:0}],hint:'Leak-before-break: M = K_IC²/σ_y',idx:'lbb'},
+ {k:'blade',n:'Jet engine turbine blade',icon:'✈',brief:'Spinning at 1100 K, the blade carries its own centrifugal load, so strength per weight at temperature is what counts. It must stay tough.',
+  obj:{n:'Specific strength at 1100 K',u:'kN·m/kg',dir:'max',f:m=>{if(matrixLimitT(m)<1100) return 0; const p=at(m,1100);return (p.ys!=null?p.ys:p.uts)/p.rho;}},
+  cons:[{n:'Service temperature',u:'K',op:'>=',v:1100,f:m=>matrixLimitT(m)},{n:'Fracture toughness',u:'MPa√m',op:'>=',v:8,f:m=>k1cOf(m)}],hint:'Light, strong tie at high temperature',idx:'stie'},
+ {k:'sink',n:'Laptop heat sink',icon:'💻',brief:'Pull heat out of a CPU as fast as possible. A laptop must stay light and cheap, so density and price are capped.',
+  obj:{n:'Thermal conductivity',u:'W/m·K',dir:'max',f:m=>m.k},
+  cons:[{n:'Density',u:'g/cm³',op:'<=',v:3.5,f:m=>m.rho},{n:'Price',u:'$/kg',op:'<=',v:15,f:m=>costOf(m)},{n:'Service temperature',u:'K',op:'>=',v:380,f:m=>matrixLimitT(m)}],hint:'High k, low ρ, low cost',idx:'free'},
+ {k:'joist',n:'House floor joist',icon:'🏠',brief:'A beam of fixed stiffness for the lowest material cost. It must not be brittle, because floors get dropped on.',
+  obj:{n:'Material cost (vs steel)',u:'× steel',dir:'min',f:m=>(costOf(m)*m.rho/Math.sqrt(m.E))/(costOf(MAT.st1018)*MAT.st1018.rho/Math.sqrt(MAT.st1018.E))},
+  cons:[{n:'Fracture toughness',u:'MPa√m',op:'>=',v:2,f:m=>k1cOf(m)}],hint:'Cheap, stiff beam: M = E^½/(C·ρ)',idx:'cheap'},
+ {k:'optic',n:'Telescope mirror support',icon:'🔭',brief:'Temperature gradients bend the support and blur the image. Minimise thermal distortion; it must be stiff too.',
+  obj:{n:'Distortion resistance k/α',u:'MW/m',dir:'max',f:m=>m.cte>0?m.k/m.cte:0},
+  cons:[{n:"Young's modulus",u:'GPa',op:'>=',v:60,f:m=>m.E},{n:'Price',u:'$/kg',op:'<=',v:500,f:m=>costOf(m)}],hint:'Low thermal distortion: M = k/α',idx:'dist'},
+ {k:'tank',n:'Liquid-hydrogen fuel tank',icon:'🚀',brief:'At 20 K many steels turn brittle as glass. Find the lightest strong material that is still ductile at 20 K.',
+  obj:{n:'Specific yield at 20 K',u:'kN·m/kg',dir:'max',f:m=>{const p=at(m,20);return p.el!=null&&p.el>=5?(p.ys!=null?p.ys:p.uts)/p.rho:0;}},
+  cons:[{n:'Elongation at 20 K',u:'%',op:'>=',v:5,f:m=>at(m,20).el||0},{n:'Fracture toughness',u:'MPa√m',op:'>=',v:20,f:m=>k1cOf(m)}],hint:'FCC metals stay ductile when cold; BCC steels do not',idx:'stie'},
+ {k:'panel',n:'Satellite equipment panel',icon:'🛰',brief:'A flat panel of fixed stiffness, as light as possible. It sees the sun, so it must take 400 K.',
+  obj:{n:'Panel mass (vs aluminium)',u:'× Al',dir:'min',f:m=>(m.rho/Math.cbrt(m.E))/(MAT.al6061.rho/Math.cbrt(MAT.al6061.E))},
+  cons:[{n:'Service temperature',u:'K',op:'>=',v:400,f:m=>matrixLimitT(m)},{n:'Price',u:'$/kg',op:'<=',v:300,f:m=>costOf(m)}],hint:'Light, stiff panel: M = E^⅓/ρ',idx:'plate'}
+];
+function chalLoad(){ try{return JSON.parse(localStorage.getItem('crucible.chal.v1')||'{}');}catch(e){return {};} }
+function chalSave(o){ try{localStorage.setItem('crucible.chal.v1',JSON.stringify(o));}catch(e){} }
+function chalEval(c,m){
+  const cons=c.cons.map(q=>{const v=q.f(m); const ok=v!=null&&isFinite(v)&&(q.op==='>='?v>=q.v:v<=q.v); return {...q,val:v,ok};});
+  const pass=m.c!=='fiber'&&cons.every(q=>q.ok); const ov=c.obj.f(m);
+  return {cons,pass,ov,fiber:m.c==='fiber'};
+}
+function chalBest(c){
+  if(c._best) return c._best; let best=null;
+  MATS.forEach(m=>{ if(m.c==='fiber') return; const e=chalEval(c,m); if(!e.pass||!(e.ov>0)||!isFinite(e.ov)) return; if(!best||(c.obj.dir==='max'?e.ov>best.ov:e.ov<best.ov)) best={m,ov:e.ov}; });
+  c._best=best; return best;
+}
+function chalScore(c,ov){ const b=chalBest(c); if(!b||!(ov>0)) return 0; return Math.round(100*(c.obj.dir==='max'?ov/b.ov:b.ov/ov)); }
+const stars=sc=>sc>=95?3:sc>=70?2:sc>0?1:0;
+function renderChalPane(pane,f){
+  const done=chalLoad(); const c=CHAL.find(q=>q.k===SEL.chal)||CHAL[0];
+  const cand=MAT[SEL.cand]||(spec(W.sel)?spec(W.sel).m:null);
+  pane.innerHTML=`<div class="chgrid"><div class="chlist">${CHAL.map(q=>{const sc=done[q.k]||0;return `<button class="chi" data-k="${q.k}" aria-current="${q.k===c.k}"><span class="chic" aria-hidden="true">${q.icon}</span><span class="chn">${esc(q.n)}</span><span class="chs" aria-label="${stars(sc)} stars">${'★'.repeat(stars(sc))}${'☆'.repeat(3-stars(sc))}</span></button>`;}).join('')}
+      <p class="tiny muted" style="margin:8px 4px 0">${CHAL.filter(q=>done[q.k]).length} / ${CHAL.length} solved · ${Object.values(done).reduce((a,v)=>a+stars(v),0)} ★</p></div>
+    <div class="chdet"><h3 class="ih3">${c.icon} ${esc(c.n)}</h3><p>${esc(c.brief)}</p>
+      <div class="fbox" style="margin:8px 0"><div><b>Objective:</b> ${c.obj.dir==='max'?'maximise':'minimise'} ${esc(c.obj.n)}</div>${c.cons.map(q=>`<div><b>Must have:</b> ${esc(q.n)}${q.bool?'':` ${q.op==='>='?'≥':'≤'} ${num(q.v)} ${q.u}`}</div>`).join('')}<div class="tiny muted">Hint: ${esc(c.hint)}</div></div>
+      <div class="row" style="flex-wrap:wrap;gap:6px"><label class="f" style="margin:0;flex:1;min-width:200px">Your material<select class="chm" style="margin-top:4px"><option value="">Choose…</option>${allMats().filter(m=>m.c!=='fiber').map(m=>`<option value="${m.id}" ${cand&&m.id===cand.id?'selected':''}>${esc(m.n)}${m.mine?' (yours)':''}</option>`).join('')}</select></label>
+        <button class="btn" data-act="bench" ${spec(W.sel)?'':'disabled'}>Use selected specimen</button><button class="btn" data-act="find">Find candidates on the chart</button></div>
+      <div class="chres"></div></div></div>`;
+  pane.querySelector('.chlist').addEventListener('click',e=>{const b=e.target.closest('[data-k]');if(!b)return;SEL.chal=b.dataset.k;renderChalPane(pane,f);});
+  const sel=pane.querySelector('.chm'); sel.addEventListener('change',()=>{SEL.cand=sel.value||null;showRes();});
+  pane.querySelector('[data-act="bench"]').addEventListener('click',()=>{const s=spec(W.sel);if(!s)return;SEL.cand=s.m.id;sel.value=s.m.id;showRes();});
+  pane.querySelector('[data-act="find"]').addEventListener('click',()=>{SEL.tab='sel'; if(c.idx){SEL.idx=c.idx;const q=IDX.find(z=>z.k===c.idx);if(q.s){SEL.x=q.x;SEL.y=q.y;SEL.s=q.s;} else {SEL.s=null;SEL.x='rho';SEL.y='k';}} SEL.logM=null; const tc=c.cons.find(q=>q.n==='Service temperature'); SEL.tmin=tc?tc.v:0; const pc=c.cons.find(q=>q.n==='Price'); SEL.cmax=pc?pc.v:1e6; renderSelect(f);});
+  const showRes=()=>{ const box=pane.querySelector('.chres'); const m=MAT[SEL.cand]; if(!m){box.innerHTML='<p class="small muted" style="margin:8px 0 0">Pick a material from the list, from the bench, or from the selector chart.</p>';return;}
+    const e=chalEval(c,m), b=chalBest(c), sc=e.pass?chalScore(c,e.ov):0, ref=c.obj.dir==='min'?1:null;
+    if(e.pass&&sc>0){ const d=chalLoad(); if((d[c.k]||0)<sc){d[c.k]=sc;chalSave(d);} }
+    const others=[b&&b.m,MAT.st1018,MAT.al6061,MAT.cfrp,MAT.oak].filter((q,i,a)=>q&&a.indexOf(q)===i&&q.id!==m.id).slice(0,4);
+    const bars=[{m,ov:e.ov,pass:e.pass,you:true},...others.map(q=>{const ee=chalEval(c,q);return {m:q,ov:ee.ov,pass:ee.pass};})].filter(q=>q.ov>0&&isFinite(q.ov));
+    const mx=Math.max(...bars.map(q=>q.ov));
+    box.innerHTML=`<div class="chscore ${e.pass?'ok':'bad'}"><div class="big">${e.pass?`${'★'.repeat(stars(sc))}${'☆'.repeat(3-stars(sc))}`:'✗'}</div><div><b>${e.pass?(sc>100?`Beats the whole catalogue! Score ${sc}`:`Score ${sc} / 100`):(e.fiber?'A loose fibre cannot be a part: lay it up in a composite first':'Does not meet the requirements')}</b><div class="small">${esc(c.obj.n)}: <b class="mono">${num(e.ov,3)} ${c.obj.u}</b>${b?` · best in catalogue: ${esc(b.m.n)} (${num(b.ov,3)})`:''}</div></div></div>
+      <table class="chemtab" style="margin-top:8px"><tr><th>Requirement</th><th>Needed</th><th>${esc(m.n.length>18?m.n.slice(0,17)+'…':m.n)}</th><th></th></tr>${e.cons.map(q=>`<tr><td>${esc(q.n)}</td><td>${q.bool?'yes':(q.op==='>='?'≥ ':'≤ ')+num(q.v)+' '+q.u}</td><td>${q.bool?(q.val?'yes':'no'):num(q.val,3)}</td><td style="color:${q.ok?'var(--good)':'var(--crit)'}">${q.ok?'✓ pass':'✗ fail'}</td></tr>`).join('')}</table>
+      <h4 style="margin:10px 0 4px">${esc(c.obj.n)} (${c.obj.dir==='max'?'longer is better':'shorter is better'})</h4><div class="chbars">${bars.map(q=>`<div class="cb ${q.you?'you':''}"><span class="cbn">${esc(q.m.n)}${q.pass?'':' <span class="muted">(fails a requirement)</span>'}</span><span class="cbt"><i style="width:${Math.max(1.5,q.ov/mx*100)}%;background:${q.you?'var(--accent)':clsColor(q.m)}"></i></span><span class="mono cbv">${num(q.ov,3)}</span></div>`).join('')}</div>
+      <p class="tiny muted" style="margin:6px 0 0">Tip: alloys and composites you make yourself appear in the list, so you can try to beat the catalogue.</p>`; };
+  showRes();
+}
+/* ============ CLASSIC SHELL: menu bar, status bar, theme, help windows ============ */
+const MENU={open:null};
+function themeSet(t){ if(t==='auto') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme',t); try{localStorage.setItem('crucible.theme',t);}catch(e){} }
+function themeGet(){ try{return localStorage.getItem('crucible.theme')||'auto';}catch(e){return 'auto';} }
+(function(){ const t=themeGet(); if(t!=='auto') document.documentElement.setAttribute('data-theme',t); })();
+function menuDefs(){
+  const s=spec(W.sel), th=themeGet(), libMin=$('.app').classList.contains('libmin');
+  const op=(k,n,sc)=>({n,sc,dis:!s||!opAllowed(k,s.m),ck:s&&W.op===k&&!DK.min,act:()=>doOp(s,k)});
+  return [
+   ['File',[{n:'New bench',sc:'',act:()=>{W.items.slice().forEach(q=>removeSpec(q.id));toast('Bench cleared');}},{n:'Tidy bench',act:tidyBench},{n:'Fresh sample',dis:!s,act:()=>{s.heater=false;s.env='air';s.ramp=null;s.target=293;resetSpec(s,293);s.log=[];s.tests=[];slog(s,'Fresh sample at 293 K');INS.dirty=true;}},'-',
+     {h:'Temperature unit'},{n:'Kelvin (K)',ck:APP.unit==='K',act:()=>setUnit('K')},{n:'Celsius (°C)',ck:APP.unit==='C',act:()=>setUnit('C')},'-',
+     {h:'Appearance'},{n:'Classic light',ck:th==='light',act:()=>themeSet('light')},{n:'Classic dark',ck:th==='dark',act:()=>themeSet('dark')},{n:'Follow system',ck:th==='auto',act:()=>themeSet('auto')}]],
+   ['Edit',[{n:'Duplicate',sc:'D',dis:!s,act:()=>addSpec(s.m,s.x+24,s.y+24)},{n:'Remove',sc:'Del',dis:!s,act:()=>removeSpec(s.id)},'-',{n:W.multi&&s&&W.multi.has(s.id)?'Remove from comparison':'Add to comparison',sc:'X',dis:!s,act:()=>toggleMulti(s.id)},{n:'Clear comparison',dis:!W.multi||!W.multi.size,act:()=>{[...W.multi].forEach(id=>toggleMulti(id));}}]],
+   ['Specimen',[op('heat','Heat / cool','H'),op('work','Roll / anneal','R'),op('alloy','Alloy','A'),op('composite','Make composite','C'),'-',{h:'Testing'},op('test','Tensile test','T'),op('fatigue','Fatigue test','F'),op('creep','Creep test','K')]],
+   ['View',[{n:'Materials library',ck:!libMin,act:()=>{const b=libMin?$('#lib-open'):$('#lib-close'); if(b&&getComputedStyle(b).display!=='none') b.click(); else $('#lib-toggle').click();}},{n:'Operations panel',ck:!DK.min,act:()=>{DK.min=!DK.min;INS.dirty=true;}},'-',{h:'Status panels'},
+     ...ST.order.map(k=>({n:WIDGETS[k].n,ck:ST.on.has(k),act:()=>{ST.on.has(k)?ST.on.delete(k):ST.on.add(k);stSave();renderStatus();}}))]],
+   ['Tools',[{n:'Material selector…',sc:'M',act:()=>openSelector('sel')},{n:'Design challenges…',sc:'G',act:()=>openSelector('chal')},{n:'Compare specimens…',act:()=>{if(!W.items.length){toast('Put some specimens on the bench first');return;}openFloat({type:'compare'});}},'-',{n:'Parameter encyclopedia…',sc:'I',act:()=>openInfo()}]],
+   ['Window',[...(FW.wins.length?FW.wins.map(f=>({n:f.el.querySelector('.ft').textContent+(f.o.type==='w'&&f.o.lock?' (locked)':''),act:()=>front(f)})):[{n:'No floating windows',dis:true}]),'-',{n:'Pop out a status panel',dis:true},
+     ...ST.order.map(k=>({n:'   '+WIDGETS[k].n,act:()=>openFloat({type:'w',key:k,lock:null})})),'-',{n:'Close all floating windows',dis:!FW.wins.length,act:()=>FW.wins.slice().forEach(closeFloat)}]],
+   ['Help',[{n:'Parameter encyclopedia',sc:'I',act:()=>openInfo()},{n:'Keyboard shortcuts',act:()=>openFloat({type:'help',key:'keys',w:420,h:440})},'-',{n:"About Eros' Metallurgy Lab",act:()=>openFloat({type:'help',key:'about',w:440,h:380})}]]
+  ];
+}
+function renderMenubar(){
+  const mb=$('#menubar'); if(!mb) return;
+  mb.innerHTML=menuDefs().map(([n],i)=>`<button class="mb" data-i="${i}" role="menuitem" aria-haspopup="true" aria-expanded="false"><u>${n[0]}</u>${n.slice(1)}</button>`).join('');
+  mb.addEventListener('click',e=>{const b=e.target.closest('.mb');if(!b)return; if(MENU.open===+b.dataset.i){closeDrop();return;} openDrop(+b.dataset.i);});
+  mb.addEventListener('mouseover',e=>{const b=e.target.closest('.mb'); if(b&&MENU.open!=null&&MENU.open!==+b.dataset.i) openDrop(+b.dataset.i);});
+}
+function openDrop(i){
+  closeDrop(true); const defs=menuDefs(); const [,items]=defs[i]; const btn=$(`#menubar .mb[data-i="${i}"]`); btn.classList.add('open'); btn.setAttribute('aria-expanded','true'); MENU.open=i;
+  const d=document.createElement('div'); d.className='mdrop'; d.id='mdrop'; d.setAttribute('role','menu');
+  d.innerHTML=items.map((it,j)=>it==='-'?'<hr>':(it.h?`<div class="mhead">${esc(it.h)}</div>`:`<button class="mi" role="menuitem" data-j="${j}" ${it.dis?'disabled':''}><span class="ck">${it.ck?'✓':''}</span><span>${esc(it.n)}</span><span class="sc">${it.sc||''}</span></button>`)).join('');
+  document.body.appendChild(d); const r=btn.getBoundingClientRect(); d.style.left=Math.max(0,Math.min(r.left,innerWidth-d.offsetWidth-4))+'px'; d.style.top=r.bottom+'px';
+  d.addEventListener('click',e=>{const b=e.target.closest('.mi');if(!b||b.disabled)return; const it=items[+b.dataset.j]; closeDrop(); try{it.act&&it.act();}catch(err){console.error(err);} });
+  const f=d.querySelector('.mi:not(:disabled)'); if(f) f.focus({preventScroll:true});
+  setTimeout(()=>addEventListener('pointerdown',dropOut),0);
+}
+function dropOut(e){ if(!e.target.closest('#mdrop')&&!e.target.closest('#menubar')) closeDrop(); }
+function closeDrop(keep){ const d=$('#mdrop'); if(d) d.remove(); $$('#menubar .mb').forEach(b=>{b.classList.remove('open');b.setAttribute('aria-expanded','false');}); if(!keep) MENU.open=null; removeEventListener('pointerdown',dropOut); }
+function renderHelp(f){
+  if(f.o.key==='about'){ f.body.innerHTML=`<div style="display:flex;gap:14px;align-items:flex-start"><span class="tbicon" style="width:42px;height:42px"></span><div><h3 class="ih3" style="font-family:var(--f-display);margin:0 0 4px;font-size:22px">Eros' Metallurgy Lab</h3><p class="small" style="margin:0 0 8px">A materials-science workbench: ${MATS.length} materials, heat treatment, cold rolling and annealing, alloys, composites, tensile, fatigue and creep testing, phase diagrams, X-ray diffraction and an Ashby material selector with design challenges.</p><p class="tiny muted" style="margin:0">Property models are simplified teaching models (homologous-temperature scaling, Hall–Petch, Basquin, Norton, JMAK, Halpin–Tsai…). Use them to build intuition, not to certify a design.</p></div></div>`; return; }
+  const K=[['H','Heat / cool'],['R','Roll / anneal'],['A','Alloy'],['C','Make composite'],['T','Tensile test'],['F','Fatigue test'],['K','Creep test'],['D','Duplicate specimen'],['X','Add / remove from comparison'],['Del','Remove specimen'],['M','Material selector'],['G','Design challenges'],['I','Parameter encyclopedia'],['Esc','Hide the operations panel'],['Shift-click','Tick cards to compare'],['Right-click','Specimen menu'],['Double-click','Heat / cool']];
+  f.body.innerHTML=`<table class="chemtab">${K.map(([k,n])=>`<tr><td style="font-family:var(--f-mono)"><b>${k}</b></td><td style="text-align:left;font-family:var(--f-body)">${n}</td></tr>`).join('')}</table>`;
+}
+function statusBar(){
+  const s=spec(W.sel); const e=$('#sb-spec'); if(!e) return;
+  e.textContent=s?`${s.m.n} · ${fT(s.T)} · ${s.p?s.p.state:''}`:'No specimen selected';
+  $('#sb-time').textContent=W.speed===0?'Paused':`Sim speed ${W.speed}×`+(s?` · t = ${Math.round(s.t)} s`:'');
+  $('#sb-n').textContent=`${W.items.length} specimen${W.items.length===1?'':'s'}`;
+  const d=$('#tb-doc'); if(d) d.textContent=s?' — '+s.m.n:'';
+}
+(function(){ const t0=toast; toast=function(msg){ t0(msg); const sb=$('#sb-msg'); if(sb){ sb.textContent=msg; clearTimeout(statusBar._t); statusBar._t=setTimeout(()=>{sb.textContent='Ready';},6000);} }; })();
+function initShell(){
+  renderMenubar(); setInterval(statusBar,300); statusBar();
+  addEventListener('keydown',e=>{ if(e.key==='Escape'&&MENU.open!=null){closeDrop();e.stopPropagation();}
+    if(e.altKey&&!e.ctrlKey&&!e.metaKey){ const i=menuDefs().findIndex(([n])=>n[0].toLowerCase()===e.key.toLowerCase()); if(i>=0){e.preventDefault();openDrop(i);} }
+    const d=$('#mdrop'); if(d&&(e.key==='ArrowDown'||e.key==='ArrowUp')){ e.preventDefault(); const it=[...d.querySelectorAll('.mi:not(:disabled)')]; const i=it.indexOf(document.activeElement); const n=it[(i+(e.key==='ArrowDown'?1:-1)+it.length)%it.length]; if(n) n.focus(); }
+    if(d&&(e.key==='ArrowRight'||e.key==='ArrowLeft')){ e.preventDefault(); const n=menuDefs().length; openDrop((MENU.open+(e.key==='ArrowRight'?1:-1)+n)%n); } },true);
+  const opHint=e=>{const b=e.target.closest('.tb,.btn,.mi,.chip'); const sb=$('#sb-msg'); if(!b||!sb) return; const t=b.getAttribute('title'); if(t){ sb.textContent=t; clearTimeout(statusBar._t); statusBar._t=setTimeout(()=>{sb.textContent='Ready';},3000);} };
+  document.addEventListener('mouseover',opHint);
+}
 </script>
 
 </body></html>
