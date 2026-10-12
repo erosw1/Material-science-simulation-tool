@@ -524,6 +524,11 @@ input[type=range]:disabled{opacity:.5}
 .toolrow{display:flex;align-items:center;gap:6px 8px;padding:3px 6px;flex-wrap:wrap;border-bottom:1px solid var(--lo);box-shadow:0 1px 0 var(--hi)}
 .toolrow .grp{display:flex;align-items:center;gap:5px}
 .toolrow .lbl{font-size:12px;color:var(--ink)}
+.toolrow #clear{display:none}
+.sused{display:flex;flex-wrap:wrap;gap:4px 10px;margin-top:6px;font-size:12px;align-items:center}
+.sused .uic{width:20px;height:20px}.sused .uic svg{width:14px;height:14px}
+.sused span.it{display:inline-flex;align-items:center;gap:5px;min-width:0}
+.sused button{border:0;background:none;color:var(--sel);text-decoration:underline;cursor:pointer;font:inherit;padding:0}
 .optool{border:0;border-radius:0;background:transparent;padding:0;margin-right:auto;gap:1px}
 .tb{border:0!important;border-radius:0;padding:3px 7px;font-size:12.5px;color:var(--ink);background:transparent}
 .tb:hover{background:transparent;box-shadow:var(--thin-up)}
@@ -715,8 +720,40 @@ input[type=range]:disabled{opacity:.5}
   .titlebar{font-size:12px}
   #sb-time{display:none}
 }
-</style>
-<script>
+
+/* ---- laminate designer ---- */
+.fwin[data-type="lam"] .fbody{overflow:hidden;display:flex;flex-direction:column}
+.fwin[data-type="lam"] .wbody{flex:1;min-height:0;display:flex;flex-direction:column}
+.lampane{overflow:auto}
+.lamgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:12px;align-items:start}
+.lamcol{display:flex;flex-direction:column;gap:6px;min-width:0}
+.lamsplit{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,200px);gap:10px;align-items:start}
+.plywrap{background:var(--panel2);box-shadow:var(--sunken);padding:2px 4px;max-height:300px;overflow:auto}
+.plyt td,.plyt th{padding:2px 4px}
+.plyt select{padding:2px 4px;font-size:12px;min-width:140px}
+.plyt input[type=number]{width:64px;padding:2px 4px}
+.plyt .ib{width:18px;height:16px;font:700 10px/1 var(--f-body);background:var(--panel);box-shadow:var(--raised);border:0;color:var(--ink);padding:0;cursor:pointer}
+.plyt .ib:disabled{color:var(--lo)}
+.ldgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.ldgrid input{margin-top:2px}
+details summary{cursor:pointer}
+.flag.info b{color:var(--cold)}
+/* ---- real-world uses ---- */
+.ucats{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px}
+.ucat{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;padding:1px 6px 1px 3px;background:var(--panel);box-shadow:var(--thin-up)}
+.ucat svg{width:14px;height:14px}
+.ulist{list-style:none;margin:0;padding:3px 6px;display:flex;flex-direction:column;gap:2px;background:var(--panel2);box-shadow:var(--sunken)}
+.ulist li{display:grid;grid-template-columns:30px minmax(0,1fr);gap:8px;align-items:center;font-size:12.5px;padding:4px 0;border-bottom:1px solid var(--line2)}
+.ulist li:last-child{border-bottom:0}
+.uic{width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:var(--panel);box-shadow:var(--raised)}
+.uic svg,.ucat svg{fill:none;stroke:var(--sel);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+:root[data-theme="dark"] .uic svg,:root[data-theme="dark"] .ucat svg{stroke:var(--cold)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .uic svg,:root:not([data-theme="light"]) .ucat svg{stroke:var(--cold)}}
+.uic svg{width:20px;height:20px}
+a{color:var(--sel)} :root[data-theme="dark"] a{color:var(--cold)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) a{color:var(--cold)}}
+@media (max-width:800px){.lamgrid,.lamsplit{grid-template-columns:minmax(0,1fr)}.fwin[data-type="lam"] .fbody{overflow:auto;display:block}.ldgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style><script>
 /* ============ CRUCIBLE · DATA ============ */
 /* Units: rho g/cm3, E GPa, ys/uts MPa, el %, temps K, k W/m·K, cte µm/m·K, cp J/kg·K, re Ω·m, lf kJ/kg, a Å, M g/mol */
 
@@ -2945,7 +2982,7 @@ function drawIcon(cv,s,p){
 const INS={dirty:true,dirtyLog:false};
 const ST={order:['props','derived','micro','atoms','xrd','bond','diagram','ttt','jominy','chem','notes','curve','pvt','ss','log','compare'],pin:[],on:new Set(['props','micro','atoms','diagram','xrd','notes','curve']),acc:0,cell:null,chain:null,prop:'E',dgSel:'auto'};
 function stSave(){try{localStorage.setItem('crucible.widgets.v3',JSON.stringify({order:ST.order,on:[...ST.on],pin:ST.pin}));}catch(e){}}
-function stLoad(){try{const o=JSON.parse(localStorage.getItem('crucible.widgets.v3')||'null');if(o&&Array.isArray(o.order)){const known=new Set(ST.order);ST.order=o.order.filter(k=>known.has(k)).concat(ST.order.filter(k=>!o.order.includes(k)));ST.on=new Set(o.on.filter(k=>known.has(k)));ST.pin=(o.pin||[]).filter(k=>known.has(k));}}catch(e){}}
+function stLoad(){try{const o=JSON.parse(localStorage.getItem('crucible.widgets.v3')||'null');if(o&&Array.isArray(o.order)){const known=new Set(ST.order),defOn=new Set(ST.on),fresh=ST.order.filter(k=>!o.order.includes(k));ST.order=o.order.filter(k=>known.has(k)).concat(ST.order.filter(k=>!o.order.includes(k)));ST.on=new Set(o.on.filter(k=>known.has(k)));ST.pin=(o.pin||[]).filter(k=>known.has(k));fresh.forEach(k=>{if(defOn.has(k))ST.on.add(k);});}}catch(e){}}
 
 /* ---------- shared readouts ---------- */
 const ib=key=>GLOSS[key]?`<button class="ii" data-info="${key}" aria-label="What is ${esc(GLOSS[key].t)}?" title="What is this?">i</button>`:'';
@@ -3255,10 +3292,11 @@ function renderStatus(){
   const m=s.m, info=STRUCT[m.s]||{};
   const pinned=ST.pin.filter(k=>ST.on.has(k)), listed=ST.order.filter(k=>ST.on.has(k)&&!ST.pin.includes(k));
   box.innerHTML=`<div class="shead"><h2>${esc(m.n)}</h2><div class="sub"><span class="formula">${esc(m.f||'')}</span><span class="badge" style="color:${clsColor(m)}">${m.mine?'Your creation':CLASSES[m.c].label.replace(/s$/,'').replace('Ceramics & glasse','Ceramic / glass')}</span><span class="badge">${esc(info.name||m.sn||'')}</span></div>
-    <div class="live"><span class="bigT" id="s-T"></span><span class="state" id="s-state"></span></div></div>
+    <div class="live"><span class="bigT" id="s-T"></span><span class="state" id="s-state"></span></div>${(()=>{const u=typeof usesFor==='function'?usesFor(m):null; return u?`<div class="sused"><b>Used in:</b>${u.items.slice(0,2).map(([k,t])=>`<span class="it"><span class="uic">${uIcon(k)}</span>${esc(t.length>58?t.slice(0,56)+'…':t)}</span>`).join('')}<button data-uses>more…</button></div>`:'';})()}</div>
     <div class="wchips" id="s-chips"><span class="lbl">Show</span>${ST.order.map(k=>`<button class="chip" data-w="${k}" aria-pressed="${ST.on.has(k)}">${WIDGETS[k].n}</button>`).join('')}</div>
     <div class="pinzone" id="s-pin">${pinned.length?'<div class="pinlbl">Pinned</div>':''}${pinned.map((k,i)=>widHTML(k,true,i,pinned.length)).join('')}</div>
     <div class="wlist" id="s-list">${listed.map((k,i)=>widHTML(k,false,i,listed.length)).join('')||'<p class="small muted" style="margin:0">Nothing else to show. Turn panels on with the chips above.</p>'}</div>`;
+  const ub=box.querySelector('[data-uses]'); if(ub) ub.addEventListener('click',()=>{ if(!ST.on.has('uses')){ST.on.add('uses');stSave();} ST.pin=ST.pin.filter(k=>k!=='uses'); ST.pin.unshift('uses'); stSave(); renderStatus(); });
   $('#s-chips').addEventListener('click',e=>{const b=e.target.closest('[data-w]');if(!b)return;const k=b.dataset.w;if(ST.on.has(k)){ST.on.delete(k);}else ST.on.add(k);stSave();renderStatus();});
   const onBtn=e=>{const b=e.target.closest('button.ib');if(!b)return;const k=b.closest('.wid').dataset.w;
     if(b.hasAttribute('data-hide')) ST.on.delete(k);
@@ -3694,10 +3732,10 @@ function openFloat(o,restoring){
   if(o.type==='info'){ const ex=FW.wins.find(f=>f.o.type==='info'); if(ex){ ex.o.entry=o.entry||ex.o.entry; renderInfo(ex); front(ex); return ex; } }
   if(o.type==='compare'){ const ex=FW.wins.find(f=>f.o.type==='compare'); if(ex){ ex.dirty=true; front(ex); return ex; } }
   const id='fw'+(++FW.n); const el=document.createElement('div'); el.className='fwin'; el.id=id; el.dataset.type=o.type; el.setAttribute('role','dialog');
-  const W0=o.w||(o.type==='info'?620:o.type==='compare'?640:o.type==='select'?960:380), H0=o.h||(o.type==='info'?540:o.type==='compare'?560:o.type==='select'?620:420);
+  const W0=o.w||(o.type==='info'?620:o.type==='compare'?640:o.type==='select'?960:o.type==='lam'?1000:380), H0=o.h||(o.type==='info'?540:o.type==='compare'?560:o.type==='select'?620:o.type==='lam'?660:420);
   const off=(FW.wins.length%6)*28;
   const x=o.x!=null?o.x:Math.max(10,innerWidth/2-W0/2+off-60), y=o.y!=null?o.y:Math.max(60,110+off);
-  const title=o.type==='info'?'Info: what every parameter means':o.type==='compare'?'Compare specimens':o.type==='select'?'Material selector':o.type==='help'?(o.key==='about'?'About':'Keyboard shortcuts'):WIDGETS[o.key].n;
+  const title=o.type==='info'?'Info: what every parameter means':o.type==='compare'?'Compare specimens':o.type==='select'?'Material selector':o.type==='lam'?'Laminate & sandwich designer':o.type==='help'?(o.key==='about'?'About':'Keyboard shortcuts'):WIDGETS[o.key].n;
   el.innerHTML=`<div class="fhead"><span class="ft">${title}</span><span class="fs"></span><span class="fb">${o.type==='w'?`<button class="ib fl" title="Lock this window to the current specimen" aria-label="Lock to specimen">🔓</button><button class="ib fd" title="Put back in the status column" aria-label="Dock back">⇲</button>`:''}<button class="ib fx" title="Close" aria-label="Close window">×</button></span></div><div class="fbody"><div class="wbody"></div></div>`;
   el.style.width=W0+'px'; el.style.height=H0+'px'; document.body.appendChild(el);
   const f={id,el,o:{...o},x,y,body:el.querySelector('.wbody'),sid:null,dirty:true};
@@ -3732,6 +3770,7 @@ function floatTick(dt,tick){
     } else if(f.o.type==='compare'){ if(f.dirty||tick){ const full=f.dirty; f.dirty=false; renderCompare2(f,full); } }
     else if(f.o.type==='info'&&f.dirty){ f.dirty=false; renderInfo(f); }
     else if(f.o.type==='select'&&f.dirty){ f.dirty=false; renderSelect(f); }
+    else if(f.o.type==='lam'&&f.dirty){ f.dirty=false; renderLam(f); }
     else if(f.o.type==='help'&&f.dirty){ f.dirty=false; renderHelp(f); }
   }
 }
@@ -3837,7 +3876,7 @@ function initConveniences(){
   // shortcuts
   addEventListener('keydown',e=>{ if(e.target.closest('input,select,textarea')||e.metaKey||e.ctrlKey||e.altKey) return; const s=spec(W.sel); const k=e.key.toLowerCase();
     if(k==='escape'){closeMenu(); if(!DK.min){DK.min=true;INS.dirty=true;} return;}
-    if(k==='i'){openInfo(); return;} if(k==='m'){openSelector('sel');return;} if(k==='g'){openSelector('chal');return;} if(k==='?'){openInfo('E');return;}
+    if(k==='i'){openInfo(); return;} if(k==='m'){openSelector('sel');return;} if(k==='g'){openSelector('chal');return;} if(k==='l'){openLaminate();return;} if(k==='?'){openInfo('E');return;}
     if(!s) return;
     const map={h:'heat',a:'alloy',c:'composite',t:'test',r:'work',f:'fatigue',k:'creep'}; if(map[k]&&opAllowed(map[k],s.m)){doOp(s,map[k]);e.preventDefault();}
     if(k==='x') toggleMulti(s.id); if(k==='d') addSpec(s.m,s.x+24,s.y+24); if(k==='delete'||k==='backspace'){removeSpec(s.id);e.preventDefault();} });
@@ -3862,7 +3901,7 @@ const OPDESC={heat:'Set a temperature, choose the surroundings, quench.',alloy:'
 function renderToolbar(){
   const s=spec(W.sel), tb=$('#optool');
   tb.innerHTML=`<span class="sel">${s?`Selected: <b>${esc(s.m.n)}</b>`:'Nothing selected'}</span>`+DOPS.map(([k,n])=>`<button class="tb" data-op="${k}" aria-pressed="${!!s&&k===W.op&&!DK.min}" ${s&&opAllowed(k,s.m)?'':'disabled'} title="${s&&!opAllowed(k,s.m)?'Not available for this material':OPDESC[k]}">${DICON[k]}${n}</button>`).join('')+
-    `<span class="sep"></span><button class="tb" data-act="dup" ${s?'':'disabled'} title="Place a copy on the bench">${'<svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V6a2 2 0 0 1 2-2h10"/></svg>'}<span class="tl">Duplicate</span></button><button class="tb" data-act="rm" ${s?'':'disabled'} title="Remove from the bench">${'<svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>'}<span class="tl">Remove</span></button><span class="sep"></span><button class="tb" data-act="cmp" title="Compare specimens (shift-click cards to choose)"><svg viewBox="0 0 24 24"><path d="M3 21h18M3 21V3"/><path d="M7 15l4-5 3 3 5-7"/></svg>Compare${W.multi&&W.multi.size?` (${W.multi.size})`:''}</button><button class="tb" data-act="sel" title="Material selector: Ashby charts with index lines (M)"><svg viewBox="0 0 24 24"><path d="M3 21V3M3 21h18"/><circle cx="8" cy="14" r="1.6"/><circle cx="12" cy="9" r="1.6"/><circle cx="17" cy="11" r="1.6"/><path d="M5 19L20 5" stroke-dasharray="3 2"/></svg>Selector</button><button class="tb" data-act="chal" title="Design challenges (G)"><svg viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4"/></svg>Challenges</button><button class="tb" data-act="info" title="What every parameter means (I)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>Info</button><button class="tb" data-act="tidy" title="Arrange the bench in a grid"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg><span class="tl">Tidy</span></button>`;
+    `<span class="sep"></span><button class="tb" data-act="dup" ${s?'':'disabled'} title="Place a copy on the bench">${'<svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V6a2 2 0 0 1 2-2h10"/></svg>'}<span class="tl">Duplicate</span></button><button class="tb" data-act="rm" ${s?'':'disabled'} title="Remove from the bench">${'<svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>'}<span class="tl">Remove</span></button><span class="sep"></span><button class="tb" data-act="cmp" title="Compare specimens (shift-click cards to choose)"><svg viewBox="0 0 24 24"><path d="M3 21h18M3 21V3"/><path d="M7 15l4-5 3 3 5-7"/></svg>Compare${W.multi&&W.multi.size?` (${W.multi.size})`:''}</button><button class="tb" data-act="lam" title="Laminate & sandwich designer (L)"><svg viewBox="0 0 24 24"><path d="M3 7h18M3 11h18M3 15h18M3 19h18"/><path d="M6 7l3 4M12 7l3 4M9 15l3 4M15 15l3 4"/></svg>Laminate</button><button class="tb" data-act="sel" title="Material selector: Ashby charts with index lines (M)"><svg viewBox="0 0 24 24"><path d="M3 21V3M3 21h18"/><circle cx="8" cy="14" r="1.6"/><circle cx="12" cy="9" r="1.6"/><circle cx="17" cy="11" r="1.6"/><path d="M5 19L20 5" stroke-dasharray="3 2"/></svg>Selector</button><button class="tb" data-act="chal" title="Design challenges (G)"><svg viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4"/></svg>Challenges</button><button class="tb" data-act="info" title="What every parameter means (I)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>Info</button><button class="tb" data-act="tidy" title="Arrange the bench in a grid"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg><span class="tl">Tidy</span></button>`;
 }
 function renderDock(){
   renderToolbar();
@@ -4025,7 +4064,7 @@ function dComp(s,body){
      <div id="c-arw"><label class="f" for="c-ar" style="margin:0">Aspect ratio ℓ/d <span class="mono" id="c-arv" style="float:right"></span></label><input type="range" id="c-ar" min="1" max="3" step="0.01"></div>
      <label class="f" for="c-ang" style="margin:0">Load direction θ <span class="mono" id="c-angv" style="float:right"></span></label><input type="range" id="c-ang" min="0" max="90" step="1"></div>
    <div class="dcol"><h4>Cross-section · direction</h4><div class="grid2" style="margin-top:0;gap:8px"><canvas class="cv" id="c-xs" style="aspect-ratio:1/1;height:auto"></canvas><canvas class="cv" id="c-pol" style="aspect-ratio:1/1;height:auto"></canvas></div><div class="legend" style="margin:0"><span><i style="background:var(--accent)"></i>E(θ)</span><span><i style="background:var(--cold)"></i>σ(θ)</span></div><ul class="notes" id="c-notes"></ul></div>
-   <div class="dcol"><h4>Result along θ (vs matrix)</h4><div class="props" id="c-props"></div><label class="f" for="c-name" style="margin:4px 0 0">Name</label><input type="text" id="c-name" maxlength="40"><div class="btns"><button class="btn pri" id="c-make">Lay up on bench</button></div></div>
+   <div class="dcol"><h4>Result along θ (vs matrix)</h4><div class="props" id="c-props"></div><label class="f" for="c-name" style="margin:4px 0 0">Name</label><input type="text" id="c-name" maxlength="40"><div class="btns"><button class="btn pri" id="c-make">Lay up on bench</button><button class="btn" id="c-lam">Design a laminate…</button></div></div>
   </div>`;
   $('#c-m').addEventListener('change',e=>{CPX.matrix=e.target.value;cUpdate();});
   $('#c-r').addEventListener('change',e=>{CPX.reinf=e.target.value;if(MAT[CPX.reinf].c!=='fiber'&&!['particle','chopped'].includes(CPX.arch))CPX.arch='particle';cUpdate();});
@@ -4033,6 +4072,7 @@ function dComp(s,body){
   $('#c-vf').addEventListener('input',e=>{CPX.vf=+e.target.value;cUpdate();});
   $('#c-ar').addEventListener('input',e=>{CPX.ar=Math.round(Math.pow(10,+e.target.value));cUpdate();});
   $('#c-ang').addEventListener('input',e=>{CPX.ang=+e.target.value;cUpdate();});
+  $('#c-lam').addEventListener('click',()=>{ if(MAT[CPX.reinf].c==='fiber'){ lamInit(); LAM.plies.forEach(p=>p.f=CPX.reinf); } if(kind(MAT[CPX.matrix])==='poly') LAM.matrix=CPX.matrix; LAM.vf=U.clamp(CPX.vf,0.3,0.7); openLaminate('lay'); });
   $('#c-make').addEventListener('click',()=>{const m=compMaterial($('#c-name').value.trim()||'My composite');addMine(m);addSpec(m,null,null,{op:'heat'});toast(`Laid up “${m.n}” on the bench`);});
   cUpdate();
 }
@@ -4108,7 +4148,7 @@ function setSpeed(v){W.speed=v;$$('#speed button').forEach(b=>b.setAttribute('ar
 function setUnit(u){APP.unit=u;$('#u-k').setAttribute('aria-pressed',u==='K');$('#u-c').setAttribute('aria-pressed',u==='C');W.items.forEach(s=>s.ptCache=null);INS.dirty=true;}
 function boot(){
   refreshColors(); stLoad(); loadMine(); initLib();
-  $('#optool').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||b.disabled)return; if(b.dataset.act==='cmp'){if(W.items.length<1){toast('Put some specimens on the bench first');return;} openFloat({type:'compare'});return;} if(b.dataset.act==='info'){openInfo();return;} if(b.dataset.act==='sel'){openSelector('sel');return;} if(b.dataset.act==='chal'){openSelector('chal');return;} if(b.dataset.act==='tidy'){tidyBench();return;} const s=spec(W.sel);if(!s)return;
+  $('#optool').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||b.disabled)return; if(b.dataset.act==='cmp'){if(W.items.length<1){toast('Put some specimens on the bench first');return;} openFloat({type:'compare'});return;} if(b.dataset.act==='info'){openInfo();return;} if(b.dataset.act==='sel'){openSelector('sel');return;} if(b.dataset.act==='lam'){openLaminate();return;} if(b.dataset.act==='chal'){openSelector('chal');return;} if(b.dataset.act==='tidy'){tidyBench();return;} const s=spec(W.sel);if(!s)return;
     if(b.dataset.op){ if(W.op===b.dataset.op&&!DK.min){DK.min=true;} else {W.op=b.dataset.op;DK.min=false;if(W.op==='alloy')FGX.forSpec=null;if(W.op==='composite')CPX.forSpec=null;} INS.dirty=true; }
     if(b.dataset.act==='dup'){addSpec(s.m,s.x+24,s.y+24);toast(`Duplicated ${s.m.n}`);}
     if(b.dataset.act==='rm'){removeSpec(s.id);} });
@@ -4570,6 +4610,532 @@ function renderChalPane(pane,f){
       <p class="tiny muted" style="margin:6px 0 0">Tip: alloys and composites you make yourself appear in the list, so you can try to beat the catalogue.</p>`; };
   showRes();
 }
+/* ============ LAMINATE & SANDWICH DESIGNER (classical lamination theory, failure, sandwich beams) ============ */
+const LAM={matrix:'epoxy',vf:0.6,plies:[],loads:{Nx:200,Ny:0,Nxy:0,Mx:0,My:0,Mxy:0},crit:'tsaiwu',tab:'lay',qty:'s1',sw:{face:'lam',ft:1,core:'alhc',c:20,L:500,P:800}};
+const LAMPRE=[['quasi','Quasi-isotropic [0/±45/90]s',[0,45,-45,90,90,-45,45,0]],['ud','Unidirectional [0]₈',[0,0,0,0,0,0,0,0]],['cross','Cross-ply [0/90]₂s',[0,90,0,90,90,0,90,0]],['ang','Angle-ply [±45]₂s',[45,-45,45,-45,-45,45,-45,45]],['tube','Pressure vessel [±55]₂s',[55,-55,55,-55,-55,55,-55,55]],['unsym','Unsymmetric [0₄/90₄] (warps!)',[0,0,0,0,90,90,90,90]],['unbal','Unbalanced [30]₈ (twists!)',[30,30,30,30,30,30,30,30]]];
+const CORES={alhc:{n:'Aluminium honeycomb 5052, 50 kg/m³',rho:0.05,E:1000,G:310,tau:1.5,sc:2.3,kind:'hc'},nomex:{n:'Nomex honeycomb, 48 kg/m³',rho:0.048,E:140,G:40,tau:1.2,sc:2.2,kind:'hc'},pvc:{n:'PVC foam, 100 kg/m³',rho:0.1,E:130,G:35,tau:1.6,sc:2.0,kind:'foam'},pmi:{n:'PMI foam (Rohacell), 75 kg/m³',rho:0.075,E:105,G:29,tau:1.3,sc:1.5,kind:'foam'},pet:{n:'PET foam, 100 kg/m³',rho:0.1,E:90,G:20,tau:1.2,sc:1.4,kind:'foam'},balsa:{n:'End-grain balsa, 150 kg/m³',rho:0.15,E:4000,G:160,tau:2.9,sc:12,kind:'balsa'}};
+const LAMCRIT=[['maxs','Max stress'],['hill','Tsai–Hill'],['tsaiwu','Tsai–Wu'],['hashin','Hashin']];
+function lamInit(){ if(!LAM.plies.length) LAMPRE[0][2].forEach(a=>LAM.plies.push({f:'cf_t300',a,t:0.125})); }
+const _plyC={};
+function plyProps(fid){
+  const key=LAM.matrix+'|'+fid+'|'+LAM.vf; if(_plyC[key]) return _plyC[key];
+  const r=MAT[fid], m=MAT[LAM.matrix]; const o=compositeCompute({matrix:m,reinf:r,arch:'ud',vf:LAM.vf,angle:0}); const p=o.ply;
+  const xcF=/kevlar|dyneema|zylon/.test(fid)?0.22:(/^cf_|cnt/.test(fid)?0.6:(/glass|basalt/.test(fid)?0.7:0.65));
+  const P={E1:p.E1*1000,E2:p.E2*1000,G12:p.G12*1000,n12:p.n12,Xt:p.X,Xc:p.X*xcF,Yt:p.Y,Yc:Math.min(p.Y*3.5,m.uts*3),S:p.S,a1:p.a1,a2:p.a2,rho:o.rho,col:r.col||'#444'};
+  _plyC[key]=P; return P;
+}
+function Qmat(P,d){ const E1=P.E1*(d?d.f:1), E2=P.E2*(d?d.m:1), G=P.G12*(d?d.m:1), n12=P.n12*(d?Math.min(d.f,d.m):1); const n21=n12*E2/E1, den=1-n12*n21; return {Q11:E1/den,Q22:E2/den,Q12:n12*E2/den,Q66:G}; }
+function qb9(Q,a){ const q=Qbar(Q,a); q[3]=q[1]; q[6]=q[2]; q[7]=q[5]; return q; }
+function solve6(M,b){ const n=6,A=M.map((r,i)=>[...r,b[i]]); for(let c=0;c<n;c++){ let p=c; for(let r=c+1;r<n;r++) if(Math.abs(A[r][c])>Math.abs(A[p][c])) p=r; if(Math.abs(A[p][c])<1e-12) return null; [A[c],A[p]]=[A[p],A[c]]; for(let r=0;r<n;r++){ if(r===c) continue; const f=A[r][c]/A[c][c]; for(let k=c;k<=n;k++) A[r][k]-=f*A[c][k]; } } return A.map((r,i)=>r[n]/r[i]); }
+function inv6(M){ const out=[]; for(let j=0;j<6;j++){ const e=[0,0,0,0,0,0]; e[j]=1; const x=solve6(M,e); if(!x) return null; out.push(x); } return out[0].map((_,i)=>out.map(c=>c[i])); }
+function lamABD(plies,dmg){
+  const h=plies.reduce((s,p)=>s+p.t,0); let z=-h/2; const A=Array(9).fill(0),B=Array(9).fill(0),D=Array(9).fill(0),zs=[];
+  plies.forEach((p,i)=>{ const P=plyProps(p.f), q=qb9(Qmat(P,dmg&&dmg[i]),p.a), z0=z, z1=z+p.t; zs.push([z0,z1]);
+    for(let k=0;k<9;k++){ A[k]+=q[k]*(z1-z0); B[k]+=q[k]*(z1*z1-z0*z0)/2; D[k]+=q[k]*(z1*z1*z1-z0*z0*z0)/3; } z=z1; });
+  const idx=[0,1,2,3,4,5,6,7,8]; const r=(M,i)=>[M[i*3],M[i*3+1],M[i*3+2]];
+  const ABD=[0,1,2].map(i=>[...r(A,i),...r(B,i)]).concat([0,1,2].map(i=>[...r(B,i),...r(D,i)])); void idx;
+  return {A,B,D,ABD,h,zs};
+}
+function lamEff(L){ const a=inv3(L.A), d=inv3(L.D), h=L.h; return {Ex:1/(h*a[0])/1000,Ey:1/(h*a[4])/1000,Gxy:1/(h*a[8])/1000,nxy:-a[1]/a[0],Efx:12/(h*h*h*d[0])/1000,Efy:12/(h*h*h*d[4])/1000}; }
+function lamCoupling(L){ const out=[]; const sA=Math.max(Math.abs(L.A[0]),1), sD=Math.max(Math.abs(L.D[0]),1);
+  const Bm=Math.max(...L.B.map(Math.abs)); if(Bm/(sA*L.h)>2e-3) out.push({k:'crit',t:'Unsymmetric stack (B ≠ 0)',d:'In-plane loads also bend and twist it, and it warps when it cools after curing. Mirror the stack about its mid-plane.'});
+  if(Math.max(Math.abs(L.A[2]),Math.abs(L.A[5]))/sA>2e-3) out.push({k:'warn',t:'Unbalanced (A₁₆, A₂₆ ≠ 0)',d:'Pulling it also shears it. Pair every +θ ply with a −θ ply.'});
+  if(Math.max(Math.abs(L.D[2]),Math.abs(L.D[5]))/sD>0.02) out.push({k:'info',t:'Bend–twist coupling (D₁₆, D₂₆ ≠ 0)',d:'Normal for angle plies; aeroelastic wings use it on purpose. Grouping ±θ pairs close together reduces it.'});
+  if(!out.length) out.push({k:'good',t:'Symmetric and balanced',d:'No warping on cure and no extension–shear coupling.'});
+  return out; }
+function lamSolve(plies,loads,dmg){
+  const L=lamABD(plies,dmg); const v=[loads.Nx,loads.Ny,loads.Nxy,loads.Mx,loads.My,loads.Mxy]; const x=solve6(L.ABD,v); if(!x) return null;
+  const e0=x.slice(0,3), k=x.slice(3);
+  const res=plies.map((p,i)=>{ const P=plyProps(p.f), Q=Qmat(P,dmg&&dmg[i]); const pts=[L.zs[i][0],(L.zs[i][0]+L.zs[i][1])/2,L.zs[i][1]].map(z=>{
+      const ex=e0[0]+z*k[0], ey=e0[1]+z*k[1], gxy=e0[2]+z*k[2]; const t=p.a*Math.PI/180,c=Math.cos(t),s=Math.sin(t);
+      const e1=c*c*ex+s*s*ey+c*s*gxy, e2=s*s*ex+c*c*ey-c*s*gxy, g12=-2*c*s*ex+2*c*s*ey+(c*c-s*s)*gxy;
+      const s1=Q.Q11*e1+Q.Q12*e2, s2=Q.Q12*e1+Q.Q22*e2, t12=Q.Q66*g12; const q=qb9(Q,p.a);
+      return {z,ex,ey,gxy,e1,e2,g12,s1,s2,t12,sx:q[0]*ex+q[1]*ey+q[2]*gxy,sy:q[3]*ex+q[4]*ey+q[5]*gxy,txy:q[6]*ex+q[7]*ey+q[8]*gxy}; });
+    return {pts,P}; });
+  return {L,e0,k,res};
+}
+/* failure index of one stress state; returns {fi, mode} with fi ≥ 1 = failed */
+function failFI(crit,P,s1,s2,t){
+  const X=s1>=0?P.Xt:P.Xc, Y=s2>=0?P.Yt:P.Yc, S=P.S; const a=Math.abs(s1)/X,b=Math.abs(s2)/Y,c=Math.abs(t)/S;
+  const mode=()=>{ const m=Math.max(a,b,c); return m===a?(s1>=0?'fibre tension':'fibre compression'):(m===b?(s2>=0?'matrix cracking':'matrix crushing'):'in-plane shear'); };
+  if(crit==='maxs') return {fi:Math.max(a,b,c),mode:mode()};
+  if(crit==='hill') return {fi:Math.sqrt(Math.max(0,(s1/X)**2-s1*s2/(X*X)+(s2/Y)**2+(t/S)**2)),mode:mode()};
+  if(crit==='tsaiwu'){ const F1=1/P.Xt-1/P.Xc,F2=1/P.Yt-1/P.Yc,F11=1/(P.Xt*P.Xc),F22=1/(P.Yt*P.Yc),F66=1/(S*S),F12=-0.5*Math.sqrt(F11*F22);
+    const A=F11*s1*s1+F22*s2*s2+F66*t*t+2*F12*s1*s2, B=F1*s1+F2*s2; const R=A>1e-18?(-B+Math.sqrt(B*B+4*A))/(2*A):(B>0?1/B:1e9); return {fi:1/Math.max(R,1e-9),mode:mode()}; }
+  // Hashin (plane stress)
+  let ff,fm,fmode,mmode;
+  if(s1>=0){ff=Math.sqrt((s1/P.Xt)**2+(t/S)**2);fmode='fibre tension';} else {ff=-s1/P.Xc;fmode='fibre compression';}
+  if(s2>=0){fm=Math.sqrt((s2/P.Yt)**2+(t/S)**2);mmode=Math.abs(t)/S>s2/P.Yt?'in-plane shear':'matrix cracking';}
+  else {const v=(s2/(2*S))**2+((P.Yc/(2*S))**2-1)*s2/P.Yc+(t/S)**2; fm=Math.sqrt(Math.max(0,v));mmode='matrix crushing';}
+  return ff>=fm?{fi:ff,mode:fmode}:{fi:fm,mode:mmode};
+}
+/* strength ratio R: multiply the load by R to reach failure (linear elastic, so scale stresses) */
+function plyR(crit,P,pt,fibreOnly){
+  if(fibreOnly){ const r=pt.s1>=0?P.Xt/Math.max(pt.s1,1e-12):P.Xc/Math.max(-pt.s1,1e-12); return {R:r,mode:pt.s1>=0?'fibre tension':'fibre compression'}; }
+  if(crit==='tsaiwu'){ const f=failFI(crit,P,pt.s1,pt.s2,pt.t12); return {R:1/Math.max(f.fi,1e-12),mode:f.mode}; }
+  let lo=0,hi=1; const f1=failFI(crit,P,pt.s1,pt.s2,pt.t12); if(!(f1.fi>0)) return {R:Infinity,mode:'—'};
+  if(crit!=='hashin') return {R:1/f1.fi,mode:f1.mode};
+  hi=2/f1.fi; while(failFI(crit,P,pt.s1*hi,pt.s2*hi,pt.t12*hi).fi<1&&hi<1e9) hi*=2;
+  for(let i=0;i<50;i++){ const m=(lo+hi)/2; if(failFI(crit,P,pt.s1*m,pt.s2*m,pt.t12*m).fi<1) lo=m; else hi=m; }
+  return {R:hi,mode:failFI(crit,P,pt.s1*hi,pt.s2*hi,pt.t12*hi).mode};
+}
+function lamFPF(plies,loads,crit,dmg){
+  const r=lamSolve(plies,loads,dmg); if(!r) return null; let best={R:Infinity};
+  r.res.forEach((q,i)=>{ if(dmg&&dmg[i]&&dmg[i].f<0.05) return; const fo=dmg&&dmg[i]&&dmg[i].m<0.5; q.pts.forEach(pt=>{ const x=plyR(crit,q.P,pt,fo); if(x.R<best.R) best={R:x.R,mode:x.mode,ply:i,z:pt.z}; }); });
+  return {...best,sol:r};
+}
+function lamProgressive(plies,loads,crit){
+  const n=plies.length, dmg=plies.map(()=>({f:1,m:1})), ev=[], curve=[[0,0]]; const ref=Math.abs(loads.Nx)>=Math.abs(loads.Ny)?(Math.abs(loads.Nx)>=Math.abs(loads.Nxy)?0:2):(Math.abs(loads.Ny)>=Math.abs(loads.Nxy)?1:2);
+  let lam=0, guard=0, ult=null;
+  while(guard++<n*3){
+    const f=lamFPF(plies,loads,crit,dmg); if(!f||!isFinite(f.R)){ ult=lam; break; }
+    const strain=(R)=>{const s=lamSolve(plies,loads,dmg);return s?s.e0[ref]*R:0;};
+    const Rn=Math.max(f.R,lam); curve.push([strain(Rn)*100,Rn]);
+    const fib=f.mode.startsWith('fibre'); const d=dmg[f.ply];
+    if(fib){d.f=0.01;d.m=0.01;} else {d.m=0.1;}
+    ev.push({R:Rn,ply:f.ply,mode:f.mode,a:plies[f.ply].a}); lam=Rn;
+    const s2=lamSolve(plies,loads,dmg); if(!s2){ult=lam;break;}
+    const intact=dmg.filter(q=>q.f>0.5).length; const jump=Math.abs(s2.e0[ref]*Rn)>Math.max(0.03,3*Math.abs(strain(Rn)/1)*0+Math.abs(curve[curve.length-1][0])/100*3);
+    if(intact===0||jump){ult=lam;break;}
+    curve.push([s2.e0[ref]*Rn*100,Rn]);
+  }
+  if(ult==null) ult=lam;
+  return {ev,curve,ult,ref};
+}
+function lamEnvelope(plies,crit,Nxy){
+  const out=[]; const h=plies.reduce((s,p)=>s+p.t,0);
+  for(let i=0;i<=72;i++){ const ph=i/72*2*Math.PI; const ld={Nx:Math.cos(ph)*100,Ny:Math.sin(ph)*100,Nxy:Nxy||0,Mx:0,My:0,Mxy:0}; const f=lamFPF(plies,ld,crit); if(f&&isFinite(f.R)) out.push([f.R*ld.Nx/h,f.R*ld.Ny/h]); }
+  return out;
+}
+
+/* ---------- sandwich beam (3-point bend, per 100 mm width) ---------- */
+function swFace(){
+  const S=LAM.sw;
+  if(S.face==='lam'){ const L=lamABD(LAM.plies), e=lamEff(L); const f=lamFPF(LAM.plies,{Nx:100,Ny:0,Nxy:0,Mx:0,My:0,Mxy:0},'tsaiwu'); const fc=lamFPF(LAM.plies,{Nx:-100,Ny:0,Nxy:0,Mx:0,My:0,Mxy:0},'tsaiwu');
+    const rho=LAM.plies.reduce((s,p)=>s+plyProps(p.f).rho*p.t,0)/L.h; return {n:'Your laminate',E:e.Ex*1000,t:L.h,st:f?f.R*100/L.h:500,scomp:fc?fc.R*100/L.h:300,rho}; }
+  const m=MAT[S.face]; return {n:m.n,E:m.E*1000,t:S.ft,st:m.ys!=null?m.ys:m.uts,scomp:m.ys!=null?m.ys:m.uts*0.6,rho:m.rho};
+}
+function swCalc(c){
+  const S=LAM.sw, F=swFace(), C=CORES[S.core], b=100, L=S.L, P=S.P, t=F.t; c=c==null?S.c:c; const d=c+t;
+  const D=F.E*b*t*d*d/2+F.E*b*t*t*t/6+C.E*b*c*c*c/12; // N·mm²
+  const Sh=C.G*b*d*d/c; // N
+  const defl=P*L*L*L/(48*D)+P*L/(4*Sh);
+  const sf=P*L/(4*t*d*b), tc=P/(2*d*b);
+  const wr=0.5*Math.cbrt(F.E*C.E*C.G); const sfail=Math.min(F.st,F.scomp);
+  const modes=[['Face failure',4*sfail*t*d*b/L],['Core shear',2*C.tau*d*b],['Face wrinkling',4*wr*t*d*b/L],['Core indentation',C.sc*b*25*Math.sqrt(1+t/2)]];
+  const gov=modes.reduce((a,q)=>q[1]<a[1]?q:a,modes[0]);
+  const mass=(2*F.rho*t+C.rho*c)*1; // kg/m² (g/cm³·mm = kg/m²)
+  const tSolid=Math.cbrt(12*D/(F.E*b)), massSolid=F.rho*tSolid;
+  return {F,C,D,Sh,defl,sf,tc,wr,modes,gov,mass,tSolid,massSolid,d};
+}
+
+/* ---------- window ---------- */
+function openLaminate(tab){ lamInit(); const ex=FW.wins.find(f=>f.o.type==='lam'); if(tab) LAM.tab=tab; if(ex){ex.dirty=true;front(ex);return ex;} const w=Math.min(innerWidth-20,1040),h=Math.min(innerHeight-90,680); return openFloat({type:'lam',w,h,x:Math.max(10,(innerWidth-w)/2),y:Math.max(60,(innerHeight-h)/2)}); }
+function renderLam(f){
+  lamInit(); const b=f.body;
+  b.innerHTML=`<div class="wtabs" role="tablist">${[['lay','Layup'],['str','Loads & stresses'],['fail','Failure'],['sw','Sandwich panel']].map(([k,n])=>`<button role="tab" data-t="${k}" aria-selected="${LAM.tab===k}">${n}</button>`).join('')}</div><div class="wtabpane lampane"></div>`;
+  b.querySelector('.wtabs').addEventListener('click',e=>{const t=e.target.closest('[data-t]');if(!t)return;LAM.tab=t.dataset.t;renderLam(f);});
+  const pane=b.querySelector('.lampane'); ({lay:lamLayPane,str:lamStrPane,fail:lamFailPane,sw:lamSwPane})[LAM.tab](pane,f);
+}
+const fibreOpts=sel=>allMats().filter(m=>m.c==='fiber').map(m=>`<option value="${m.id}" ${m.id===sel?'selected':''}>${esc(m.n)}</option>`).join('');
+function plyTable(){ return `<table class="chemtab plyt"><tr><th>#</th><th style="text-align:left">Fibre</th><th>Angle °</th><th>t mm</th><th></th></tr>${LAM.plies.map((p,i)=>`<tr data-i="${i}"><td>${i+1}</td><td style="text-align:left"><select class="pf" aria-label="Ply ${i+1} fibre">${fibreOpts(p.f)}</select></td><td><input type="number" class="pa" value="${p.a}" min="-90" max="90" step="5" aria-label="Ply ${i+1} angle"></td><td><input type="number" class="pt" value="${p.t}" min="0.05" max="5" step="0.025" aria-label="Ply ${i+1} thickness"></td><td style="white-space:nowrap"><button class="ib pu" aria-label="Move ply ${i+1} up" ${i?'':'disabled'}>↑</button><button class="ib pd" aria-label="Move ply ${i+1} down" ${i<LAM.plies.length-1?'':'disabled'}>↓</button><button class="ib px" aria-label="Delete ply ${i+1}" ${LAM.plies.length>1?'':'disabled'}>×</button></td></tr>`).join('')}</table>`; }
+function lamLayPane(pane,f){
+  pane.innerHTML=`<div class="lamgrid"><div class="lamcol">
+     <div class="row" style="flex-wrap:wrap;gap:6px"><label class="f" style="margin:0;flex:1;min-width:150px">Matrix<select id="lm-m" style="margin-top:3px">${allMats().filter(isMatrix).filter(m=>kind(m)==='poly').map(m=>`<option value="${m.id}" ${m.id===LAM.matrix?'selected':''}>${esc(m.n)}</option>`).join('')}</select></label>
+       <label class="f" style="margin:0;width:150px">Fibre volume <span class="mono" id="lm-vfv" style="float:right"></span><input type="range" id="lm-vf" min="0.3" max="0.7" step="0.01" value="${LAM.vf}"></label></div>
+     <label class="f" style="margin:4px 0 0">Preset stack<select id="lm-pre" style="margin-top:3px"><option value="">Choose a classic layup…</option>${LAMPRE.map(([k,n])=>`<option value="${k}">${n}</option>`).join('')}</select></label>
+     <div class="scroll-x plywrap">${plyTable()}</div>
+     <div class="btns"><button class="btn" id="lm-add">+ Add ply</button><button class="btn" id="lm-mir">Mirror (make symmetric)</button><button class="btn pri" id="lm-bench">Lay up on bench</button></div>
+     <p class="tiny muted" style="margin:0">Ply 1 is the top face. Each ply can use a different fibre (hybrid laminate). Angles are measured from the x (load) axis.</p></div>
+   <div class="lamcol"><canvas class="cv" id="lm-stack" style="height:190px"></canvas><div id="lm-flags" class="col" style="gap:4px"></div>
+     <div class="lamsplit"><div><h4 style="margin:4px 0">Effective properties${ib('clt')}</h4><dl class="kv" id="lm-eff"></dl></div><div><h4 style="margin:4px 0">Stiffness vs direction</h4><canvas class="cv" id="lm-pol" style="aspect-ratio:1/1;height:auto"></canvas><div class="legend" style="margin:2px 0 0"><span><i style="background:var(--accent)"></i>E<sub>x</sub>(θ)</span><span><i style="background:var(--cold)"></i>G<sub>xy</sub>(θ)</span></div></div></div>
+     <details><summary class="small">A, B, D stiffness matrices</summary><div class="scroll-x" id="lm-abd"></div></details></div></div>`;
+  const upd=()=>{ $('#lm-vfv').textContent=Math.round(LAM.vf*100)+'%'; lamLayDraw(); };
+  $('#lm-m').addEventListener('change',e=>{LAM.matrix=e.target.value;upd();});
+  $('#lm-vf').addEventListener('input',e=>{LAM.vf=+e.target.value;upd();});
+  $('#lm-pre').addEventListener('change',e=>{const p=LAMPRE.find(q=>q[0]===e.target.value);if(!p)return;const fib=LAM.plies[0]?LAM.plies[0].f:'cf_t300';LAM.plies=p[2].map(a=>({f:fib,a,t:0.125}));lamLayPane(pane,f);});
+  const tb=pane.querySelector('.plywrap');
+  tb.addEventListener('change',e=>{const tr=e.target.closest('[data-i]');if(!tr)return;const p=LAM.plies[+tr.dataset.i];if(e.target.matches('.pf'))p.f=e.target.value;if(e.target.matches('.pa'))p.a=U.clamp(Math.round(+e.target.value||0),-90,90);if(e.target.matches('.pt'))p.t=U.clamp(+e.target.value||0.125,0.02,10);upd();});
+  tb.addEventListener('click',e=>{const tr=e.target.closest('[data-i]');if(!tr)return;const i=+tr.dataset.i;if(e.target.matches('.pu')&&i>0)[LAM.plies[i-1],LAM.plies[i]]=[LAM.plies[i],LAM.plies[i-1]];else if(e.target.matches('.pd')&&i<LAM.plies.length-1)[LAM.plies[i+1],LAM.plies[i]]=[LAM.plies[i],LAM.plies[i+1]];else if(e.target.matches('.px')&&LAM.plies.length>1)LAM.plies.splice(i,1);else return;tb.innerHTML=plyTable();upd();});
+  $('#lm-add').addEventListener('click',()=>{const l=LAM.plies[LAM.plies.length-1];LAM.plies.push({f:l?l.f:'cf_t300',a:0,t:l?l.t:0.125});tb.innerHTML=plyTable();upd();});
+  $('#lm-mir').addEventListener('click',()=>{LAM.plies=LAM.plies.concat(LAM.plies.slice().reverse().map(p=>({...p})));if(LAM.plies.length>48)LAM.plies=LAM.plies.slice(0,48);tb.innerHTML=plyTable();upd();});
+  $('#lm-bench').addEventListener('click',()=>{const m=lamMaterial();addMine(m);addSpec(m,null,null,{op:'heat'});toast(`Laid up “${m.n}” on the bench`);});
+  upd();
+}
+function lamCode(){ const a=LAM.plies.map(p=>p.a); const n=a.length; const sym=n%2===0&&a.slice(0,n/2).every((v,i)=>v===a[n-1-i]); const half=sym?a.slice(0,n/2):a; return '['+half.map(v=>v>0&&half.includes(-v)?'±'+v:v).filter((v,i,arr)=>!(typeof v==='number'&&v<0&&arr.includes('±'+(-v)))).join('/')+']'+(sym?'s':''); }
+function lamMaterial(){
+  const L=lamABD(LAM.plies), e=lamEff(L), rho=LAM.plies.reduce((s,p)=>s+plyProps(p.f).rho*p.t,0)/L.h; const f=lamFPF(LAM.plies,{Nx:100,Ny:0,Nxy:0,Mx:0,My:0,Mxy:0},'tsaiwu');
+  const fids=[...new Set(LAM.plies.map(p=>p.f))], mt=MAT[LAM.matrix], rf=MAT[fids[0]];
+  const m={id:'my_'+Date.now().toString(36),n:`${fids.map(id=>MAT[id].n.split(' (')[0]).join('+')} laminate ${lamCode()}`.slice(0,60),f:`${LAM.plies.length} plies · ${Math.round(LAM.vf*100)}% fibre in ${mt.n}`,c:'composite',mine:true,model:'poly',s:'COMP',sn:'Laminate '+lamCode(),
+    rho:+rho.toFixed(3),E:+e.Ex.toFixed(2),uts:Math.round(f?f.R*100/L.h:300),el:+Math.max(0.3,Math.min(...LAM.plies.map(p=>MAT[p.f].el||1.5))).toFixed(2),k:+((rf.k||5)*LAM.vf*0.5+mt.k).toFixed(2),cte:+(2).toFixed(2),cp:Math.round(LAM.vf*(rf.cp||800)+(1-LAM.vf)*mt.cp),re:Math.min(mt.re,rf.re<1?rf.re*10:mt.re),nu:+e.nxy.toFixed(3),th:400,M:50,fv:LAM.vf,mcol:mt.col,fcol:rf.col,col:rf.col,tg:mt.tg,td:mt.td,xl:mt.xl,
+    note:`Laminate ${lamCode()} designed in the laminate designer: Ex ${num(e.Ex)} GPa, Ey ${num(e.Ey)} GPa, Gxy ${num(e.Gxy)} GPa. Strength is the first-ply failure stress in x.`};
+  return m;
+}
+function drawStack(cv,hi){
+  const {ctx,w,h}=fit(cv); if(w<60) return; ctx.clearRect(0,0,w,h); const n=LAM.plies.length, H=LAM.plies.reduce((s,p)=>s+p.t,0);
+  const pw=Math.min(w*0.46,240), x0=16, top=10, avail=h-20; let y=top;
+  LAM.plies.forEach((p,i)=>{ const hh=Math.max(3,p.t/H*avail); const P=plyProps(p.f); ctx.fillStyle=MAT[LAM.matrix].col||'#d8c48f'; ctx.fillRect(x0,y,pw,hh);
+    ctx.save(); ctx.beginPath(); ctx.rect(x0,y,pw,hh); ctx.clip(); ctx.strokeStyle=P.col; ctx.lineWidth=Math.max(1,Math.min(2.2,hh/3)); const t=-p.a*Math.PI/180, sp=6;
+    for(let k=-pw*2;k<pw*2;k+=sp){ ctx.beginPath(); const cx=x0+pw/2+k, cy=y+hh/2; ctx.moveTo(cx-Math.cos(t)*pw,cy-Math.sin(t)*pw*0.25); ctx.lineTo(cx+Math.cos(t)*pw,cy+Math.sin(t)*pw*0.25); ctx.stroke(); } ctx.restore();
+    if(hi!=null&&hi===i){ctx.strokeStyle=C.crit;ctx.lineWidth=2;ctx.strokeRect(x0+1,y+1,pw-2,hh-2);}
+    ctx.strokeStyle='rgba(0,0,0,.35)'; ctx.lineWidth=1; ctx.strokeRect(x0+0.5,y+0.5,pw-1,hh);
+    if(hh>=9){ ctx.fillStyle=C.ink; ctx.font=`11px ${C.mono}`; ctx.textAlign='left'; ctx.textBaseline='middle'; ctx.fillText(`${i+1}  ${p.a>0?'+':''}${p.a}°  ${MAT[p.f].n.split(' (')[0]}`,x0+pw+10,y+hh/2); }
+    y+=hh; });
+  ctx.strokeStyle=C.accent; ctx.setLineDash([4,3]); ctx.beginPath(); ctx.moveTo(x0-8,top+avail/2); ctx.lineTo(x0+pw+6,top+avail/2); ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle=C.muted; ctx.font=`10px ${C.mono}`; ctx.textAlign='right'; ctx.fillText('mid-plane',w-4,top+avail/2-6); ctx.fillText(`h = ${num(H,3)} mm · ${lamCode()}`,w-4,h-4);
+}
+function lamLayDraw(){
+  const L=lamABD(LAM.plies), e=lamEff(L); drawStack($('#lm-stack'));
+  $('#lm-flags').innerHTML=lamCoupling(L).map(q=>`<div class="flag ${q.k}"><div><b>${esc(q.t)}</b><div class="small">${esc(q.d)}</div></div></div>`).join('');
+  const rho=LAM.plies.reduce((s,p)=>s+plyProps(p.f).rho*p.t,0)/L.h;
+  $('#lm-eff').innerHTML=[['Thickness h',num(L.h,3)+' mm'],['Density',num(rho,3)+' g/cm³'],['E<sub>x</sub> (in-plane)',num(e.Ex)+' GPa'],['E<sub>y</sub>',num(e.Ey)+' GPa'],['G<sub>xy</sub>',num(e.Gxy)+' GPa'],['ν<sub>xy</sub>',num(e.nxy,3)],['Flexural E<sub>x</sub><sup>f</sup>',num(e.Efx)+' GPa'],['E<sub>x</sub>/ρ',num(e.Ex/rho)+' MJ/kg'],['Areal mass',num(rho*L.h,3)+' kg/m²']].map(([a,v])=>`<dt>${a}</dt><dd>${v}</dd>`).join('');
+  const pol=[],gp=[]; for(let t=0;t<=360;t+=5){ const rot=LAM.plies.map(p=>({...p,a:p.a-t})); const ee=lamEff(lamABD(rot)); pol.push([t,ee.Ex]); gp.push([t,ee.Gxy]); }
+  const cv=$('#lm-pol'); const {ctx,w,h}=fit(cv); ctx.clearRect(0,0,w,h); const cx=w/2,cy=h/2,R=Math.min(w,h)/2-12, mx=Math.max(...pol.map(q=>q[1]),...gp.map(q=>q[1]));
+  ctx.strokeStyle=C.line2; [0.5,1].forEach(k=>{ctx.beginPath();ctx.arc(cx,cy,R*k,0,7);ctx.stroke();}); ctx.beginPath(); ctx.moveTo(cx-R,cy); ctx.lineTo(cx+R,cy); ctx.moveTo(cx,cy-R); ctx.lineTo(cx,cy+R); ctx.stroke();
+  [[pol,C.accent],[gp,C.cold]].forEach(([P,col])=>{ctx.strokeStyle=col;ctx.lineWidth=2;ctx.beginPath();P.forEach(([t,v],i)=>{const a=t*Math.PI/180,r=v/mx*R;i?ctx.lineTo(cx+Math.cos(a)*r,cy-Math.sin(a)*r):ctx.moveTo(cx+Math.cos(a)*r,cy-Math.sin(a)*r);});ctx.closePath();ctx.stroke();});
+  ctx.fillStyle=C.muted; ctx.font=`10px ${C.mono}`; ctx.textAlign='right'; ctx.textBaseline='bottom'; ctx.fillText('x 0°',w-2,cy-2); ctx.textAlign='left'; ctx.textBaseline='top'; ctx.fillText('90°',cx+3,1); ctx.textAlign='left'; ctx.textBaseline='bottom'; ctx.fillText(`max ${num(mx)} GPa`,2,h-2);
+  const fmt=v=>Math.abs(v)<1e-9?'0':num(v,3); const tbl=(nm,M,u)=>`<table class="chemtab" style="margin:4px 0"><tr><th style="text-align:left">${nm} <span class="muted">${u}</span></th><th>1</th><th>2</th><th>6</th></tr>${[0,1,2].map(i=>`<tr><td>${['1','2','6'][i]}</td>${[0,1,2].map(j=>`<td>${fmt(M[i*3+j])}</td>`).join('')}</tr>`).join('')}</table>`;
+  $('#lm-abd').innerHTML=tbl('A',L.A,'N/mm')+tbl('B',L.B,'N')+tbl('D',L.D,'N·mm');
+}
+const LOADPRE=[['Uniaxial tension',{Nx:200,Ny:0,Nxy:0,Mx:0,My:0,Mxy:0}],['Uniaxial compression',{Nx:-200,Ny:0,Nxy:0,Mx:0,My:0,Mxy:0}],['Pressure vessel (hoop = 2 × axial)',{Nx:100,Ny:200,Nxy:0,Mx:0,My:0,Mxy:0}],['Pure shear',{Nx:0,Ny:0,Nxy:100,Mx:0,My:0,Mxy:0}],['Bending',{Nx:0,Ny:0,Nxy:0,Mx:50,My:0,Mxy:0}],['Torsion of a tube wall',{Nx:0,Ny:0,Nxy:150,Mx:0,My:0,Mxy:0}]];
+const QTY=[['s1','σ₁ along fibres','MPa'],['s2','σ₂ across fibres','MPa'],['t12','τ₁₂ in-plane shear','MPa'],['sx','σx (global)','MPa'],['ex','εx strain','%'],['fi','Failure index (current criterion)','']];
+function loadInputs(){ const L=LAM.loads; return `<div class="ldgrid">${[['Nx','N/mm'],['Ny','N/mm'],['Nxy','N/mm'],['Mx','N·mm/mm'],['My','N·mm/mm'],['Mxy','N·mm/mm']].map(([k,u])=>`<label class="f" style="margin:0">${k.replace(/^(.)(.*)$/,'$1<sub>$2</sub>')} <span class="tiny muted">${u}</span><input type="number" data-l="${k}" value="${L[k]}" step="10"></label>`).join('')}</div>`; }
+function lamStrPane(pane,f){
+  pane.innerHTML=`<div class="lamgrid"><div class="lamcol"><label class="f" style="margin:0">Load case<select id="ls-pre" style="margin-top:3px"><option value="">Choose…</option>${LOADPRE.map(([n],i)=>`<option value="${i}">${n}</option>`).join('')}</select></label>${loadInputs()}
+      <p class="tiny muted" style="margin:0">N = force per unit width of the laminate; M = moment per unit width.</p>
+      <h4 style="margin:4px 0">Mid-plane response</h4><dl class="kv" id="ls-mid"></dl><div class="scroll-x"><table class="chemtab" id="ls-tab"></table></div></div>
+    <div class="lamcol"><div class="row" style="flex-wrap:wrap;gap:6px"><label class="f" style="margin:0;flex:1">Show through the thickness<select id="ls-q" style="margin-top:3px">${QTY.map(([k,n])=>`<option value="${k}" ${k===LAM.qty?'selected':''}>${n}</option>`).join('')}</select></label><label class="f" style="margin:0;width:150px">Criterion<select id="ls-c" style="margin-top:3px">${LAMCRIT.map(([k,n])=>`<option value="${k}" ${k===LAM.crit?'selected':''}>${n}</option>`).join('')}</select></label></div>
+      <canvas class="cv" id="ls-thru" style="height:330px"></canvas><p class="tiny muted" style="margin:0">Strain varies linearly through the thickness, but stress jumps at every ply interface because each ply has a different stiffness in the load direction.</p></div></div>`;
+  const upd=()=>lamStrDraw();
+  pane.querySelector('.ldgrid').addEventListener('input',e=>{const k=e.target.dataset.l;if(!k)return;LAM.loads[k]=+e.target.value||0;upd();});
+  $('#ls-pre').addEventListener('change',e=>{const p=LOADPRE[+e.target.value];if(!p)return;LAM.loads={...p[1]};lamStrPane(pane,f);});
+  $('#ls-q').addEventListener('change',e=>{LAM.qty=e.target.value;upd();}); $('#ls-c').addEventListener('change',e=>{LAM.crit=e.target.value;upd();});
+  upd();
+}
+function lamStrDraw(){
+  const r=lamSolve(LAM.plies,LAM.loads); if(!r){$('#ls-mid').innerHTML='<dt>—</dt><dd>Stack is singular</dd>';return;}
+  const z0=v=>Math.abs(v)<1e-9?0:v; const pct=v=>num(z0(v)*100,3)+' %';
+  $('#ls-mid').innerHTML=[['ε⁰x',pct(r.e0[0])],['ε⁰y',pct(r.e0[1])],['γ⁰xy',pct(r.e0[2])],['κx',num(z0(r.k[0])*1000,3)+' /m'],['κy',num(z0(r.k[1])*1000,3)+' /m'],['κxy',num(z0(r.k[2])*1000,3)+' /m']].map(([a,v])=>`<dt>${a}</dt><dd>${v}</dd>`).join('');
+  const rows=r.res.map((q,i)=>{const mid=q.pts[1]; const worst=q.pts.map(pt=>plyR(LAM.crit,q.P,pt)).reduce((a,b)=>b.R<a.R?b:a); return {i,mid,worst};});
+  const minR=Math.min(...rows.map(x=>x.worst.R));
+  $('#ls-tab').innerHTML=`<tr><th>Ply</th><th>θ</th><th>σ₁</th><th>σ₂</th><th>τ₁₂</th><th>R</th><th style="text-align:left">Critical mode</th></tr>`+rows.map(x=>`<tr style="${x.worst.R===minR?'color:var(--crit);font-weight:700':''}"><td>${x.i+1}</td><td>${LAM.plies[x.i].a}</td><td>${num(Math.abs(x.mid.s1)<1e-6?0:x.mid.s1,3)}</td><td>${num(Math.abs(x.mid.s2)<1e-6?0:x.mid.s2,3)}</td><td>${num(Math.abs(x.mid.t12)<1e-6?0:x.mid.t12,3)}</td><td>${isFinite(x.worst.R)?num(x.worst.R,3):'∞'}</td><td style="text-align:left">${esc(x.worst.mode)}</td></tr>`).join('');
+  // through-thickness plot
+  const cv=$('#ls-thru'); const {ctx,w,h}=fit(cv); if(w<60) return; ctx.clearRect(0,0,w,h);
+  const H=r.L.h, pad={l:64,r:14,t:14,b:28}, pw=w-pad.l-pad.r, ph=h-pad.t-pad.b; const key=LAM.qty;
+  const val=(q,pt)=>key==='ex'?pt.ex*100:(key==='fi'?failFI(LAM.crit,q.P,pt.s1,pt.s2,pt.t12).fi:pt[key]);
+  const vals=r.res.flatMap(q=>q.pts.map(pt=>val(q,pt))); let lo=Math.min(0,...vals),hi=Math.max(0,...vals); if(key==='fi') hi=Math.max(hi,1.1); if(hi-lo<1e-9){hi+=1;lo-=1;} const sp=(hi-lo)*0.08; lo-=key==='fi'?0:sp; hi+=sp;
+  const X=v=>pad.l+(v-lo)/(hi-lo)*pw, Y=z=>pad.t+(z+H/2)/H*ph;
+  r.res.forEach((q,i)=>{ const [z0,z1]=r.L.zs[i]; ctx.fillStyle=i%2?C['accent-soft']:'transparent'; ctx.fillRect(pad.l,Y(z0),pw,Y(z1)-Y(z0)); ctx.strokeStyle=C.line2; ctx.beginPath(); ctx.moveTo(pad.l,Y(z1)); ctx.lineTo(pad.l+pw,Y(z1)); ctx.stroke();
+    ctx.fillStyle=C.muted; ctx.font=`10px ${C.mono}`; ctx.textAlign='right'; ctx.textBaseline='middle'; if(Y(z1)-Y(z0)>9) ctx.fillText(`${i+1}: ${LAM.plies[i].a}°`,pad.l-6,(Y(z0)+Y(z1))/2); });
+  ctx.strokeStyle=C.line; ctx.strokeRect(pad.l+0.5,pad.t+0.5,pw,ph); ctx.beginPath(); ctx.moveTo(X(0),pad.t); ctx.lineTo(X(0),pad.t+ph); ctx.stroke();
+  if(key==='fi'){ ctx.strokeStyle=C.crit; ctx.setLineDash([4,3]); ctx.beginPath(); ctx.moveTo(X(1),pad.t); ctx.lineTo(X(1),pad.t+ph); ctx.stroke(); ctx.setLineDash([]); ctx.fillStyle=C.crit; ctx.textAlign='left'; ctx.textBaseline='top'; ctx.fillText('failure',X(1)+3,pad.t+2); }
+  ctx.strokeStyle=C.accent; ctx.lineWidth=2.4; ctx.beginPath(); let first=true;
+  r.res.forEach(q=>{ [q.pts[0],q.pts[2]].forEach(pt=>{ const x=X(val(q,pt)),y=Y(pt.z); if(first){ctx.moveTo(x,y);first=false;} else ctx.lineTo(x,y); }); }); ctx.stroke();
+  ctx.fillStyle=C.accent; ctx.globalAlpha=0.18; r.res.forEach(q=>{ const a=q.pts[0],b=q.pts[2]; ctx.beginPath(); ctx.moveTo(X(0),Y(a.z)); ctx.lineTo(X(val(q,a)),Y(a.z)); ctx.lineTo(X(val(q,b)),Y(b.z)); ctx.lineTo(X(0),Y(b.z)); ctx.closePath(); ctx.fill(); }); ctx.globalAlpha=1;
+  ctx.fillStyle=C.muted; ctx.font=`10.5px ${C.mono}`; ctx.textAlign='center'; ctx.textBaseline='top'; niceTicks(lo,hi,5).forEach(v=>ctx.fillText(num(v),X(v),pad.t+ph+5));
+  const q=QTY.find(x=>x[0]===key); ctx.textAlign='right'; ctx.textBaseline='bottom'; ctx.fillText(`${q[1]}${q[2]?' ('+q[2]+')':''}`,pad.l+pw,h-1); ctx.textAlign='left'; ctx.textBaseline='bottom'; ctx.fillText('top',4,pad.t+10); ctx.textBaseline='top'; ctx.fillText('bottom',4,pad.t+ph-10);
+}
+function lamFailPane(pane,f){
+  pane.innerHTML=`<div class="lamgrid"><div class="lamcol"><label class="f" style="margin:0">Criterion for first-ply failure & progressive analysis${ib('fcrit')}<select id="lf-c" style="margin-top:3px">${LAMCRIT.map(([k,n])=>`<option value="${k}" ${k===LAM.crit?'selected':''}>${n}</option>`).join('')}</select></label>
+     <div id="lf-sum"></div><h4 style="margin:6px 0 2px">Progressive failure under the current load case</h4><canvas class="cv" id="lf-prog" style="height:240px"></canvas><ol class="small" id="lf-ev" style="margin:4px 0 0;padding-left:20px"></ol></div>
+   <div class="lamcol"><h4 style="margin:0 0 2px">First-ply failure envelope (average stress σx vs σy)</h4><canvas class="cv" id="lf-env" style="aspect-ratio:1/1;height:auto;max-height:440px"></canvas><div class="legend" id="lf-leg" style="margin:2px 0 0"></div>
+     <p class="tiny muted" style="margin:0">Each curve is where the first ply fails for loads in that direction. The dot is your load case; the ray shows where it would cross the envelope.</p></div></div>`;
+  $('#lf-c').addEventListener('change',e=>{LAM.crit=e.target.value;lamFailDraw();});
+  lamFailDraw();
+}
+function lamFailDraw(){
+  const ld=LAM.loads, h=LAM.plies.reduce((s,p)=>s+p.t,0); const F=lamFPF(LAM.plies,ld,LAM.crit); const P=lamProgressive(LAM.plies,ld,LAM.crit);
+  const ref=['Nx','Ny','Nxy'][P.ref];
+  $('#lf-sum').innerHTML=F&&isFinite(F.R)?`<div class="chscore ${F.R>=1?'ok':'bad'}"><div class="big" style="font-size:20px">${F.R>=1?'✓':'✗'}</div><div><b>${F.R>=1?`Safe: first ply fails at ${num(F.R,3)} × this load`:`Fails: the load is ${num(1/F.R,3)} × the first-ply strength`}</b><div class="small">First ply failure: ply ${F.ply+1} (${LAM.plies[F.ply].a}°) by ${esc(F.mode)} at ${ref} = ${num(F.R*ld[ref],3)} N/mm · ultimate ≈ ${num(P.ult,3)} × load (${num(P.ult*ld[ref],3)} N/mm, ${num(P.ult*ld[ref]/h,3)} MPa)</div></div></div>`:'<p class="small muted">Apply a load on the Loads & stresses tab.</p>';
+  const cv=$('#lf-prog'); if(P.curve.length>1) drawChart(cv,{xr:[0,Math.max(...P.curve.map(q=>Math.abs(q[0])))*1.1||1],yr:[0,Math.max(...P.curve.map(q=>q[1]))*1.15||1],series:[{pts:P.curve.map(q=>[Math.abs(q[0]),q[1]]),color:C.accent,width:2.4,name:'load',endX:true}],points:P.ev.map(e=>({x:Math.abs(P.curve[P.curve.findIndex(q=>q[1]===e.R)][0]),y:e.R,color:e.mode.startsWith('fibre')?C.crit:C.warn,r:4})),hmarks:[{y:1,label:'applied load',color:C.muted}],xlabel:`|strain ${['εx','εy','γxy'][P.ref]}| %`,ylabel:'load factor',xunit:'%',yunit:'×'});
+  else drawChart(cv,{xr:[0,1],yr:[0,1],empty:'No load applied'});
+  $('#lf-ev').innerHTML=P.ev.slice(0,10).map(e=>`<li>×${num(e.R,3)}: ply ${e.ply+1} (${e.a}°) ${esc(e.mode)} → ${e.mode.startsWith('fibre')?'ply loses all stiffness':'transverse and shear stiffness drop 90%'}</li>`).join('')+(P.ev.length?`<li><b>Ultimate at ×${num(P.ult,3)}</b>: the remaining plies cannot carry more load.</li>`:'');
+  // envelope
+  const cols={maxs:C.muted,hill:C.cold,tsaiwu:C.accent,hashin:C.good}; const envs=LAMCRIT.map(([k,n])=>({k,n,pts:lamEnvelope(LAM.plies,k,ld.Nxy)}));
+  const ec=$('#lf-env'); const {ctx,w,h:H}=fit(ec); if(w<60) return; ctx.clearRect(0,0,w,H);
+  const all=envs.flatMap(e=>e.pts); const ldp=[ld.Nx/h,ld.Ny/h]; const m=Math.max(...all.map(q=>Math.max(Math.abs(q[0]),Math.abs(q[1]))),Math.abs(ldp[0]),Math.abs(ldp[1]),1)*1.1;
+  const pad=36, cx=w/2, cy=H/2, sc=(Math.min(w,H)/2-pad)/m; const X=v=>cx+v*sc, Y=v=>cy-v*sc;
+  ctx.strokeStyle=C.line2; niceTicks(-m,m,6).forEach(v=>{ctx.beginPath();ctx.moveTo(X(v),Y(-m));ctx.lineTo(X(v),Y(m));ctx.moveTo(X(-m),Y(v));ctx.lineTo(X(m),Y(v));ctx.stroke();});
+  ctx.strokeStyle=C.line; ctx.beginPath(); ctx.moveTo(X(-m),cy); ctx.lineTo(X(m),cy); ctx.moveTo(cx,Y(-m)); ctx.lineTo(cx,Y(m)); ctx.stroke();
+  ctx.fillStyle=C.muted; ctx.font=`10px ${C.mono}`; ctx.textAlign='center'; ctx.textBaseline='top'; niceTicks(-m,m,6).forEach(v=>{if(v)ctx.fillText(num(v),X(v),cy+3);}); ctx.textAlign='right'; ctx.textBaseline='bottom'; ctx.fillText('σx MPa →',X(m),cy-3); ctx.textAlign='left'; ctx.textBaseline='top'; ctx.fillText('↑ σy MPa',cx+4,Y(m));
+  envs.forEach(e=>{ if(e.pts.length<3) return; ctx.strokeStyle=cols[e.k]; ctx.lineWidth=e.k===LAM.crit?2.6:1.4; ctx.setLineDash(e.k===LAM.crit?[]:[5,3]); ctx.beginPath(); e.pts.forEach(([a,b],i)=>i?ctx.lineTo(X(a),Y(b)):ctx.moveTo(X(a),Y(b))); ctx.closePath(); ctx.stroke(); ctx.setLineDash([]); });
+  if(ldp[0]||ldp[1]){ const sel=envs.find(e=>e.k===LAM.crit); const Rr=F&&isFinite(F.R)?F.R:1; ctx.strokeStyle=C.ink; ctx.setLineDash([2,3]); ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(X(ldp[0]*Rr),Y(ldp[1]*Rr)); ctx.stroke(); ctx.setLineDash([]); void sel;
+    ctx.fillStyle=F&&F.R>=1?C.good:C.crit; ctx.beginPath(); ctx.arc(X(ldp[0]),Y(ldp[1]),5,0,7); ctx.fill(); ctx.strokeStyle=C.ink; ctx.lineWidth=1; ctx.stroke(); }
+  $('#lf-leg').innerHTML=envs.map(e=>`<span><i style="background:${cols[e.k]}"></i>${e.n}${e.k===LAM.crit?' (selected)':''}</span>`).join('');
+}
+function lamSwPane(pane,f){
+  const S=LAM.sw;
+  pane.innerHTML=`<div class="lamgrid"><div class="lamcol">
+     <label class="f" style="margin:0">Face sheets${ib('sandwich')}<select id="sw-f" style="margin-top:3px"><option value="lam" ${S.face==='lam'?'selected':''}>Your laminate (${lamCode()}, ${num(LAM.plies.reduce((s,p)=>s+p.t,0),3)} mm)</option>${['al6061','al2024','st1018','ti64','gfrp','cfrp','plywood'].filter(id=>MAT[id]).map(id=>`<option value="${id}" ${S.face===id?'selected':''}>${esc(MAT[id].n)} sheet</option>`).join('')}</select></label>
+     <label class="f" id="sw-ftw" style="margin:0" ${S.face==='lam'?'hidden':''}>Face thickness <span class="mono" id="sw-ftv" style="float:right"></span><input type="range" id="sw-ft" min="0.2" max="5" step="0.1" value="${S.ft}"></label>
+     <label class="f" style="margin:0">Core<select id="sw-c" style="margin-top:3px">${Object.entries(CORES).map(([k,c])=>`<option value="${k}" ${k===S.core?'selected':''}>${esc(c.n)}</option>`).join('')}</select></label>
+     <label class="f" style="margin:0">Core thickness <span class="mono" id="sw-cv" style="float:right"></span><input type="range" id="sw-cc" min="2" max="80" step="1" value="${S.c}"></label>
+     <label class="f" style="margin:0">Span (3-point bend) <span class="mono" id="sw-Lv" style="float:right"></span><input type="range" id="sw-L" min="100" max="2000" step="10" value="${S.L}"></label>
+     <label class="f" style="margin:0">Central load (on a 100 mm wide beam) <span class="mono" id="sw-Pv" style="float:right"></span><input type="range" id="sw-P" min="10" max="20000" step="10" value="${S.P}"></label>
+     <canvas class="cv" id="sw-x" style="height:150px"></canvas><dl class="kv" id="sw-kv"></dl></div>
+   <div class="lamcol"><div id="sw-sum"></div><h4 style="margin:6px 0 2px">Failure load of each mode vs core thickness</h4><canvas class="cv" id="sw-map" style="height:230px"></canvas><div class="legend" id="sw-leg" style="margin:2px 0 0"></div>
+     <h4 style="margin:6px 0 2px">Bending stiffness and mass vs core thickness</h4><canvas class="cv" id="sw-dm" style="height:170px"></canvas><div class="legend" style="margin:2px 0 0"><span><i style="background:var(--accent)"></i>stiffness D (relative)</span><span><i style="background:var(--cold)"></i>mass per m² (relative)</span></div></div></div>`;
+  const upd=()=>{ $('#sw-ftv').textContent=num(S.ft,2)+' mm'; $('#sw-cv').textContent=S.c+' mm'; $('#sw-Lv').textContent=S.L+' mm'; $('#sw-Pv').textContent=num(S.P)+' N'; $('#sw-ftw').hidden=S.face==='lam'; lamSwDraw(); };
+  $('#sw-f').addEventListener('change',e=>{S.face=e.target.value;upd();}); $('#sw-c').addEventListener('change',e=>{S.core=e.target.value;upd();});
+  [['sw-ft','ft'],['sw-cc','c'],['sw-L','L'],['sw-P','P']].forEach(([id,k])=>$('#'+id).addEventListener('input',e=>{S[k]=+e.target.value;upd();}));
+  upd();
+}
+function lamSwDraw(){
+  const S=LAM.sw, r=swCalc(); const MC={'Face failure':C.accent,'Core shear':C.cold,'Face wrinkling':C.warn,'Core indentation':C['c-fiber']};
+  const ok=S.P<r.gov[1];
+  $('#sw-sum').innerHTML=`<div class="chscore ${ok?'ok':'bad'}"><div class="big" style="font-size:20px">${ok?'✓':'✗'}</div><div><b>${ok?`Holds: fails at ${num(r.gov[1])} N by ${r.gov[0].toLowerCase()}`:`Breaks by ${r.gov[0].toLowerCase()} at ${num(r.gov[1])} N`}</b><div class="small">Deflection ${num(r.defl,3)} mm · ${num(r.mass,3)} kg/m² · a solid plate of the face material this stiff would be ${num(r.tSolid,3)} mm thick and weigh ${num(r.massSolid,3)} kg/m² (${num(r.massSolid/r.mass,2)}× heavier)</div></div></div>`;
+  $('#sw-kv').innerHTML=[['Face',`${esc(r.F.n)}, t = ${num(r.F.t,3)} mm, E = ${num(r.F.E/1000)} GPa`],['Bending stiffness D',sci(r.D,3)+' N·mm²'],['Shear stiffness',sci(r.Sh,3)+' N'],['Face stress',num(r.sf,3)+' MPa'],['Core shear stress',num(r.tc,3)+' MPa (limit '+num(r.C.tau,2)+')'],['Wrinkling stress',num(r.wr,3)+' MPa'],['Shear share of deflection',Math.round((S.P*S.L/(4*r.Sh))/r.defl*100)+' %']].map(([a,v])=>`<dt>${a}</dt><dd>${v}</dd>`).join('');
+  // cross-section drawing
+  const cv=$('#sw-x'); { const {ctx,w,h}=fit(cv); if(w>60){ ctx.clearRect(0,0,w,h); const L=w-40, x0=20, tot=r.F.t*2+S.c, scl=Math.min((h-50)/tot,4), ft=Math.max(2,r.F.t*scl), cc=S.c*scl, y0=24, sag=Math.min(18,r.defl*2);
+      const yAt=x=>y0+sag*Math.sin(Math.PI*(x-x0)/L);
+      const band=(off,th,fill)=>{ctx.fillStyle=fill;ctx.beginPath();for(let x=x0;x<=x0+L;x+=4)ctx.lineTo(x,yAt(x)+off);for(let x=x0+L;x>=x0;x-=4)ctx.lineTo(x,yAt(x)+off+th);ctx.closePath();ctx.fill();};
+      band(0,ft,S.face==='lam'?'#2b2d30':(MAT[S.face].col||'#999')); band(ft+cc,ft,S.face==='lam'?'#2b2d30':(MAT[S.face].col||'#999'));
+      const cf=r.C.kind==='hc'?'#c9ced3':(r.C.kind==='balsa'?'#d9c08a':'#e6dfc8'); band(ft,cc,cf);
+      ctx.save(); ctx.beginPath(); for(let x=x0;x<=x0+L;x+=4)ctx.lineTo(x,yAt(x)+ft); for(let x=x0+L;x>=x0;x-=4)ctx.lineTo(x,yAt(x)+ft+cc); ctx.closePath(); ctx.clip(); ctx.strokeStyle='rgba(0,0,0,.28)'; ctx.lineWidth=1;
+      if(r.C.kind==='hc'){ for(let x=x0;x<x0+L;x+=8){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke();} } else if(r.C.kind==='balsa'){ for(let x=x0;x<x0+L;x+=5){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x+1,h);ctx.stroke();} } else { const rr=U.rng(3); for(let i=0;i<180;i++){ctx.beginPath();ctx.arc(x0+rr()*L,y0+rr()*(cc+ft*2+sag),1+rr()*2,0,7);ctx.stroke();} } ctx.restore();
+      const yb=yAt(x0)+ft*2+cc; ctx.fillStyle=C.ink; [x0,x0+L].forEach(x=>{ctx.beginPath();ctx.moveTo(x,yb+1);ctx.lineTo(x-7,yb+12);ctx.lineTo(x+7,yb+12);ctx.closePath();ctx.fill();});
+      const xm=x0+L/2; ctx.strokeStyle=C.crit; ctx.fillStyle=C.crit; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(xm,2); ctx.lineTo(xm,yAt(xm)-3); ctx.stroke(); ctx.beginPath(); ctx.moveTo(xm,yAt(xm)-1); ctx.lineTo(xm-5,yAt(xm)-9); ctx.lineTo(xm+5,yAt(xm)-9); ctx.closePath(); ctx.fill();
+      ctx.font=`11px ${C.mono}`; ctx.textAlign='left'; ctx.textBaseline='top'; ctx.fillText(`P = ${num(S.P)} N`,xm+8,2); ctx.fillStyle=C.muted; ctx.textAlign='right'; ctx.fillText(`δ = ${num(r.defl,3)} mm (drawn exaggerated)`,w-4,h-14); } }
+  // failure map
+  const cs=[]; for(let c=2;c<=80;c+=2) cs.push(c); const rs=cs.map(c=>swCalc(c));
+  const series=Object.keys(MC).map(k=>({name:k,color:MC[k],width:2,pts:rs.map((q,i)=>[cs[i],q.modes.find(m=>m[0]===k)[1]])}));
+  const ymax=Math.max(S.P*1.5,...rs.map(q=>q.gov[1]))*1.1;
+  drawChart($('#sw-map'),{xr:[2,80],yr:[Math.max(1,Math.min(...series.flatMap(s=>s.pts.map(p=>p[1])))*0.5),ymax*3],ylog:true,series,hmarks:[{y:S.P,label:'applied load',color:C.ink}],marks:[{x:S.c,label:'now',color:C.ink}],xlabel:'core thickness (mm)',ylabel:'failure load N',xunit:'mm',yunit:'N',padL:56});
+  $('#sw-leg').innerHTML=Object.entries(MC).map(([k,c])=>`<span><i style="background:${c}"></i>${k}</span>`).join('');
+  const D0v=rs[0].D, M0=rs[0].mass;
+  drawChart($('#sw-dm'),{xr:[2,80],yr:[0.5,Math.max(...rs.map(q=>q.D/D0v))*1.3],ylog:true,series:[{pts:rs.map((q,i)=>[cs[i],q.D/D0v]),color:C.accent,width:2.4,name:'stiffness'},{pts:rs.map((q,i)=>[cs[i],q.mass/M0]),color:C.cold,width:2,name:'mass'}],marks:[{x:S.c,label:'now',color:C.ink}],xlabel:'core thickness (mm)',ylabel:'× thinnest',xunit:'mm',yunit:'×'});
+}
+Object.assign(GLOSS,{
+ clt:{t:'Classical lamination theory',sym:'A, B, D',unit:'N/mm · N · N·mm',cat:'Composites',
+  what:'The standard way to predict how a stack of differently oriented plies behaves as one plate.',
+  means:'A links in-plane forces to stretching, D links moments to bending, and B couples the two. A symmetric stack has B = 0; a balanced one has A₁₆ = A₂₆ = 0.',
+  formula:['[N; M] = [A B; B D] · [ε⁰; κ]','A_ij = Σ Q̄_ij,k (z_k − z_k−1)','B_ij = ½ Σ Q̄_ij,k (z_k² − z_k−1²)','D_ij = ⅓ Σ Q̄_ij,k (z_k³ − z_k−1³)','Ply stress: σ_k = Q̄_k (ε⁰ + z κ)'],
+  model:'Ply stiffness and strength come from the micromechanics of the chosen fibre, matrix and fibre fraction. The 6×6 ABD matrix is inverted numerically; stresses are evaluated at the top, middle and bottom of every ply.'},
+ fcrit:{t:'Composite failure criteria',sym:'FI, R',unit:'—',cat:'Composites',
+  what:'Rules that combine the stresses along and across the fibres into a single verdict: failed or not.',
+  means:'A ply is far stronger along its fibres than across them, so von Mises does not apply. Different criteria give different envelopes; the spread between them is a measure of uncertainty.',
+  formula:['Max stress: σ₁ < X, σ₂ < Y, |τ₁₂| < S','Tsai–Hill: (σ₁/X)² − σ₁σ₂/X² + (σ₂/Y)² + (τ₁₂/S)² = 1','Tsai–Wu: F₁σ₁ + F₂σ₂ + F₁₁σ₁² + F₂₂σ₂² + F₆₆τ₁₂² + 2F₁₂σ₁σ₂ = 1','Hashin: separate fibre and matrix modes','Strength ratio R: the factor on the load that reaches failure'],
+  model:'Progressive failure: when a ply fails in a matrix mode its transverse and shear stiffness drop to 10%; in a fibre mode it drops to 1%. The load is raised until the remaining plies can carry no more.'},
+ sandwich:{t:'Sandwich panel',sym:'D, S',unit:'N·mm² · N',cat:'Composites',
+  what:'Two thin, stiff face sheets bonded to a thick, light core: an I-beam in plate form.',
+  means:'Moving the faces apart raises bending stiffness with the square of their separation while adding almost no weight. Aircraft floors, helicopter blades, race-car tubs and wind-turbine blades are sandwiches.',
+  formula:['D ≈ E_f·t·d²/2 (per unit width, d = c + t)','Shear stiffness S = G_c·d²/c','3-point deflection: δ = PL³/48D + PL/4S','Face stress σ_f = PL/(4·t·d)  ·  core shear τ_c = P/(2d)','Wrinkling: σ_wr = 0.5·(E_f·E_c·G_c)^⅓'],
+  model:'Checks face failure, core shear, face wrinkling and core indentation under a central load on a 100 mm wide beam, and reports which one governs.'}
+});
+/* ============ REAL-WORLD USES: applications + reference article for every catalogue material ============ */
+const UICON={
+ air:'<path d="M2 13l8-2 4-7h2l-2 7 5 1 2-2h1l-1 4 1 4h-1l-2-2-5 1 2 7h-2l-4-7-8-2z"/>',
+ car:'<path d="M3 15l2-5h14l2 5v4H3z"/><circle cx="7.5" cy="19" r="1.8"/><circle cx="16.5" cy="19" r="1.8"/><path d="M6 10l2-4h8l2 4"/>',
+ bld:'<path d="M3 21h18M5 21V9l7-5 7 5v12M9 21v-6h6v6"/>',
+ bridge:'<path d="M2 18h20M4 18V9M20 18V9M4 9q8 8 16 0M8 18v-4M12 18v-3M16 18v-4"/>',
+ elec:'<rect x="6" y="6" width="12" height="12" rx="1"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/>',
+ wire:'<path d="M3 17c4 0 4-10 9-10s5 10 9 10"/><circle cx="3" cy="17" r="1.5"/><circle cx="21" cy="17" r="1.5"/>',
+ med:'<path d="M12 21s-8-5-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 6-8 11-8 11z"/><path d="M8 12h2l1-2 2 4 1-2h2"/>',
+ tool:'<path d="M14 6a4 4 0 0 0 5 5l-9 9a2 2 0 0 1-3-3l9-9a4 4 0 0 0-2-2z"/>',
+ pipe:'<path d="M3 8h8a3 3 0 0 1 3 3v10M3 12h7v9"/><path d="M14 4h7M17.5 4v6"/>',
+ ship:'<path d="M3 15h18l-3 5H6z"/><path d="M12 3v12M12 4l6 9h-6"/>',
+ energy:'<path d="M12 12l0-9M12 12l7.8 4.5M12 12l-7.8 4.5"/><circle cx="12" cy="12" r="1.6"/><path d="M12 13v8"/>',
+ jewel:'<path d="M6 4h12l3 5-9 11L3 9z"/><path d="M3 9h18M9 4l3 16 3-16"/>',
+ sport:'<circle cx="6" cy="16" r="4"/><circle cx="18" cy="16" r="4"/><path d="M6 16l4-8h6l2 8M10 8l3 8"/>',
+ pack:'<path d="M9 2h6v3l2 3v13H7V8l2-3z"/><path d="M7 12h10"/>',
+ space:'<path d="M12 2c3 3 4 7 4 11l-4 4-4-4c0-4 1-8 4-11z"/><circle cx="12" cy="9" r="1.5"/><path d="M8 13l-3 3 1 3 3-2M16 13l3 3-1 3-3-2"/>',
+ home:'<path d="M3 12h3v8h12v-8h3M7 6h10l2 6H5z"/>',
+ nuke:'<circle cx="12" cy="12" r="1.8"/><ellipse cx="12" cy="12" rx="10" ry="4"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(-60 12 12)"/>',
+ optic:'<circle cx="12" cy="12" r="5"/><path d="M2 12h5M17 12h5M12 2v3M12 19v3"/>',
+ coin:'<ellipse cx="10" cy="9" rx="7" ry="3"/><path d="M3 9v4c0 1.7 3 3 7 3s7-1.3 7-3V9"/><path d="M14 15.5v3c0 1.7 3 3 7 3"/>',
+ batt:'<rect x="4" y="7" width="15" height="10" rx="1"/><path d="M19 10h2v4h-2M8 10v4M6 12h4M13 12h3"/>',
+ cook:'<path d="M3 11h14v2a6 6 0 0 1-6 6H9a6 6 0 0 1-6-6zM17 12h4"/>',
+ cloth:'<path d="M8 3l-5 4 3 3 2-1v12h8V9l2 1 3-3-5-4a4 4 0 0 1-8 0z"/>',
+ chem:'<path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3"/>'
+};
+const UCAT={air:'Aerospace',car:'Automotive',bld:'Buildings',bridge:'Infrastructure',elec:'Electronics',wire:'Electrical',med:'Medical',tool:'Tools',pipe:'Process plant',ship:'Marine',energy:'Energy',jewel:'Jewellery & art',sport:'Sport',pack:'Packaging',space:'Space',home:'Consumer goods',nuke:'Nuclear',optic:'Optics',coin:'Coins',batt:'Batteries',cook:'Kitchen',cloth:'Textiles',chem:'Chemicals'};
+const USES={
+ fe:['Iron',['bridge','The Eiffel Tower (1889) is built from puddled wrought iron, about 7,300 tonnes of it'],['bld','Cast-iron columns and wrought-iron beams of 19th-century mills and railway stations'],['elec','Soft-magnetic cores and pole pieces (pure iron saturates at about 2.15 T)'],['chem','Almost all iron becomes steel: about 1.9 billion tonnes of crude steel are made each year']],
+ al:['Aluminium',['pack','Beverage cans and household foil'],['wire','Overhead power-line conductors, steel-reinforced (ACSR)'],['bld','Window frames and curtain-wall façades'],['elec','Heat sinks and smartphone and laptop housings']],
+ cu:['Copper',['wire','Building wiring, motor windings and transformer coils: second only to silver in conductivity'],['pipe','Domestic water and refrigeration tubing'],['jewel','The Statue of Liberty’s skin is copper sheet about 2.4 mm thick; the green is its patina'],['elec','On-chip interconnects (since 1997) and printed-circuit-board traces']],
+ ti:['Titanium',['air','Airframes and jet-engine fan and compressor parts'],['med','Dental implants: bone grows directly onto titanium (osseointegration)'],['chem','Heat exchangers and condensers that see sea water'],['bld','The Guggenheim Museum Bilbao (1997) is clad in titanium panels']],
+ ni:['Nickel',['chem','Plating and the main alloying element of stainless steels'],['batt','Cathodes of NMC and NCA lithium-ion batteries; NiMH cells'],['air','The base of superalloys for turbine blades'],['coin','Coins and coin plating']],
+ mg:['Magnesium',['car','Steering-wheel armatures, seat frames and instrument-panel beams'],['elec','Laptop and camera bodies'],['chem','Alloying addition in aluminium cans (5182 lids)'],['tool','Sacrificial anodes for water heaters and ship hulls']],
+ zn:['Zinc',['bld','Hot-dip galvanizing of steel, the biggest single use'],['batt','Alkaline and zinc–carbon batteries'],['car','Die-cast door handles and carburettor bodies (Zamak alloys)'],['coin','Copper-plated zinc core of the US cent since 1982']],
+ sn:['Tin',['elec','Lead-free solder for electronics'],['pack','Tinplate: tin-coated steel food cans'],['optic','Float glass: molten glass is floated on a bath of liquid tin'],['jewel','Pewter tableware and organ pipes']],
+ pb:['Lead',['batt','Lead–acid car batteries, the dominant use'],['nuke','Radiation shielding in hospitals and nuclear facilities'],['bld','Roof flashing (traditional)'],['ship','Keel ballast for yachts']],
+ au:['Gold',['jewel','Jewellery takes about half of world demand'],['coin','Bullion bars and coins; central-bank reserves'],['elec','Bond wires and connector plating that never corrodes'],['space','Gold-coated mirrors of the James Webb Space Telescope reflect infrared']],
+ ag:['Silver',['elec','Conductive pastes on solar-cell front contacts'],['jewel','Sterling silver jewellery and silverware'],['optic','Mirror coatings: highest visible reflectance of any metal'],['med','Antibacterial wound dressings']],
+ pt:['Platinum',['car','Catalytic converters (together with palladium and rhodium)'],['chem','Catalyst gauzes for nitric-acid production'],['med','Pacemaker electrodes'],['jewel','Jewellery; the old kilogram prototype was platinum–iridium']],
+ w:['Tungsten',['home','Incandescent lamp filaments: the metal with the highest melting point'],['tool','Tungsten carbide cutting tools and drill bits'],['nuke','Plasma-facing armour in fusion reactors (ITER divertor)'],['elec','TIG welding electrodes and X-ray tube targets']],
+ mo:['Molybdenum',['chem','Alloying element in stainless (316) and tool steels'],['energy','Furnace heating elements and heat shields'],['elec','Back contact of thin-film CIGS solar cells'],['optic','Glass-melting electrodes']],
+ cr:['Chromium',['chem','At least 10.5% chromium makes steel stainless'],['car','Decorative and hard chrome plating'],['tool','Chrome-vanadium wrench steel'],['optic','Photomask absorber layers for chip lithography']],
+ co:['Cobalt',['batt','Lithium cobalt oxide cathodes in phone batteries'],['air','Cobalt superalloys and Stellite wear coatings'],['tool','Binder in cemented tungsten carbide'],['elec','Permanent magnets (Alnico, SmCo)']],
+ v:['Vanadium',['tool','Chrome-vanadium hand tools and high-speed steels'],['bld','Microalloyed rebar and structural steel'],['energy','Vanadium redox-flow batteries for grid storage'],['air','Ti-6Al-4V contains 4% vanadium']],
+ nb:['Niobium',['nuke','Superconducting Nb-Ti magnets in MRI scanners and the LHC'],['bridge','Microalloyed high-strength pipeline and bridge steels'],['space','Rocket-nozzle extensions (C-103 alloy)'],['jewel','Anodised in bright colours for jewellery']],
+ ta:['Tantalum',['elec','Tantalum capacitors in phones and laptops'],['med','Surgical implants and suture clips'],['chem','Acid-resistant linings for chemical plant'],['optic','Thin-film coatings']],
+ zr:['Zirconium',['nuke','Fuel-rod cladding: almost transparent to neutrons'],['chem','Corrosion-resistant pumps and valves'],['med','Source of zirconia for dental crowns'],['optic','Getters in vacuum tubes']],
+ li:['Lithium',['batt','Lithium-ion batteries for phones and electric cars'],['air','Aluminium–lithium alloys for airframes (e.g. 2195 on the Space Shuttle external tank)'],['chem','Lithium grease for bearings'],['med','Lithium carbonate is a psychiatric medicine']],
+ gd:['Gadolinium',['med','MRI contrast agents'],['nuke','Burnable neutron poison in reactor fuel'],['elec','Magnetocaloric refrigeration research'],['optic','Phosphors in X-ray screens']],
+ hg:['Mercury',['optic','Fluorescent lamps (now being phased out under the Minamata Convention)'],['elec','Old thermometers, barometers and tilt switches'],['chem','Chlor-alkali cells (largely replaced)'],['jewel','Historical fire-gilding of statues']],
+ be:['Beryllium',['space','The 18 mirror segments of the James Webb Space Telescope are gold-coated beryllium'],['nuke','Neutron reflector and moderator'],['elec','Beryllium–copper springs and connectors'],['optic','X-ray windows: almost transparent to X-rays']],
+ ir:['Iridium',['car','Long-life spark-plug tips'],['chem','Crucibles for growing laser crystals'],['elec','Electrodes for proton-exchange-membrane electrolysers'],['optic','Standard metre bar and kilogram prototype alloy (90% Pt, 10% Ir)']],
+ os:['Osmium',['jewel','Hard tips of high-end fountain-pen nibs (osmium–iridium alloys)'],['elec','Historic electrical contacts'],['chem','Osmium tetroxide stains tissue for electron microscopy'],['optic','Densest element: 22.6 g/cm³']],
+ re:['Rhenium',['air','Single-crystal superalloys for turbine blades (3–6% Re)'],['chem','Platinum–rhenium reforming catalysts for high-octane petrol'],['energy','Thermocouples for very high temperatures'],['elec','Filaments in mass spectrometers']],
+ hf:['Hafnium',['nuke','Control rods: it absorbs neutrons strongly'],['elec','Hafnium oxide gate dielectric in modern transistors (since 2007)'],['air','Additions to nickel superalloys'],['tool','Plasma-cutter electrodes']],
+ pd:['Palladium',['car','Catalytic converters in petrol cars'],['elec','Multilayer ceramic capacitor electrodes'],['chem','Hydrogen purification membranes'],['jewel','White gold alloys']],
+ in:['Indium',['elec','Indium tin oxide (ITO): the transparent electrode on touchscreens'],['elec','Low-melting solders and thermal interface pads'],['optic','Indium phosphide lasers for fibre optics'],['space','Cryogenic vacuum seals']],
+ ga:['Gallium',['elec','Gallium nitride LEDs and fast phone chargers'],['optic','Gallium arsenide solar cells on satellites'],['med','Gallium-68 PET imaging'],['home','Galinstan liquid-metal thermometers']],
+ bi:['Bismuth',['chem','Lead-free replacement in brass and solder'],['med','Bismuth subsalicylate stomach remedies'],['home','Low-melting fusible alloys in fire sprinkler plugs'],['jewel','Iridescent hopper crystals grown as ornaments']],
+ sb:['Antimony',['chem','Flame retardant (antimony trioxide) in plastics'],['batt','Hardens the lead grids of lead–acid batteries'],['elec','Dopant for n-type silicon'],['optic','Clarifying agent in glass']],
+ cd:['Cadmium',['batt','Nickel–cadmium batteries (now restricted)'],['energy','Cadmium telluride thin-film solar panels'],['nuke','Control rods'],['chem','Yellow and red pigments (restricted)']],
+ na:['Sodium',['optic','Low-pressure sodium street lamps (the classic orange light)'],['nuke','Coolant in fast-breeder reactors'],['car','Sodium-filled hollow exhaust valves in high-performance engines'],['batt','Sodium-ion and sodium–sulfur batteries']],
+ si:['Silicon',['elec','The base of almost every computer chip, grown as 300 mm single-crystal wafers'],['energy','Crystalline-silicon solar cells, over 95% of the market'],['chem','Silicones and aluminium–silicon casting alloys'],['optic','MEMS accelerometers and gyroscopes in phones']],
+ ge:['Germanium',['optic','Infrared lenses for thermal cameras'],['elec','The first transistor (Bell Labs, 1947) was germanium'],['space','Substrate for multi-junction satellite solar cells'],['optic','Dopant raising the refractive index of optical-fibre cores']],
+ gaas:['Gallium arsenide',['elec','Radio-frequency amplifiers in mobile phones'],['space','High-efficiency solar cells on satellites and Mars rovers'],['optic','Infrared LEDs and laser diodes'],['elec','Microwave electronics in radar']],
+ zno:['Zinc oxide',['med','Mineral sunscreens and diaper-rash cream'],['car','Vulcanisation activator in tyres'],['elec','Varistors that protect circuits from surges'],['chem','White pigment']],
+ gan:['Gallium nitride',['optic','Blue and white LEDs (2014 Nobel Prize in Physics)'],['elec','Compact fast chargers for phones and laptops'],['elec','5G and radar power amplifiers'],['optic','Blu-ray laser diodes']],
+ inp:['Indium phosphide',['optic','Lasers and detectors for 1.55 µm fibre-optic links'],['elec','High-frequency transistors'],['optic','Photonic integrated circuits for data centres'],['space','Radiation-hard solar cells']],
+ cdte:['Cadmium telluride',['energy','Thin-film solar modules, a major utility-scale technology'],['med','X-ray and gamma-ray detectors'],['optic','Infrared windows'],['elec','Radiation sensors']],
+ al2o3:['Aluminium oxide',['elec','Spark-plug insulators and circuit substrates'],['med','Hip-joint ball heads'],['optic','Sapphire watch crystals and phone camera covers'],['tool','Grinding wheels and sandpaper']],
+ sic:['Silicon carbide',['car','Power electronics in electric-vehicle inverters'],['car','Carbon–ceramic brake discs in high-end sports cars'],['tool','Abrasives and kiln furniture'],['space','Lightweight telescope mirrors']],
+ si3n4:['Silicon nitride',['tool','Hybrid ceramic bearings for spindles and EV motors'],['car','Glow plugs and turbocharger rotors'],['tool','Cutting inserts for cast iron'],['med','Spinal implants']],
+ zro2:['Zirconium dioxide',['med','Dental crowns and bridges'],['air','Thermal-barrier coatings on turbine blades'],['energy','Oxygen sensors (lambda probes) in exhausts'],['cook','Ceramic kitchen knives']],
+ mgo:['Magnesium oxide',['energy','Refractory bricks lining steel furnaces'],['home','Electrical insulation inside cooker heating elements'],['bld','Fire-resistant MgO boards'],['med','Antacids']],
+ nacl:['Sodium chloride',['cook','Table salt'],['bridge','De-icing roads in winter'],['chem','Feedstock for chlorine and sodium hydroxide'],['optic','Infrared spectroscopy windows']],
+ wc:['Tungsten carbide',['tool','Cutting inserts, drill bits and end mills'],['tool','Mining and tunnel-boring tools'],['jewel','Scratch-resistant rings'],['home','Ballpoint-pen balls']],
+ tio2:['Titanium dioxide',['chem','White pigment in paint, paper and plastics, the largest use'],['med','Sunscreen'],['bld','Self-cleaning photocatalytic glass'],['cook','Food colouring E171 (banned in the EU since 2022)']],
+ batio3:['Barium titanate',['elec','Multilayer ceramic capacitors: billions in every phone'],['elec','Thermistors (PTC heaters)'],['med','Ultrasound transducers (historically)'],['optic','Nonlinear optical crystals']],
+ diamond:['Diamond',['jewel','Gemstones'],['tool','Saw blades and drill bits for stone, concrete and glass'],['elec','Heat spreaders for high-power lasers'],['optic','Windows for high-power CO₂ lasers']],
+ graphite:['Graphite',['batt','Anode of nearly every lithium-ion battery'],['energy','Electrodes for electric-arc steel furnaces'],['home','Pencil "lead"'],['nuke','Moderator in early and gas-cooled reactors']],
+ soda:['Soda-lime glass',['bld','Window glass'],['pack','Bottles and jars'],['car','Windscreens (laminated) and side windows (tempered)'],['home','Drinking glasses']],
+ silica:['Fused quartz',['optic','Optical fibres for the internet'],['elec','Crucibles and furnace tubes for chipmaking'],['optic','Lithography lenses and photomask blanks'],['space','Space Shuttle windows (outer panes)']],
+ boro:['Borosilicate glass',['chem','Laboratory glassware (Pyrex, Duran)'],['cook','Oven-safe bakeware'],['optic','Telescope mirror blanks such as Palomar’s 5 m mirror'],['med','Pharmaceutical vials']],
+ aln:['Aluminium nitride',['elec','Substrates for power modules and LEDs: ceramic that conducts heat'],['elec','Piezoelectric RF filters in phones'],['optic','Deep-UV LEDs'],['elec','Semiconductor wafer chucks']],
+ hbn:['Hexagonal boron nitride',['home','Cosmetics (slip and sheen)'],['tool','High-temperature lubricant and mould release'],['elec','Insulating substrate for graphene devices'],['space','Crucibles and plasma-thruster channels']],
+ cbn:['Cubic boron nitride',['tool','Grinding hardened steel, where diamond would react with iron'],['car','Machining engine blocks and brake discs'],['tool','Hard-turning inserts'],['air','Turbine-blade tip coatings']],
+ b4c:['Boron carbide',['nuke','Control rods and neutron shielding'],['tool','Sand-blasting nozzles'],['home','Lightweight body-armour plates'],['tool','Abrasive lapping powders']],
+ tic:['Titanium carbide',['tool','Cermet cutting tools'],['air','Wear-resistant coatings'],['tool','Additive in cemented carbides'],['space','Heat-shield research']],
+ tin_n:['Titanium nitride',['tool','Gold-coloured coating on drill bits'],['elec','Diffusion barrier in chip interconnects'],['jewel','Decorative gold-look coatings'],['med','Coatings on surgical instruments and implants']],
+ quartz:['Quartz',['elec','Crystal oscillators in watches and computers'],['bld','Engineered quartz countertops'],['optic','Wave plates and polarising optics'],['chem','Raw material for silicon and glass']],
+ mullite:['Mullite',['energy','Kiln furniture and refractory linings'],['home','Porcelain owes much of its strength to mullite needles'],['elec','Insulating tubes'],['air','Oxide fibres for ceramic-matrix composites']],
+ cordierite:['Cordierite',['car','Honeycomb substrates in catalytic converters'],['cook','Pizza stones'],['energy','Kiln shelves'],['car','Diesel particulate filters']],
+ hap:['Hydroxyapatite',['med','Coatings on hip stems that help bone bond'],['med','Bone-graft substitutes'],['home','Remineralising toothpaste'],['chem','Chromatography columns']],
+ zerodur:['Zerodur',['space','Mirror blanks for large telescopes such as the Keck segments'],['optic','Lithography machine stages'],['optic','Ring-laser gyroscopes'],['space','Optical benches']],
+ porcelain:['Porcelain',['wire','High-voltage insulators on power lines'],['home','Tableware'],['bld','Sanitary ware and floor tiles'],['med','Dental veneers']],
+ st1018:['SAE 1018 steel',['car','Shafts, pins and machined parts'],['bld','Bolts, brackets and fittings'],['tool','Case-hardened gears'],['home','Cold-drawn bar stock']],
+ st1045:['SAE 1045 steel',['car','Crankshafts, axles and gears'],['tool','Hammers and hand tools'],['tool','Hydraulic piston rods'],['bld','Couplings and studs']],
+ st1095:['SAE 1095 steel',['tool','Springs and spring clips'],['cook','Knife blades'],['tool','Saw blades and scrapers'],['home','Music wire']],
+ st4140:['AISI 4140 steel',['car','Axle shafts and connecting rods'],['energy','Oil-drilling collars'],['sport','Chromoly bicycle frames (4130 is the close cousin)'],['tool','Gun barrels and tool holders']],
+ ss304:['304 stainless steel',['cook','Sinks, cookware and cutlery (18/8 steel)'],['chem','Food and dairy processing equipment'],['bld','Architectural trim; the Gateway Arch in St. Louis is clad in 304'],['med','Hospital fittings']],
+ ss316:['Marine grade stainless',['ship','Boat fittings and marine hardware'],['med','Surgical implants (316L)'],['chem','Pharmaceutical and chemical plant'],['bld','Coastal architecture']],
+ ss430:['Ferritic stainless steel',['home','Dishwasher and washing-machine drums'],['car','Exhaust trim'],['cook','Induction-compatible cookware bases (it is magnetic)'],['bld','Appliance panels']],
+ castiron:['Cast iron',['car','Engine blocks and brake discs'],['cook','Skillets and Dutch ovens'],['pipe','Manhole covers and water pipes'],['tool','Machine-tool beds: graphite flakes damp vibration']],
+ al6061:['6061 aluminium alloy',['sport','Bicycle frames'],['ship','Boat hulls and fittings'],['car','Truck and trailer frames'],['air','Aircraft fittings']],
+ al7075:['7075 aluminium alloy',['air','Wing spars and fuselage frames'],['sport','Rock-climbing carabiners'],['sport','Bicycle components'],['air','Model rocketry and firearm receivers']],
+ al2024:['2024 aluminium alloy',['air','Fuselage skins and wing lower surfaces (fatigue-critical)'],['air','Aircraft rivets'],['car','Truck wheels'],['space','Spacecraft structures']],
+ a356:['A356 aluminium alloy',['car','Cast car wheels'],['car','Cylinder heads'],['air','Aircraft castings'],['home','Pump housings']],
+ ti64:['Ti-6Al-4V',['air','Jet-engine fan blades and airframe parts'],['med','Hip and knee implants'],['sport','Golf-club heads and high-end bicycle frames'],['space','3D-printed rocket-engine parts']],
+ brass:['Brass',['home','Door hardware and taps'],['jewel','Trumpets, trombones and saxophones'],['pipe','Plumbing valves and fittings'],['coin','Ammunition cartridge cases']],
+ bronze:['Bronze',['jewel','Statues and bells'],['ship','Ship propellers'],['tool','Self-lubricating sleeve bearings'],['coin','Medals; the Bronze Age began around 3300 BC']],
+ cuni:['Cupronickel',['coin','Silver-coloured coins (outer layers of many coins)'],['ship','Sea-water piping and condensers'],['pipe','Desalination plants'],['car','Brake lines']],
+ in718:['Inconel 718',['air','Jet-engine turbine discs and shafts'],['space','Rocket-engine parts, including 3D-printed injectors'],['energy','Gas-turbine components'],['energy','Oil and gas wellhead parts']],
+ invar:['Invar',['optic','Precision instruments and measuring tapes'],['home','Clock pendulums and balance springs'],['energy','LNG tanker membrane tanks'],['elec','Shadow masks in old colour TV tubes']],
+ monel:['Monel',['ship','Marine propeller shafts and pumps'],['chem','Hydrofluoric-acid equipment'],['jewel','Eyeglass frames and guitar strings'],['home','Kitchen sinks and counter tops (1920s–1950s)']],
+ nitinol:['Nickel titanium',['med','Self-expanding heart stents'],['med','Orthodontic arch wires'],['home','Flexible eyeglass frames'],['space','Actuators and deployable structures']],
+ sn63:['Tin–lead solder',['elec','Classic electronics solder (Sn63/Pb37 eutectic, 456 K)'],['air','Still used in aerospace and military electronics'],['pipe','Old plumbing joints'],['jewel','Stained-glass came joints']],
+ sac305:['SAC305 solder',['elec','The standard lead-free solder since the EU RoHS directive (2006)'],['car','Automotive electronics'],['elec','Ball-grid-array chip balls'],['home','Consumer electronics']],
+ sterling:['Sterling silver',['jewel','Silverware and jewellery (92.5% silver)'],['coin','Historical coinage'],['jewel','Flutes'],['jewel','Trophies']],
+ gold18:['Colored gold',['jewel','18-carat jewellery (75% gold)'],['home','Watch cases'],['med','Dental crowns (historically)'],['jewel','Wedding rings']],
+ ni3al:['Nickel aluminide',['air','The strengthening γ′ phase inside nickel superalloys'],['energy','Furnace rollers and fixtures'],['tool','Forging dies'],['energy','Turbocharger rotors (research)']],
+ duplex:['Duplex stainless steel',['energy','Offshore oil and gas piping'],['chem','Chemical tankers'],['bridge','Bridges, e.g. the Stonecutters Bridge towers in Hong Kong'],['pipe','Desalination plants']],
+ ph174:['17-4 stainless steel',['air','Aircraft fittings and gears'],['energy','Turbine blades in steam turbines'],['sport','Golf-club heads'],['tool','3D-printed tooling']],
+ h13:['H13 steel',['tool','Aluminium die-casting dies'],['tool','Extrusion dies'],['tool','Forging dies'],['tool','Plastic injection moulds']],
+ d2:['D2 steel',['tool','Punches and blanking dies'],['cook','Knife blades'],['tool','Shear blades'],['tool','Thread-rolling dies']],
+ m2:['High-speed steel',['tool','Twist drills and taps'],['tool','Milling cutters and saw blades'],['tool','Lathe tool bits'],['car','Engine valve seats']],
+ c276:['Hastelloy C-276',['chem','Chemical reactors and scrubbers'],['energy','Flue-gas desulfurisation systems'],['pipe','Pharmaceutical plant'],['ship','Sea-water applications']],
+ stellite:['Stellite',['energy','Steam-turbine blade erosion shields'],['car','Valve seats and hard-facing'],['cook','Chainsaw guide-bar tips'],['tool','Wear-resistant overlays']],
+ waspaloy:['Waspaloy',['air','Jet-engine turbine discs'],['air','Engine seals and rings'],['energy','Gas-turbine shafts'],['space','Missile parts']],
+ cube:['Beryllium copper',['elec','Spring contacts and connectors'],['tool','Non-sparking tools for oil rigs and mines'],['air','Aircraft landing-gear bushings'],['tool','Injection-mould inserts']],
+ az31:['AZ31 magnesium alloy',['elec','Laptop and phone cases'],['car','Lightweight panels'],['med','Biodegradable implant research'],['air','Aircraft interior parts']],
+ al5083:['5083 aluminium alloy',['ship','Ship hulls and superstructures'],['energy','LNG storage tanks'],['car','Truck and tanker bodies'],['bld','Pressure vessels']],
+ al6063:['6063 aluminium alloy',['bld','Window and door frames'],['elec','Heat sinks (extruded)'],['home','Furniture'],['bld','Architectural extrusions']],
+ zry4:['Zircaloy',['nuke','Fuel-rod cladding in pressurised-water reactors'],['nuke','Fuel-assembly grids and channels'],['chem','Corrosion-resistant chemical plant'],['nuke','Reactor pressure tubes (Zr-2.5Nb in CANDU)']],
+ kovar:['Kovar',['elec','Glass-to-metal seals in electronic packages'],['optic','Laser-diode and sensor housings'],['space','Hermetic feedthroughs'],['elec','Vacuum tubes']],
+ constantan:['Constantan',['elec','Strain gauges: resistance hardly changes with temperature'],['energy','Type T and J thermocouples'],['elec','Precision resistors'],['home','Heating elements']],
+ nichrome:['Nichrome',['home','Toaster and hair-dryer heating wire'],['energy','Industrial furnace elements'],['home','E-cigarette coils'],['tool','Hot-wire foam cutters']],
+ hdpe:['High-density polyethylene',['pack','Milk jugs and detergent bottles'],['pipe','Gas and water pipes'],['home','Cutting boards'],['chem','Fuel tanks in cars']],
+ ldpe:['Low-density polyethylene',['pack','Plastic bags and cling film'],['pack','Squeeze bottles'],['wire','Cable insulation'],['pack','Coating on milk cartons']],
+ uhmwpe:['Ultra-high-molecular-weight polyethylene',['med','Bearing surfaces of artificial hips and knees'],['tool','Conveyor wear strips'],['ship','Dock fenders'],['sport','Ice-rink dasher boards']],
+ pp:['Polypropylene',['pack','Yogurt pots and bottle caps'],['car','Bumpers and interior trim'],['home','Living hinges on flip-top lids'],['med','Syringes and surgical masks (melt-blown fabric)']],
+ ps:['Polystyrene',['pack','Expanded-foam packaging and cups'],['home','CD cases and disposable cutlery'],['bld','Foam insulation boards'],['med','Petri dishes']],
+ pvc:['Polyvinyl chloride',['pipe','Drain and water pipes'],['bld','Window frames and flooring'],['wire','Electrical cable insulation'],['med','Blood bags and IV tubing']],
+ pmma:['Poly(methyl methacrylate)',['bld','Aquarium windows (e.g. Monterey Bay Aquarium)'],['car','Tail-light lenses'],['med','Bone cement and old hard contact lenses'],['home','Signs and displays']],
+ pc:['Polycarbonate',['home','Safety glasses, riot shields and machine guards'],['car','Headlight lenses'],['bld','Greenhouse and skylight sheet'],['elec','Laptop and phone housings']],
+ pet:['Polyethylene terephthalate',['pack','Soft-drink and water bottles'],['cloth','Polyester clothing fibre'],['pack','Food trays'],['optic','Photographic and X-ray film base']],
+ pa66:['Nylon 66',['car','Air-intake manifolds and radiator end tanks (glass-filled)'],['cloth','Stockings, carpets and ropes'],['elec','Cable ties and connectors'],['tool','Gears and bushings']],
+ ptfe:['Polytetrafluoroethylene',['cook','Non-stick pan coatings'],['elec','Coaxial-cable dielectric'],['pipe','Thread-seal tape and gaskets'],['cloth','Waterproof membranes (expanded PTFE)']],
+ peek:['Polyether ether ketone',['med','Spinal-fusion cages'],['air','Aircraft brackets and clips'],['energy','Oil-well seals'],['space','3D-printed spacecraft parts']],
+ abs:['Acrylonitrile butadiene styrene',['home','LEGO bricks are moulded from ABS'],['home','Computer keyboards and appliance housings'],['car','Interior trim'],['tool','FDM 3D-printing filament']],
+ pla:['Polylactic acid',['tool','The most popular 3D-printing filament'],['pack','Compostable cups and packaging'],['med','Dissolving sutures and screws (PLLA)'],['cloth','Tea bags and textile fibre']],
+ pom:['Polyoxymethylene',['tool','Precision gears and zipper teeth'],['car','Fuel-system parts and seatbelt clips'],['home','Pen mechanisms and kitchen gadgets'],['jewel','Guitar picks']],
+ epoxy:['Epoxy',['air','Matrix of carbon-fibre airframes such as the Boeing 787'],['energy','Wind-turbine blades'],['elec','Circuit-board laminate (FR-4) and chip encapsulation'],['home','Two-part adhesives']],
+ nr:['Natural rubber',['car','Truck and aircraft tyres'],['med','Surgical gloves'],['bridge','Laminated bridge bearings and seismic isolators'],['home','Rubber bands and balloons']],
+ pdms:['Polydimethylsiloxane',['med','Breast implants, catheters and contact lenses'],['cook','Silicone bakeware'],['elec','Microfluidic lab-on-chip devices'],['bld','Sealants']],
+ tpu:['Thermoplastic polyurethane',['sport','Ski boots and shoe soles'],['elec','Phone cases'],['tool','Flexible 3D-printing filament'],['wire','Cable jackets']],
+ pei:['Polyetherimide',['air','Aircraft interior panels and air ducts'],['med','Sterilisable instrument handles'],['tool','3D-printer build plates'],['elec','Connectors']],
+ kapton:['Kapton',['space','Gold-coloured spacecraft insulation blankets'],['elec','Flexible printed circuits in phones and cameras'],['wire','Wire insulation'],['tool','Heat-resistant masking tape']],
+ pps:['Polyphenylene sulfide',['car','Coolant pump housings'],['elec','Connectors and coil bobbins'],['chem','Filter fabrics in coal-fired plants'],['home','Hair-dryer parts']],
+ pvdf:['Polyvinylidene fluoride',['batt','Binder in lithium-ion electrodes'],['chem','Chemical-resistant piping'],['elec','Piezoelectric films for sensors'],['bld','Long-life architectural coatings']],
+ pa6:['Nylon 6',['cloth','Textile fibre and fishing line'],['car','Engine covers'],['tool','Power-tool housings'],['pack','Food-packaging film']],
+ pbt:['Polybutylene terephthalate',['elec','Mechanical keyboard keycaps'],['car','Connectors and sensor housings'],['home','Toothbrush bristles'],['elec','Lamp sockets']],
+ hips:['High impact polystyrene',['home','Fridge liners'],['pack','Disposable cups'],['tool','3D-printing support material'],['home','Toys']],
+ sbr:['Styrene-butadiene rubber',['car','Passenger-car tyres (the largest use)'],['home','Shoe soles'],['bld','Carpet backing'],['sport','Chewing-gum base']],
+ epdm:['EPDM rubber',['bld','Flat roofing membranes'],['car','Door and window seals'],['car','Radiator hoses'],['bld','Pond liners']],
+ neoprene:['Neoprene',['sport','Wetsuits'],['elec','Laptop sleeves'],['tool','Gaskets and hoses'],['med','Orthopaedic braces']],
+ bakelite:['Bakelite',['elec','Early telephones, radios and electrical switches'],['home','Pan handles and billiard balls'],['car','Distributor caps'],['jewel','Vintage jewellery']],
+ upr:['Polyester resin',['ship','Fibreglass boat hulls'],['bld','Bathtubs and shower trays'],['car','Body panels and repair filler'],['energy','Pipes and tanks']],
+ cf_t300:['Carbon fiber reinforced polymer',['air','Primary structure of the Boeing 787 and Airbus A350 (about 50% by weight)'],['sport','Bicycle frames, tennis rackets and fishing rods'],['car','Formula 1 monocoques'],['energy','Wind-turbine spar caps']],
+ cf_hm:['Carbon fibers',['space','Satellite antenna reflectors and optical benches'],['sport','Stiff fishing rods and golf shafts'],['air','Stiffness-critical aircraft parts'],['space','Space-telescope trusses']],
+ eglass:['Glass fiber',['ship','Boat hulls'],['energy','Wind-turbine blades'],['elec','Circuit boards (FR-4)'],['bld','Insulation wool and roofing']],
+ sglass:['Glass fiber',['air','Helicopter rotor blades'],['home','Body-armour backing'],['space','Rocket-motor cases'],['air','Pressure vessels']],
+ kevlar:['Kevlar',['home','Bullet-resistant vests'],['air','Jet-engine fan containment rings'],['sport','Racing sails, canoes and helmets'],['cloth','Cut-resistant gloves']],
+ dyneema:['Ultra-high-molecular-weight polyethylene',['ship','Mooring lines and sailing ropes'],['home','Lightweight body armour'],['sport','Ultralight backpacks and climbing slings'],['med','Surgical sutures']],
+ basalt:['Basalt fiber',['bld','Corrosion-free concrete reinforcement bars'],['car','Exhaust insulation'],['sport','Skis and bike parts'],['energy','Fire-resistant fabrics']],
+ boronf:['Boron fiber',['air','F-14 and F-15 tail skins (boron/epoxy)'],['sport','Golf shafts and fishing rods'],['air','Bonded repair patches on aircraft'],['space','Space Shuttle frame struts (boron/aluminium)']],
+ sicf:['Silicon carbide fibers',['air','Ceramic-matrix composite turbine shrouds (GE LEAP engine)'],['nuke','Accident-tolerant fuel cladding research'],['space','Hot structures'],['energy','Gas-turbine parts']],
+ cnt:['Carbon nanotube',['batt','Conductive additive in lithium-ion electrodes'],['sport','Reinforcement in bike frames and rackets'],['elec','Transistors and interconnects (research)'],['space','Lightweight conductive yarns']],
+ nextel:['3M Nextel',['air','Oxide-oxide CMC exhaust parts'],['space','Thermal blankets and heat shields'],['energy','Furnace belts'],['tool','High-temperature sewing thread']],
+ zylon:['Zylon',['home','Bullet-resistant vests (early 2000s; withdrawn after the fibre degraded in heat and humidity)'],['sport','Racing-car tethers and wheel restraints'],['home','Protective clothing'],['sport','Sail cords and bowstrings']],
+ flax:['Flax fiber',['cloth','Linen fabric'],['car','Door panels in natural-fibre composites'],['sport','Skis, surfboards and bike frames'],['jewel','Banknote and fine paper']],
+ steelwire:['Steel wire',['bridge','Main cables of suspension bridges such as the Akashi Kaikyō Bridge'],['car','Tyre cord in steel-belted radials'],['bld','Prestressing tendons'],['jewel','Piano strings']],
+ cfrp:['Carbon fiber reinforced polymer',['air','Wings and fuselage of the Boeing 787 and Airbus A350'],['car','Formula 1 and supercar monocoques'],['sport','Bicycle frames'],['med','Prosthetic running blades']],
+ gfrp:['Glass-reinforced plastic',['ship','Boat hulls'],['energy','Wind-turbine blades'],['bld','Water tanks and pipes'],['car','Corvette and other car body panels']],
+ wccomp:['Cemented carbide',['tool','Cutting inserts and drills'],['tool','Mining and oil-drill bits'],['tool','Wire-drawing dies'],['home','Ballpoint tips']],
+ concrete:['Concrete',['bld','The most used material on Earth after water'],['bridge','Dams such as the Hoover Dam (about 2.5 million m³)'],['bridge','Roads, bridges and tunnels'],['bld','The Pantheon’s unreinforced Roman concrete dome (about 125 AD) still stands']],
+ oak:['Oak',['bld','Timber framing and flooring'],['ship','Historic warships such as HMS Victory'],['cook','Wine and whisky barrels'],['home','Furniture']],
+ bone:['Bone',['med','The skeleton: a composite of collagen and hydroxyapatite'],['med','Bone grafts'],['jewel','Carved tools and ornaments since prehistory'],['med','Model for biomimetic materials']],
+ cc:['Reinforced carbon–carbon',['space','Space Shuttle wing leading edges and nose cap'],['air','Aircraft brake discs'],['car','Formula 1 brakes'],['space','Rocket-nozzle throats']],
+ sicsic:['Ceramic matrix composite',['air','Turbine shrouds and nozzles in jet engines'],['nuke','Fusion-reactor blanket research'],['space','Hot structures for hypersonic vehicles'],['energy','Gas-turbine parts']],
+ almmc:['Metal matrix composite',['car','Brake rotors and drive shafts'],['air','Helicopter blade sleeves'],['elec','Electronic packaging (AlSiC)'],['sport','Bicycle frames (Specialized M2)']],
+ kfrp:['Aramid',['ship','Racing canoes and kayaks'],['air','Helicopter fairings'],['home','Helmets'],['sport','Racing-yacht hulls']],
+ glare:['Glare (material)',['air','Upper fuselage panels of the Airbus A380'],['air','Fatigue-resistant skins'],['air','Bird-strike-resistant leading edges'],['air','Cargo floors']],
+ plywood:['Plywood',['bld','Roof and floor sheathing'],['air','The de Havilland Mosquito bomber (WWII) was largely plywood and balsa'],['home','Furniture'],['ship','Small boat hulls']]
+};
+function usesFor(m){
+  if(USES[m.id]) return {wiki:USES[m.id][0],items:USES[m.id].slice(1),own:false};
+  if(m.mine){ let ref=null; if(m.comp&&m.base){ const near=allMats().filter(q=>!q.mine&&q.comp&&q.base===m.base); let best=null,bd=1e9; near.forEach(q=>{let d=0; new Set([...Object.keys(q.comp),...Object.keys(m.comp)]).forEach(e=>d+=Math.abs((q.comp[e]||0)-(m.comp[e]||0))); if(d<bd){bd=d;best=q;}}); ref=best||MAT[(ELEM[m.base]||{}).mid]; }
+    else if(m.c==='composite'){ ref=/carbon|cf/i.test(m.f||m.n)?MAT.cfrp:(/glass/i.test(m.f||m.n)?MAT.gfrp:(/aramid|kevlar/i.test(m.f||m.n)?MAT.kfrp:MAT.cfrp)); }
+    if(ref&&USES[ref.id]) return {wiki:USES[ref.id][0],items:USES[ref.id].slice(1),own:true,ref};
+  }
+  return null;
+}
+const uIcon=k=>`<svg viewBox="0 0 24 24" aria-hidden="true">${UICON[k]||UICON.tool}</svg>`;
+function usesHTML(m,compact){
+  const u=usesFor(m); if(!u) return '<p class="small muted" style="margin:0">No application notes for this material yet.</p>';
+  const cats=[...new Set(u.items.map(i=>i[0]))];
+  return `${u.own?`<p class="tiny muted" style="margin:0 0 6px">Your creation. Closest catalogue relative: <b>${esc(u.ref.n)}</b>, whose uses are listed.</p>`:''}
+   <div class="ucats">${cats.map(k=>`<span class="ucat" title="${UCAT[k]}">${uIcon(k)}<span>${UCAT[k]}</span></span>`).join('')}</div>
+   <ul class="ulist">${u.items.slice(0,compact?3:9).map(([k,t])=>`<li><span class="uic">${uIcon(k)}</span><span>${esc(t)}</span></li>`).join('')}</ul>
+   <p class="small" style="margin:6px 0 0">Reference: <a href="https://en.wikipedia.org/wiki/${encodeURIComponent(u.wiki.replace(/ /g,'_'))}" target="_blank" rel="noopener">Wikipedia: ${esc(u.wiki)} ↗</a> · <a href="https://commons.wikimedia.org/w/index.php?search=${encodeURIComponent(u.wiki)}&title=Special:MediaSearch&type=image" target="_blank" rel="noopener">photos on Wikimedia Commons ↗</a></p>`;
+}
+WIDGETS.uses={n:'Real-world uses',render:(s,el)=>{el.innerHTML=usesHTML(s.m);}};
+ST.order.splice(1,0,'uses'); ST.on.add('uses'); WINFO.uses='spec';
 /* ============ CLASSIC SHELL: menu bar, status bar, theme, help windows ============ */
 const MENU={open:null};
 function themeSet(t){ if(t==='auto') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme',t); try{localStorage.setItem('crucible.theme',t);}catch(e){} }
@@ -4586,7 +5152,7 @@ function menuDefs(){
    ['Specimen',[op('heat','Heat / cool','H'),op('work','Roll / anneal','R'),op('alloy','Alloy','A'),op('composite','Make composite','C'),'-',{h:'Testing'},op('test','Tensile test','T'),op('fatigue','Fatigue test','F'),op('creep','Creep test','K')]],
    ['View',[{n:'Materials library',ck:!libMin,act:()=>{const b=libMin?$('#lib-open'):$('#lib-close'); if(b&&getComputedStyle(b).display!=='none') b.click(); else $('#lib-toggle').click();}},{n:'Operations panel',ck:!DK.min,act:()=>{DK.min=!DK.min;INS.dirty=true;}},'-',{h:'Status panels'},
      ...ST.order.map(k=>({n:WIDGETS[k].n,ck:ST.on.has(k),act:()=>{ST.on.has(k)?ST.on.delete(k):ST.on.add(k);stSave();renderStatus();}}))]],
-   ['Tools',[{n:'Material selector…',sc:'M',act:()=>openSelector('sel')},{n:'Design challenges…',sc:'G',act:()=>openSelector('chal')},{n:'Compare specimens…',act:()=>{if(!W.items.length){toast('Put some specimens on the bench first');return;}openFloat({type:'compare'});}},'-',{n:'Parameter encyclopedia…',sc:'I',act:()=>openInfo()}]],
+   ['Tools',[{n:'Material selector…',sc:'M',act:()=>openSelector('sel')},{n:'Design challenges…',sc:'G',act:()=>openSelector('chal')},{n:'Laminate & sandwich designer…',sc:'L',act:()=>openLaminate()},{n:'Compare specimens…',act:()=>{if(!W.items.length){toast('Put some specimens on the bench first');return;}openFloat({type:'compare'});}},'-',{n:'Parameter encyclopedia…',sc:'I',act:()=>openInfo()}]],
    ['Window',[...(FW.wins.length?FW.wins.map(f=>({n:f.el.querySelector('.ft').textContent+(f.o.type==='w'&&f.o.lock?' (locked)':''),act:()=>front(f)})):[{n:'No floating windows',dis:true}]),'-',{n:'Pop out a status panel',dis:true},
      ...ST.order.map(k=>({n:'   '+WIDGETS[k].n,act:()=>openFloat({type:'w',key:k,lock:null})})),'-',{n:'Close all floating windows',dis:!FW.wins.length,act:()=>FW.wins.slice().forEach(closeFloat)}]],
    ['Help',[{n:'Parameter encyclopedia',sc:'I',act:()=>openInfo()},{n:'Keyboard shortcuts',act:()=>openFloat({type:'help',key:'keys',w:420,h:440})},'-',{n:"About Eros' Metallurgy Lab",act:()=>openFloat({type:'help',key:'about',w:440,h:380})}]]
@@ -4611,7 +5177,7 @@ function dropOut(e){ if(!e.target.closest('#mdrop')&&!e.target.closest('#menubar
 function closeDrop(keep){ const d=$('#mdrop'); if(d) d.remove(); $$('#menubar .mb').forEach(b=>{b.classList.remove('open');b.setAttribute('aria-expanded','false');}); if(!keep) MENU.open=null; removeEventListener('pointerdown',dropOut); }
 function renderHelp(f){
   if(f.o.key==='about'){ f.body.innerHTML=`<div style="display:flex;gap:14px;align-items:flex-start"><span class="tbicon" style="width:42px;height:42px"></span><div><h3 class="ih3" style="font-family:var(--f-display);margin:0 0 4px;font-size:22px">Eros' Metallurgy Lab</h3><p class="small" style="margin:0 0 8px">A materials-science workbench: ${MATS.length} materials, heat treatment, cold rolling and annealing, alloys, composites, tensile, fatigue and creep testing, phase diagrams, X-ray diffraction and an Ashby material selector with design challenges.</p><p class="tiny muted" style="margin:0">Property models are simplified teaching models (homologous-temperature scaling, Hall–Petch, Basquin, Norton, JMAK, Halpin–Tsai…). Use them to build intuition, not to certify a design.</p></div></div>`; return; }
-  const K=[['H','Heat / cool'],['R','Roll / anneal'],['A','Alloy'],['C','Make composite'],['T','Tensile test'],['F','Fatigue test'],['K','Creep test'],['D','Duplicate specimen'],['X','Add / remove from comparison'],['Del','Remove specimen'],['M','Material selector'],['G','Design challenges'],['I','Parameter encyclopedia'],['Esc','Hide the operations panel'],['Shift-click','Tick cards to compare'],['Right-click','Specimen menu'],['Double-click','Heat / cool']];
+  const K=[['H','Heat / cool'],['R','Roll / anneal'],['A','Alloy'],['C','Make composite'],['T','Tensile test'],['F','Fatigue test'],['K','Creep test'],['D','Duplicate specimen'],['X','Add / remove from comparison'],['Del','Remove specimen'],['M','Material selector'],['G','Design challenges'],['L','Laminate & sandwich designer'],['I','Parameter encyclopedia'],['Esc','Hide the operations panel'],['Shift-click','Tick cards to compare'],['Right-click','Specimen menu'],['Double-click','Heat / cool']];
   f.body.innerHTML=`<table class="chemtab">${K.map(([k,n])=>`<tr><td style="font-family:var(--f-mono)"><b>${k}</b></td><td style="text-align:left;font-family:var(--f-body)">${n}</td></tr>`).join('')}</table>`;
 }
 function statusBar(){
