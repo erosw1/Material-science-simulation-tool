@@ -753,6 +753,34 @@ details summary{cursor:pointer}
 a{color:var(--sel)} :root[data-theme="dark"] a{color:var(--cold)}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) a{color:var(--cold)}}
 @media (max-width:800px){.lamgrid,.lamsplit{grid-template-columns:minmax(0,1fr)}.fwin[data-type="lam"] .fbody{overflow:auto;display:block}.ldgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+@media (max-width:1760px){.tb .tl2{display:none}}
+/* ---- stress analyzer & cost estimator ---- */
+.fwin[data-type="fea"] .fbody,.fwin[data-type="cost"] .fbody{overflow:auto}
+.feagrid{display:grid;grid-template-columns:270px minmax(0,1fr);gap:12px;align-items:start}
+.feaside{display:flex;flex-direction:column;gap:5px;min-width:0}
+.feamain{min-width:0}
+.feamat{padding:4px 6px;background:var(--panel2);box-shadow:var(--thin-dn)}
+.feabox{position:relative;height:380px;background:var(--panel2);box-shadow:var(--sunken)}
+.feabox canvas{position:absolute;inset:0;width:100%;height:100%;cursor:crosshair}
+.cobar{display:flex;height:26px;box-shadow:var(--sunken);background:var(--panel2);padding:2px}
+.cobar i{display:block;height:100%;border-right:1px solid rgba(0,0,0,.25)}
+@media (max-width:760px){.feagrid{grid-template-columns:minmax(0,1fr)}.feabox{height:300px}}
+
+.pickhead{display:flex;flex-direction:column;gap:2px}
+.pickgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(178px,1fr));gap:6px}
+.pick{display:grid;grid-template-columns:46px minmax(0,1fr);grid-template-rows:auto auto;gap:1px 8px;align-items:center;text-align:left;padding:6px;background:var(--panel);box-shadow:var(--raised);border:0;cursor:pointer;color:var(--ink);font:12.5px var(--f-body)}
+.pick:hover{background:var(--lt)} .pick:active{box-shadow:var(--pressed)}
+.pkic{grid-row:1/3;width:46px;height:46px;background:var(--panel2);box-shadow:var(--sunken);display:flex;align-items:center;justify-content:center}
+.pkic svg,.shapettl svg{width:36px;height:36px;fill:var(--accent-soft);stroke:var(--sel);stroke-width:1.8;stroke-linejoin:round}
+:root[data-theme="dark"] .pkic svg,:root[data-theme="dark"] .shapettl svg{stroke:var(--cold)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .pkic svg,:root:not([data-theme="light"]) .shapettl svg{stroke:var(--cold)}}
+.pkn{font-weight:700} .pkd{font-size:11.5px;color:var(--muted)}
+.shapettl{display:flex;align-items:center;gap:6px;font-size:13px}
+.shapettl svg{width:28px;height:28px}
+.mohrgrid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:8px}
+.fwin[data-type="mohr"] .fbody{overflow:auto}
+@media (max-width:760px){.mohrgrid{grid-template-columns:minmax(0,1fr)}}
 </style><script>
 /* ============ CRUCIBLE · DATA ============ */
 /* Units: rho g/cm3, E GPa, ys/uts MPa, el %, temps K, k W/m·K, cte µm/m·K, cp J/kg·K, re Ω·m, lf kJ/kg, a Å, M g/mol */
@@ -3732,10 +3760,10 @@ function openFloat(o,restoring){
   if(o.type==='info'){ const ex=FW.wins.find(f=>f.o.type==='info'); if(ex){ ex.o.entry=o.entry||ex.o.entry; renderInfo(ex); front(ex); return ex; } }
   if(o.type==='compare'){ const ex=FW.wins.find(f=>f.o.type==='compare'); if(ex){ ex.dirty=true; front(ex); return ex; } }
   const id='fw'+(++FW.n); const el=document.createElement('div'); el.className='fwin'; el.id=id; el.dataset.type=o.type; el.setAttribute('role','dialog');
-  const W0=o.w||(o.type==='info'?620:o.type==='compare'?640:o.type==='select'?960:o.type==='lam'?1000:380), H0=o.h||(o.type==='info'?540:o.type==='compare'?560:o.type==='select'?620:o.type==='lam'?660:420);
+  const W0=o.w||(o.type==='info'?620:o.type==='compare'?640:o.type==='select'?960:o.type==='lam'?1000:o.type==='fea'||o.type==='cost'?980:o.type==='mohr'?920:380), H0=o.h||(o.type==='info'?540:o.type==='compare'?560:o.type==='select'?620:o.type==='lam'?660:o.type==='fea'||o.type==='cost'?640:420);
   const off=(FW.wins.length%6)*28;
   const x=o.x!=null?o.x:Math.max(10,innerWidth/2-W0/2+off-60), y=o.y!=null?o.y:Math.max(60,110+off);
-  const title=o.type==='info'?'Info: what every parameter means':o.type==='compare'?'Compare specimens':o.type==='select'?'Material selector':o.type==='lam'?'Laminate & sandwich designer':o.type==='help'?(o.key==='about'?'About':'Keyboard shortcuts'):WIDGETS[o.key].n;
+  const title=o.type==='info'?'Info: what every parameter means':o.type==='compare'?'Compare specimens':o.type==='select'?'Material selector':o.type==='lam'?'Laminate & sandwich designer':o.type==='fea'?'Stress analyzer':o.type==='mohr'?"Mohr's circle":o.type==='cost'?'Cost estimator':o.type==='help'?(o.key==='about'?'About':'Keyboard shortcuts'):WIDGETS[o.key].n;
   el.innerHTML=`<div class="fhead"><span class="ft">${title}</span><span class="fs"></span><span class="fb">${o.type==='w'?`<button class="ib fl" title="Lock this window to the current specimen" aria-label="Lock to specimen">🔓</button><button class="ib fd" title="Put back in the status column" aria-label="Dock back">⇲</button>`:''}<button class="ib fx" title="Close" aria-label="Close window">×</button></span></div><div class="fbody"><div class="wbody"></div></div>`;
   el.style.width=W0+'px'; el.style.height=H0+'px'; document.body.appendChild(el);
   const f={id,el,o:{...o},x,y,body:el.querySelector('.wbody'),sid:null,dirty:true};
@@ -3771,6 +3799,9 @@ function floatTick(dt,tick){
     else if(f.o.type==='info'&&f.dirty){ f.dirty=false; renderInfo(f); }
     else if(f.o.type==='select'&&f.dirty){ f.dirty=false; renderSelect(f); }
     else if(f.o.type==='lam'&&f.dirty){ f.dirty=false; renderLam(f); }
+    else if(f.o.type==='fea'){ if(f.dirty){ f.dirty=false; renderFea(f); } else if(tick&&FEA.src==='spec'){ const s=spec(W.sel); const sig=s?s.id+Math.round(s.T)+s.m.id:''; if(sig!==f._sig){ f._sig=sig; feaDraw(); } } }
+    else if(f.o.type==='cost'&&f.dirty){ f.dirty=false; renderCost(f); }
+    else if(f.o.type==='mohr'&&f.dirty){ f.dirty=false; renderMohrFloat(f); }
     else if(f.o.type==='help'&&f.dirty){ f.dirty=false; renderHelp(f); }
   }
 }
@@ -3876,7 +3907,7 @@ function initConveniences(){
   // shortcuts
   addEventListener('keydown',e=>{ if(e.target.closest('input,select,textarea')||e.metaKey||e.ctrlKey||e.altKey) return; const s=spec(W.sel); const k=e.key.toLowerCase();
     if(k==='escape'){closeMenu(); if(!DK.min){DK.min=true;INS.dirty=true;} return;}
-    if(k==='i'){openInfo(); return;} if(k==='m'){openSelector('sel');return;} if(k==='g'){openSelector('chal');return;} if(k==='l'){openLaminate();return;} if(k==='?'){openInfo('E');return;}
+    if(k==='i'){openInfo(); return;} if(k==='m'){openSelector('sel');return;} if(k==='g'){openSelector('chal');return;} if(k==='l'){openLaminate();return;} if(k==='s'){openStress();return;} if(k==='$'){openCost();return;} if(k==='?'){openInfo('E');return;}
     if(!s) return;
     const map={h:'heat',a:'alloy',c:'composite',t:'test',r:'work',f:'fatigue',k:'creep'}; if(map[k]&&opAllowed(map[k],s.m)){doOp(s,map[k]);e.preventDefault();}
     if(k==='x') toggleMulti(s.id); if(k==='d') addSpec(s.m,s.x+24,s.y+24); if(k==='delete'||k==='backspace'){removeSpec(s.id);e.preventDefault();} });
@@ -3901,7 +3932,7 @@ const OPDESC={heat:'Set a temperature, choose the surroundings, quench.',alloy:'
 function renderToolbar(){
   const s=spec(W.sel), tb=$('#optool');
   tb.innerHTML=`<span class="sel">${s?`Selected: <b>${esc(s.m.n)}</b>`:'Nothing selected'}</span>`+DOPS.map(([k,n])=>`<button class="tb" data-op="${k}" aria-pressed="${!!s&&k===W.op&&!DK.min}" ${s&&opAllowed(k,s.m)?'':'disabled'} title="${s&&!opAllowed(k,s.m)?'Not available for this material':OPDESC[k]}">${DICON[k]}${n}</button>`).join('')+
-    `<span class="sep"></span><button class="tb" data-act="dup" ${s?'':'disabled'} title="Place a copy on the bench">${'<svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V6a2 2 0 0 1 2-2h10"/></svg>'}<span class="tl">Duplicate</span></button><button class="tb" data-act="rm" ${s?'':'disabled'} title="Remove from the bench">${'<svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>'}<span class="tl">Remove</span></button><span class="sep"></span><button class="tb" data-act="cmp" title="Compare specimens (shift-click cards to choose)"><svg viewBox="0 0 24 24"><path d="M3 21h18M3 21V3"/><path d="M7 15l4-5 3 3 5-7"/></svg>Compare${W.multi&&W.multi.size?` (${W.multi.size})`:''}</button><button class="tb" data-act="lam" title="Laminate & sandwich designer (L)"><svg viewBox="0 0 24 24"><path d="M3 7h18M3 11h18M3 15h18M3 19h18"/><path d="M6 7l3 4M12 7l3 4M9 15l3 4M15 15l3 4"/></svg>Laminate</button><button class="tb" data-act="sel" title="Material selector: Ashby charts with index lines (M)"><svg viewBox="0 0 24 24"><path d="M3 21V3M3 21h18"/><circle cx="8" cy="14" r="1.6"/><circle cx="12" cy="9" r="1.6"/><circle cx="17" cy="11" r="1.6"/><path d="M5 19L20 5" stroke-dasharray="3 2"/></svg>Selector</button><button class="tb" data-act="chal" title="Design challenges (G)"><svg viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4"/></svg>Challenges</button><button class="tb" data-act="info" title="What every parameter means (I)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>Info</button><button class="tb" data-act="tidy" title="Arrange the bench in a grid"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg><span class="tl">Tidy</span></button>`;
+    `<span class="sep"></span><button class="tb" data-act="dup" ${s?'':'disabled'} title="Place a copy on the bench">${'<svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V6a2 2 0 0 1 2-2h10"/></svg>'}<span class="tl">Duplicate</span></button><button class="tb" data-act="rm" ${s?'':'disabled'} title="Remove from the bench">${'<svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>'}<span class="tl">Remove</span></button><span class="sep"></span><button class="tb" data-act="cmp" title="Compare specimens (shift-click cards to choose)"><svg viewBox="0 0 24 24"><path d="M3 21h18M3 21V3"/><path d="M7 15l4-5 3 3 5-7"/></svg><span class="tl2">Compare</span>${W.multi&&W.multi.size?` (${W.multi.size})`:''}</button><button class="tb" data-act="lam" title="Laminate & sandwich designer (L)"><svg viewBox="0 0 24 24"><path d="M3 7h18M3 11h18M3 15h18M3 19h18"/><path d="M6 7l3 4M12 7l3 4M9 15l3 4M15 15l3 4"/></svg>Laminate</button><button class="tb" data-act="fea" title="Stress analyzer: colour-coded stress maps (S)"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12"/><circle cx="12" cy="12" r="3"/><path d="M3 9h5M16 9h5M3 15h5M16 15h5"/></svg>Stress</button><button class="tb" data-act="cost" title="Cost estimator ($)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15 8.5c-.6-1-1.8-1.5-3-1.5-1.7 0-3 .9-3 2.3 0 3.2 6 1.8 6 5 0 1.4-1.3 2.3-3 2.3-1.3 0-2.5-.6-3.1-1.6M12 5v2M12 17v2"/></svg>Cost</button><button class="tb" data-act="sel" title="Material selector: Ashby charts with index lines (M)"><svg viewBox="0 0 24 24"><path d="M3 21V3M3 21h18"/><circle cx="8" cy="14" r="1.6"/><circle cx="12" cy="9" r="1.6"/><circle cx="17" cy="11" r="1.6"/><path d="M5 19L20 5" stroke-dasharray="3 2"/></svg>Selector</button><button class="tb" data-act="chal" title="Design challenges (G)"><svg viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4"/></svg><span class="tl2">Challenges</span></button><button class="tb" data-act="info" title="What every parameter means (I)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg><span class="tl2">Info</span></button><button class="tb" data-act="tidy" title="Arrange the bench in a grid"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg><span class="tl">Tidy</span></button>`;
 }
 function renderDock(){
   renderToolbar();
@@ -4148,7 +4179,7 @@ function setSpeed(v){W.speed=v;$$('#speed button').forEach(b=>b.setAttribute('ar
 function setUnit(u){APP.unit=u;$('#u-k').setAttribute('aria-pressed',u==='K');$('#u-c').setAttribute('aria-pressed',u==='C');W.items.forEach(s=>s.ptCache=null);INS.dirty=true;}
 function boot(){
   refreshColors(); stLoad(); loadMine(); initLib();
-  $('#optool').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||b.disabled)return; if(b.dataset.act==='cmp'){if(W.items.length<1){toast('Put some specimens on the bench first');return;} openFloat({type:'compare'});return;} if(b.dataset.act==='info'){openInfo();return;} if(b.dataset.act==='sel'){openSelector('sel');return;} if(b.dataset.act==='lam'){openLaminate();return;} if(b.dataset.act==='chal'){openSelector('chal');return;} if(b.dataset.act==='tidy'){tidyBench();return;} const s=spec(W.sel);if(!s)return;
+  $('#optool').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||b.disabled)return; if(b.dataset.act==='cmp'){if(W.items.length<1){toast('Put some specimens on the bench first');return;} openFloat({type:'compare'});return;} if(b.dataset.act==='info'){openInfo();return;} if(b.dataset.act==='sel'){openSelector('sel');return;} if(b.dataset.act==='lam'){openLaminate();return;} if(b.dataset.act==='fea'){openStress();return;} if(b.dataset.act==='cost'){openCost();return;} if(b.dataset.act==='chal'){openSelector('chal');return;} if(b.dataset.act==='tidy'){tidyBench();return;} const s=spec(W.sel);if(!s)return;
     if(b.dataset.op){ if(W.op===b.dataset.op&&!DK.min){DK.min=true;} else {W.op=b.dataset.op;DK.min=false;if(W.op==='alloy')FGX.forSpec=null;if(W.op==='composite')CPX.forSpec=null;} INS.dirty=true; }
     if(b.dataset.act==='dup'){addSpec(s.m,s.x+24,s.y+24);toast(`Duplicated ${s.m.n}`);}
     if(b.dataset.act==='rm'){removeSpec(s.id);} });
@@ -4745,7 +4776,7 @@ function lamLayPane(pane,f){
        <label class="f" style="margin:0;width:150px">Fibre volume <span class="mono" id="lm-vfv" style="float:right"></span><input type="range" id="lm-vf" min="0.3" max="0.7" step="0.01" value="${LAM.vf}"></label></div>
      <label class="f" style="margin:4px 0 0">Preset stack<select id="lm-pre" style="margin-top:3px"><option value="">Choose a classic layup…</option>${LAMPRE.map(([k,n])=>`<option value="${k}">${n}</option>`).join('')}</select></label>
      <div class="scroll-x plywrap">${plyTable()}</div>
-     <div class="btns"><button class="btn" id="lm-add">+ Add ply</button><button class="btn" id="lm-mir">Mirror (make symmetric)</button><button class="btn pri" id="lm-bench">Lay up on bench</button></div>
+     <div class="btns"><button class="btn" id="lm-add">+ Add ply</button><button class="btn" id="lm-mir">Mirror (make symmetric)</button><button class="btn pri" id="lm-bench">Lay up on bench</button><button class="btn" id="lm-cost">Estimate cost…</button></div>
      <p class="tiny muted" style="margin:0">Ply 1 is the top face. Each ply can use a different fibre (hybrid laminate). Angles are measured from the x (load) axis.</p></div>
    <div class="lamcol"><canvas class="cv" id="lm-stack" style="height:190px"></canvas><div id="lm-flags" class="col" style="gap:4px"></div>
      <div class="lamsplit"><div><h4 style="margin:4px 0">Effective properties${ib('clt')}</h4><dl class="kv" id="lm-eff"></dl></div><div><h4 style="margin:4px 0">Stiffness vs direction</h4><canvas class="cv" id="lm-pol" style="aspect-ratio:1/1;height:auto"></canvas><div class="legend" style="margin:2px 0 0"><span><i style="background:var(--accent)"></i>E<sub>x</sub>(θ)</span><span><i style="background:var(--cold)"></i>G<sub>xy</sub>(θ)</span></div></div></div>
@@ -4759,6 +4790,7 @@ function lamLayPane(pane,f){
   tb.addEventListener('click',e=>{const tr=e.target.closest('[data-i]');if(!tr)return;const i=+tr.dataset.i;if(e.target.matches('.pu')&&i>0)[LAM.plies[i-1],LAM.plies[i]]=[LAM.plies[i],LAM.plies[i-1]];else if(e.target.matches('.pd')&&i<LAM.plies.length-1)[LAM.plies[i+1],LAM.plies[i]]=[LAM.plies[i],LAM.plies[i+1]];else if(e.target.matches('.px')&&LAM.plies.length>1)LAM.plies.splice(i,1);else return;tb.innerHTML=plyTable();upd();});
   $('#lm-add').addEventListener('click',()=>{const l=LAM.plies[LAM.plies.length-1];LAM.plies.push({f:l?l.f:'cf_t300',a:0,t:l?l.t:0.125});tb.innerHTML=plyTable();upd();});
   $('#lm-mir').addEventListener('click',()=>{LAM.plies=LAM.plies.concat(LAM.plies.slice().reverse().map(p=>({...p})));if(LAM.plies.length>48)LAM.plies=LAM.plies.slice(0,48);tb.innerHTML=plyTable();upd();});
+  $('#lm-cost').addEventListener('click',()=>{COST_UI.src='lam';openCost();});
   $('#lm-bench').addEventListener('click',()=>{const m=lamMaterial();addMine(m);addSpec(m,null,null,{op:'heat'});toast(`Laid up “${m.n}” on the bench`);});
   upd();
 }
@@ -4872,11 +4904,12 @@ function lamSwPane(pane,f){
      <label class="f" style="margin:0">Core thickness <span class="mono" id="sw-cv" style="float:right"></span><input type="range" id="sw-cc" min="2" max="80" step="1" value="${S.c}"></label>
      <label class="f" style="margin:0">Span (3-point bend) <span class="mono" id="sw-Lv" style="float:right"></span><input type="range" id="sw-L" min="100" max="2000" step="10" value="${S.L}"></label>
      <label class="f" style="margin:0">Central load (on a 100 mm wide beam) <span class="mono" id="sw-Pv" style="float:right"></span><input type="range" id="sw-P" min="10" max="20000" step="10" value="${S.P}"></label>
-     <canvas class="cv" id="sw-x" style="height:150px"></canvas><dl class="kv" id="sw-kv"></dl></div>
+     <canvas class="cv" id="sw-x" style="height:150px"></canvas><div class="btns"><button class="btn" id="sw-cost">Estimate cost of this sandwich…</button></div><dl class="kv" id="sw-kv"></dl></div>
    <div class="lamcol"><div id="sw-sum"></div><h4 style="margin:6px 0 2px">Failure load of each mode vs core thickness</h4><canvas class="cv" id="sw-map" style="height:230px"></canvas><div class="legend" id="sw-leg" style="margin:2px 0 0"></div>
      <h4 style="margin:6px 0 2px">Bending stiffness and mass vs core thickness</h4><canvas class="cv" id="sw-dm" style="height:170px"></canvas><div class="legend" style="margin:2px 0 0"><span><i style="background:var(--accent)"></i>stiffness D (relative)</span><span><i style="background:var(--cold)"></i>mass per m² (relative)</span></div></div></div>`;
   const upd=()=>{ $('#sw-ftv').textContent=num(S.ft,2)+' mm'; $('#sw-cv').textContent=S.c+' mm'; $('#sw-Lv').textContent=S.L+' mm'; $('#sw-Pv').textContent=num(S.P)+' N'; $('#sw-ftw').hidden=S.face==='lam'; lamSwDraw(); };
   $('#sw-f').addEventListener('change',e=>{S.face=e.target.value;upd();}); $('#sw-c').addEventListener('change',e=>{S.core=e.target.value;upd();});
+  $('#sw-cost').addEventListener('click',()=>{COST_UI.src='sw';openCost();});
   [['sw-ft','ft'],['sw-cc','c'],['sw-L','L'],['sw-P','P']].forEach(([id,k])=>$('#'+id).addEventListener('input',e=>{S[k]=+e.target.value;upd();}));
   upd();
 }
@@ -5136,6 +5169,959 @@ function usesHTML(m,compact){
 }
 WIDGETS.uses={n:'Real-world uses',render:(s,el)=>{el.innerHTML=usesHTML(s.m);}};
 ST.order.splice(1,0,'uses'); ST.on.add('uses'); WINFO.uses='spec';
+/* ============ STRESS ANALYZER: colour-coded stress fields for classic engineering geometries ============ */
+const FEA={src:'spec',geo:'hole',qty:'vm',bands:true,
+  hole:{W:100,D:30,t:4,F:20000},cant:{L:400,h:30,b:20,F:800},bend:{L:600,h:40,b:30,F:3000},vessel:{R:300,t:6,Lc:900,p:1.5},shaft:{ro:20,ri:0,L:500,T:400}};
+const FGEO=[['hole','Plate with a hole in tension'],['cant','Cantilever beam, end load'],['bend','Beam in 3-point bending'],['vessel','Pressure vessel (cylinder + domed ends)'],['shaft','Shaft in torsion']];
+const FQTY=[['vm','von Mises stress'],['sx','σx (along the part)'],['sy','σy / hoop stress'],['txy','τxy shear stress'],['sf','Safety factor vs yield']];
+const FDIM={
+ hole:[['W','Plate width',20,300,1,'mm'],['D','Hole diameter',2,0.8,1,'mm','ofW'],['t','Thickness',0.5,30,0.5,'mm'],['F','Tensile force',100,300000,100,'N','log']],
+ cant:[['L','Length',50,2000,10,'mm'],['h','Depth',4,200,1,'mm'],['b','Width',4,200,1,'mm'],['F','End load',1,50000,1,'N','log']],
+ bend:[['L','Span',50,3000,10,'mm'],['h','Depth',4,200,1,'mm'],['b','Width',4,200,1,'mm'],['F','Central load',1,200000,1,'N','log']],
+ vessel:[['R','Radius',20,2000,5,'mm'],['t','Wall thickness',0.5,60,0.5,'mm'],['Lc','Cylinder length',0,4000,10,'mm'],['p','Internal pressure',0.05,60,0.05,'MPa','log']],
+ shaft:[['ro','Outer radius',3,150,0.5,'mm'],['ri','Inner radius (0 = solid)',0,0.95,0.5,'mm','ofro'],['L','Length',20,3000,10,'mm'],['T','Torque',1,100000,1,'N·m','log']]
+};
+function feaMat(){
+  if(FEA.src==='lam'&&typeof lamABD==='function'){ lamInit(); const L=lamABD(LAM.plies), e=lamEff(L); const f=lamFPF(LAM.plies,{Nx:100,Ny:0,Nxy:0,Mx:0,My:0,Mxy:0},'tsaiwu');
+    const rho=LAM.plies.reduce((s,p)=>s+plyProps(p.f).rho*p.t,0)/L.h; return {n:'Laminate '+lamCode(),E:e.Ex*1000,nu:e.nxy,allow:f?f.R*100/L.h:300,rho,lam:true,e,m:null,T:293}; }
+  const s=spec(W.sel); if(!s) return null; const p=s.p||propsAt(s.m,s.T,specState(s));
+  return {n:s.m.n,E:Math.max(1e-3,p.E)*1000,nu:s.m.nu||0.3,allow:(p.ys!=null?p.ys:p.uts)||1,rho:p.rho,lam:false,m:s.m,T:s.T,uts:p.uts,brittle:p.ys==null,k1c:k1cOf(s.m)};
+}
+const vmOf=(a,b,t)=>Math.sqrt(a*a-a*b+b*b+3*t*t);
+/* each geometry: domain extents (mm), inside test, stress at a point, extras */
+function feaModel(M){
+  const g=FEA.geo, P=FEA[g];
+  if(g==='hole'){ const W=P.W,D=Math.min(P.D,W*0.8),a=D/2,t=P.t,Lp=W*2.4; const Sg=P.F/(W*t); const r=D/W;
+    const KtG=(2+Math.pow(1-r,3))/(1-r); let Kt=KtG; let ortho=1;
+    if(M.lam){ const e=M.e; const Kinf=1+Math.sqrt(2*(Math.sqrt(e.Ex/e.Ey)-e.nxy)+e.Ex/e.Gxy); ortho=Kinf/3; Kt=KtG*ortho; }
+    const f=(Kt-1)/2;
+    const st=(x,y)=>{ const rr=Math.hypot(x,y); if(rr<a) return null; const th=Math.atan2(y,x), c2=Math.cos(2*th), s2=Math.sin(2*th), q=a*a/(rr*rr);
+      const sr=0.5*(1-q)+0.5*(1-4*q+3*q*q)*c2, sq=0.5*(1+q)-0.5*(1+3*q*q)*c2, tr=-0.5*(1+2*q-3*q*q)*s2; const c=Math.cos(th),s=Math.sin(th);
+      let sx=sr*c*c+sq*s*s-2*tr*s*c, sy=sr*s*s+sq*c*c+2*tr*s*c, txy=(sr-sq)*s*c+tr*(c*c-s*s);
+      sx=1+(sx-1)*f; sy*=f; txy*=f; return {sx:sx*Sg,sy:sy*Sg,txy:txy*Sg}; };
+    return {xr:[-Lp/2,Lp/2],yr:[-W/2,W/2],st,vol:(Lp*W-Math.PI*a*a)*t,
+      sum:[['Gross stress σ∞',num(Sg,3)+' MPa'],['Net-section stress',num(P.F/((W-D)*t),3)+' MPa'],['Stress concentration K<sub>t</sub>',num(Kt,3)+(M.lam?` (orthotropic ×${num(ortho,3)})`:'')],['Peak stress at the hole edge',num(Kt*Sg,4)+' MPa']],
+      draw:(ctx,X,Y)=>{ ctx.strokeStyle=C.ink; ctx.lineWidth=1.5; ctx.beginPath(); ctx.ellipse(X(0),Y(0),Math.abs(X(a)-X(0)),Math.abs(Y(a)-Y(0)),0,0,7); ctx.stroke(); ctx.strokeRect(X(-Lp/2),Y(W/2),X(Lp/2)-X(-Lp/2),Y(-W/2)-Y(W/2));
+        ctx.fillStyle=C.crit; [[-1],[1]].forEach(([sg])=>{ for(let i=-2;i<=2;i++){ const y=Y(i*W/5), x=sg<0?X(-Lp/2)-4:X(Lp/2)+4; ctx.beginPath(); ctx.moveTo(x+sg*12,y); ctx.lineTo(x+sg*4,y-4); ctx.lineTo(x+sg*4,y+4); ctx.closePath(); ctx.fill(); ctx.fillRect(Math.min(x,x+sg*5),y-0.75,5,1.5);} }); },
+      defl:null};
+  }
+  if(g==='cant'||g==='bend'){ const L=P.L,h=P.h,b=P.b,F=P.F,I=b*h*h*h/12; const cant=g==='cant';
+    const Mx=x=>cant?F*(L-x):(x<L/2?F*x/2:F*(L-x)/2), Vx=x=>cant?F:(x<L/2?F/2:-F/2);
+    const st=(x,y)=>{ if(x<0||x>L||Math.abs(y)>h/2) return null; return {sx:-Mx(x)*y/I,sy:0,txy:Vx(x)/(2*I)*(h*h/4-y*y)}; };
+    const G=M.E/(2*(1+M.nu)); const d=cant?F*L*L*L/(3*M.E*I)+F*L/(5/6*G*b*h):F*L*L*L/(48*M.E*I)+F*L/(4*5/6*G*b*h);
+    const smax=(cant?F*L:F*L/4)*(h/2)/I;
+    return {xr:[0,L],yr:[-h/2,h/2],st,vol:L*b*h,exag:true,defl:d,
+      sum:[['Max bending moment',num(cant?F*L/1000:F*L/4000,3)+' N·m'],['Max bending stress (Mc/I)',num(smax,4)+' MPa'],['Max shear stress (3V/2A)',num(1.5*(cant?F:F/2)/(b*h),3)+' MPa'],[cant?'Tip deflection':'Mid-span deflection',num(d,3)+' mm']],
+      shape:x=>{ if(cant){ return F*x*x*(3*L-x)/(6*M.E*I); } const xx=x<=L/2?x:L-x; return F*xx*(3*L*L-4*xx*xx)/(48*M.E*I); },
+      draw:(ctx,X,Y,sh)=>{ ctx.fillStyle=C.ink; if(cant){ ctx.fillStyle=C.muted; ctx.fillRect(X(0)-12,Y(h/2)-14,10,Y(-h/2)-Y(h/2)+28); for(let i=0;i<6;i++){ctx.strokeStyle=C.ink;ctx.beginPath();ctx.moveTo(X(0)-12,Y(h/2)-14+i*(Y(-h/2)-Y(h/2)+28)/5);ctx.lineTo(X(0)-18,Y(h/2)-8+i*(Y(-h/2)-Y(h/2)+28)/5);ctx.stroke();} }
+        else { [0,L].forEach(x=>{ const yb=Y(-h/2)+sh(x); ctx.fillStyle=C.ink; ctx.beginPath(); ctx.moveTo(X(x),yb+1); ctx.lineTo(X(x)-7,yb+12); ctx.lineTo(X(x)+7,yb+12); ctx.closePath(); ctx.fill(); }); }
+        const xl=cant?L:L/2, yl=Y(h/2)+sh(xl); ctx.strokeStyle=C.crit; ctx.fillStyle=C.crit; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(X(xl),yl-34); ctx.lineTo(X(xl),yl-4); ctx.stroke(); ctx.beginPath(); ctx.moveTo(X(xl),yl-2); ctx.lineTo(X(xl)-5,yl-10); ctx.lineTo(X(xl)+5,yl-10); ctx.closePath(); ctx.fill();
+        ctx.font=`11px ${C.mono}`; ctx.textAlign='left'; ctx.textBaseline='bottom'; ctx.fillText(`F = ${num(F)} N`,X(xl)+(cant?-90:6),yl-24); }};
+  }
+  if(g==='vessel'){ const R=P.R,t=P.t,Lc=P.Lc,p=P.p; const te=Math.max(t,R*0.07); const hoop=p*R/t, ax=p*R/(2*t), sph=p*R/(2*t); const lam=2.5*Math.sqrt(R*t);
+    const st=(x,y)=>{ const ax_=Math.abs(x); let d,inCyl=ax_<=Lc/2; if(inCyl) d=Math.abs(Math.abs(y)-R); else d=Math.abs(Math.hypot(ax_-Lc/2,y)-R); if(d>te/2) return null;
+      if(inCyl){ const dist=Lc/2-ax_, w=Math.exp(-dist/lam)*Math.cos(dist/lam)*0.5; const sh=U.lerp(hoop,sph,w), sa=ax; return {sx:sa,sy:sh,txy:0}; }
+      const w=Math.exp(-(R*Math.atan2(ax_-Lc/2,Math.abs(y)))/lam)*0.5; return {sx:sph,sy:U.lerp(sph,hoop,w),txy:0}; };
+    const vol=2*Math.PI*R*t*Lc+4*Math.PI*R*R*t;
+    const out={xr:[-Lc/2-R-te,Lc/2+R+te],yr:[-R-te,R+te],st,vol,
+      sum:[['Hoop stress pR/t (cylinder)',num(hoop,4)+' MPa'],['Axial stress pR/2t',num(ax,4)+' MPa'],['Membrane stress in domes pR/2t',num(sph,4)+' MPa'],['Wall drawn',te>t?`×${num(te/t,2)} thicker than real`:'to scale']],
+      draw:(ctx,X,Y)=>{ ctx.fillStyle=C['cold-soft']; ctx.beginPath(); ctx.moveTo(X(-Lc/2),Y(R-te/2)); ctx.lineTo(X(Lc/2),Y(R-te/2)); ctx.ellipse(X(Lc/2),Y(0),Math.abs(X(R-te/2)-X(0)),Math.abs(Y(R-te/2)-Y(0)),0,-Math.PI/2,Math.PI/2); ctx.lineTo(X(-Lc/2),Y(-R+te/2)); ctx.ellipse(X(-Lc/2),Y(0),Math.abs(X(R-te/2)-X(0)),Math.abs(Y(R-te/2)-Y(0)),0,Math.PI/2,Math.PI*1.5); ctx.closePath(); ctx.fill();
+        ctx.fillStyle=C.cold; ctx.font=`11px ${C.mono}`; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(`p = ${num(p,3)} MPa`,X(0),Y(0)); }};
+    if(M.k1c&&!M.lam){ const ac=Math.pow(M.k1c/hoop,2)/Math.PI*1000; out.sum.push(['Critical crack length at hoop stress',num(ac,3)+' mm'],['Leak before break?',ac>t?`yes: a through-wall crack (${num(t,3)} mm) leaks before it is critical`:'no: a crack becomes critical before it breaks through']); }
+    return out;
+  }
+  if(g==='shaft'){ const ro=P.ro, ri=Math.min(P.ri,ro*0.95), T=P.T*1000, J=Math.PI/2*(Math.pow(ro,4)-Math.pow(ri,4)); const G=M.E/(2*(1+M.nu)); const phi=T*P.L/(G*J);
+    const st=(x,y)=>{ const r=Math.hypot(x,y); if(r>ro||r<ri) return null; const tau=T*r/J; return {sx:0,sy:0,txy:tau}; };
+    return {xr:[-ro*1.15,ro*1.15],yr:[-ro*1.15,ro*1.15],st,vol:Math.PI*(ro*ro-ri*ri)*P.L,square:true,
+      sum:[['Max shear stress Tr/J',num(T*ro/J,4)+' MPa'],['Polar moment J',sci(J,3)+' mm⁴'],['Angle of twist',num(phi*180/Math.PI,3)+'° over '+num(P.L)+' mm'],['Shear modulus G',num(G/1000,3)+' GPa']],
+      draw:(ctx,X,Y)=>{ ctx.strokeStyle=C.ink; ctx.lineWidth=1.5; ctx.beginPath(); ctx.arc(X(0),Y(0),Math.abs(X(ro)-X(0)),0,7); ctx.stroke(); if(ri>0){ctx.beginPath();ctx.arc(X(0),Y(0),Math.abs(X(ri)-X(0)),0,7);ctx.stroke();}
+        ctx.strokeStyle=C.crit; ctx.lineWidth=2; const rr=Math.abs(X(ro)-X(0))+12; ctx.beginPath(); ctx.arc(X(0),Y(0),rr,-0.6,0.9); ctx.stroke(); const a=0.9; ctx.fillStyle=C.crit; ctx.beginPath(); ctx.moveTo(X(0)+Math.cos(a)*rr,Y(0)+Math.sin(a)*rr); ctx.lineTo(X(0)+Math.cos(a-0.12)*(rr-6),Y(0)+Math.sin(a-0.12)*(rr-6)); ctx.lineTo(X(0)+Math.cos(a-0.12)*(rr+6),Y(0)+Math.sin(a-0.12)*(rr+6)); ctx.closePath(); ctx.fill();
+        ctx.font=`11px ${C.mono}`; ctx.textAlign='left'; ctx.textBaseline='top'; ctx.fillText(`T = ${num(P.T)} N·m`,X(0)+rr*0.6,Y(0)-rr-4); ctx.fillStyle=C.muted; ctx.textAlign='center'; ctx.fillText('cross-section',X(0),Y(-ro)+16); }};
+  }
+}
+/* classic banded rainbow (blue → red) and a traffic-light safety scale */
+const RAINBOW=[[0,[38,38,190]],[0.2,[0,150,255]],[0.4,[0,220,170]],[0.55,[120,230,40]],[0.7,[255,230,0]],[0.85,[255,130,0]],[1,[220,20,20]]];
+function rainbow(t){ t=U.clamp(t,0,1); for(let i=1;i<RAINBOW.length;i++){ if(t<=RAINBOW[i][0]){ const [a,ca]=RAINBOW[i-1],[b,cb]=RAINBOW[i]; const k=(t-a)/(b-a); return ca.map((v,j)=>Math.round(v+(cb[j]-v)*k)); } } return RAINBOW[RAINBOW.length-1][1]; }
+const SFB=[[1,[205,25,25],'< 1 ✗'],[1.5,[255,140,0],'1 – 1.5'],[2,[240,215,0],'1.5 – 2'],[3,[120,205,60],'2 – 3'],[Infinity,[40,140,220],'> 3']];
+function sfColor(v){ for(const [lim,c] of SFB) if(v<lim) return c; return SFB[SFB.length-1][1]; }
+function openStress(){ const ex=FW.wins.find(f=>f.o.type==='fea'); if(ex){ex.dirty=true;front(ex);return ex;} const w=Math.min(innerWidth-20,1000),h=Math.min(innerHeight-90,640); return openFloat({type:'fea',w,h,x:Math.max(10,(innerWidth-w)/2),y:Math.max(60,(innerHeight-h)/2)}); }
+function renderFea(f){
+  const b=f.body; const P=FEA[FEA.geo]; const hasLam=typeof LAM!=='undefined';
+  b.innerHTML=`<div class="feagrid"><div class="feaside">
+    <label class="f" style="margin:0">Material<select id="fe-src" style="margin-top:3px"><option value="spec" ${FEA.src==='spec'?'selected':''}>Selected bench specimen (at its temperature)</option>${hasLam?`<option value="lam" ${FEA.src==='lam'?'selected':''}>Laminate from the designer</option>`:''}</select></label>
+    <div class="small feamat" id="fe-mat"></div>
+    <label class="f" style="margin:0">Part<select id="fe-geo" style="margin-top:3px">${FGEO.map(([k,n])=>`<option value="${k}" ${k===FEA.geo?'selected':''}>${n}</option>`).join('')}</select></label>
+    <div id="fe-dims" class="col" style="gap:2px"></div>
+    <label class="f" style="margin:4px 0 0">Colour by<select id="fe-q" style="margin-top:3px">${FQTY.map(([k,n])=>`<option value="${k}" ${k===FEA.qty?'selected':''}>${n}</option>`).join('')}</select></label>
+    <label class="small inline" style="margin-top:2px"><input type="checkbox" id="fe-band" ${FEA.bands?'checked':''}> Contour bands</label>
+    <div class="btns" style="margin-top:4px"><button class="btn" id="fe-cost">Estimate the cost of this part…</button></div></div>
+   <div class="feamain"><div class="feabox"><canvas id="fe-cv" aria-label="Colour-coded stress map"></canvas><div class="tip" hidden id="fe-tip"></div></div><div id="fe-sumwrap"></div></div></div>`;
+  $('#fe-src').addEventListener('change',e=>{FEA.src=e.target.value;feaDraw();});
+  $('#fe-geo').addEventListener('change',e=>{FEA.geo=e.target.value;renderFea(f);});
+  $('#fe-q').addEventListener('change',e=>{FEA.qty=e.target.value;feaDraw();});
+  $('#fe-band').addEventListener('change',e=>{FEA.bands=e.target.checked;feaDraw();});
+  $('#fe-cost').addEventListener('click',()=>{ const M=feaMat(), G=M&&feaModel(M); if(!M||!G) return; COST_UI.src=M.lam?'lam':'spec'; COST_UI.mass=+(G.vol*M.rho/1e6).toFixed(4); COST_UI.area=+(G.vol/Math.max(1,(FEA.src==='lam'?lamABD(LAM.plies).h:1))/1e6).toFixed(4); openCost(); });
+  const dims=$('#fe-dims');
+  dims.innerHTML=FDIM[FEA.geo].map(([k,n,lo,hi,stp,u,mode])=>{ const max=mode==='ofW'?P.W*hi:(mode==='ofro'?P.ro*hi:hi); const lg=mode==='log'; const v=P[k];
+    return `<label class="f" style="margin:0">${n} <span class="mono" data-v="${k}" style="float:right;text-transform:none"></span><input type="range" data-k="${k}" min="${lg?Math.log10(lo):lo}" max="${lg?Math.log10(max):max}" step="${lg?0.01:stp}" value="${lg?Math.log10(v):v}"></label>`; }).join('');
+  const lab=()=>FDIM[FEA.geo].forEach(([k,,,,,u])=>{ const e=dims.querySelector(`[data-v="${k}"]`); if(e) e.textContent=num(P[k],3)+' '+u; });
+  dims.addEventListener('input',e=>{ const k=e.target.dataset.k; if(!k) return; const d=FDIM[FEA.geo].find(q=>q[0]===k); let v=d[6]==='log'?Math.pow(10,+e.target.value):+e.target.value; P[k]=+v.toPrecision(4);
+    if(FEA.geo==='hole'&&k==='W'){ const dd=dims.querySelector('[data-k="D"]'); dd.max=P.W*0.8; P.D=Math.min(P.D,P.W*0.8); }
+    if(FEA.geo==='shaft'&&k==='ro'){ const dd=dims.querySelector('[data-k="ri"]'); dd.max=P.ro*0.95; P.ri=Math.min(P.ri,P.ro*0.95); }
+    lab(); feaDraw(); });
+  lab();
+  const cv=$('#fe-cv'), tip=$('#fe-tip');
+  cv.addEventListener('pointermove',e=>{ const r=cv.getBoundingClientRect(); const x=e.clientX-r.left,y=e.clientY-r.top; const h=cv._hit; if(!h){tip.hidden=true;return;} const v=h(x,y); if(!v){tip.hidden=true;return;}
+    tip.hidden=false; tip.innerHTML=`<div class="mono tiny">σx ${num(v.sx,3)} · σy ${num(v.sy,3)} · τxy ${num(v.txy,3)} MPa<br><b>von Mises ${num(v.vm,3)} MPa</b> · SF ${isFinite(v.sf)?num(v.sf,3):'∞'}</div>`; tip.style.left=Math.min(x+14,r.width-230)+'px'; tip.style.top=Math.max(4,y-48)+'px'; });
+  cv.addEventListener('pointerleave',()=>tip.hidden=true);
+  requestAnimationFrame(feaDraw);
+}
+function feaDraw(){
+  const cv=$('#fe-cv'); if(!cv) return; const M=feaMat();
+  if($('#fe-mat')) $('#fe-mat').innerHTML=M?`<b>${esc(M.n)}</b>${M.lam?'':` at ${fT(M.T)}`} · E ${num(M.E/1000,3)} GPa · allowable ${num(M.allow,3)} MPa (${M.lam?'first-ply failure in x':(M.brittle?'tensile strength: brittle':'yield strength')})`:'<span style="color:var(--crit)">Select a specimen on the bench first.</span>';
+  const {ctx,w,h}=fit(cv); ctx.clearRect(0,0,w,h); if(!M||w<80) return;
+  const G=feaModel(M); const pad={l:28,r:84,t:36,b:30}; const pw=w-pad.l-pad.r, ph=h-pad.t-pad.b;
+  const dx=G.xr[1]-G.xr[0], dy=G.yr[1]-G.yr[0]; let sx=pw/dx, sy=ph/dy, exag=1;
+  if(G.exag){ sy=Math.min(ph*0.55/dy,sx*40); exag=sy/sx; if(exag<1.05){sy=sx;exag=1;} } else { const s=Math.min(sx,sy); sx=sy=s; }
+  const ox=pad.l+(pw-dx*sx)/2, oy=pad.t+(ph-dy*sy)/2;
+  const shape=G.shape||(()=>0); const dsc=G.defl?Math.min(40,(ph*0.18)/Math.max(1e-9,G.defl*sy))*sy:0;
+  const X=x=>ox+(x-G.xr[0])*sx, Y=y=>oy+(G.yr[1]-y)*sy; const SH=x=>shape(x)*dsc;
+  // field
+  const N=Math.max(80,Math.min(320,Math.round(dx*sx/2))), Mh=Math.max(20,Math.min(220,Math.round(dy*sy/2)));
+  const vals=[]; let mx=-Infinity, mn=Infinity, best=null; const q=FEA.qty;
+  const valOf=s=>{ const vm=G.vmf?G.vmf(s):vmOf(s.sx,s.sy,s.txy); return {vm,sf:M.allow/Math.max(vm,1e-9),...s}; };
+  for(let j=0;j<Mh;j++) for(let i=0;i<N;i++){ const x=G.xr[0]+(i+0.5)/N*dx, y=G.yr[1]-(j+0.5)/Mh*dy; const s=G.st(x,y); if(!s){vals.push(null);continue;} const v=valOf(s); const k=q==='sf'?v.sf:v[q]; vals.push(k); if(k>mx){mx=k;} if(k<mn) mn=k; if(!best||v.vm>best.vm) best={...v,x,y}; }
+  if(q==='sf'){ mn=Math.min(mn,0.5); } else if(q!=='vm'){ const a=Math.max(Math.abs(mx),Math.abs(mn),1e-9); if(mn<0){mn=-a;mx=a;} else mn=0; } else mn=0;
+  const off=feaDraw._o||(feaDraw._o=document.createElement('canvas')); off.width=N; off.height=Mh; const oc=off.getContext('2d'); const img=oc.createImageData(N,Mh);
+  const bands=FEA.bands?12:0;
+  vals.forEach((v,k)=>{ const o=k*4; if(v==null){img.data[o+3]=0;return;} let c; if(q==='sf') c=sfColor(v); else { let t=(v-mn)/Math.max(1e-12,mx-mn); if(bands) t=Math.min(bands-1,Math.floor(t*bands))/(bands-1); c=rainbow(t); } img.data[o]=c[0];img.data[o+1]=c[1];img.data[o+2]=c[2];img.data[o+3]=255; });
+  oc.putImageData(img,0,0);
+  ctx.save(); ctx.imageSmoothingEnabled=!FEA.bands&&q!=='sf';
+  if(G.exag&&G.defl){ // draw column strips displaced by deflection
+    for(let i=0;i<N;i++){ const x=G.xr[0]+(i+0.5)/N*dx; ctx.drawImage(off,i,0,1,Mh,X(G.xr[0])+i*(dx*sx/N),Y(G.yr[1])+SH(x),Math.ceil(dx*sx/N)+0.5,dy*sy); }
+  } else ctx.drawImage(off,X(G.xr[0]),Y(G.yr[1]),dx*sx,dy*sy);
+  ctx.restore();
+  if(G.exag&&G.defl){ ctx.strokeStyle=C.muted; ctx.setLineDash([4,3]); ctx.strokeRect(X(G.xr[0]),Y(G.yr[1]),dx*sx,dy*sy); ctx.setLineDash([]); ctx.strokeStyle=C.ink; ctx.lineWidth=1.2; ctx.beginPath(); for(let i=0;i<=60;i++){const x=G.xr[0]+i/60*dx; i?ctx.lineTo(X(x),Y(G.yr[1])+SH(x)):ctx.moveTo(X(x),Y(G.yr[1])+SH(x));} for(let i=60;i>=0;i--){const x=G.xr[0]+i/60*dx; ctx.lineTo(X(x),Y(G.yr[0])+SH(x));} ctx.closePath(); ctx.stroke(); }
+  if(G.draw) G.draw(ctx,X,Y,x=>SH(x));
+  // hottest spot marker
+  if(best){ const bx=X(best.x), by=Y(best.y)+SH(best.x); ctx.strokeStyle=C.ink; ctx.lineWidth=1.5; ctx.beginPath(); ctx.arc(bx,by,7,0,7); ctx.stroke(); ctx.beginPath(); ctx.moveTo(bx+5,by-5); ctx.lineTo(bx+16,by-16); ctx.stroke(); ctx.font=`600 11px ${C.mono}`; ctx.fillStyle=C.ink; ctx.textAlign='left'; ctx.textBaseline='bottom'; ctx.fillText(`max ${num(best.vm,3)} MPa`,bx+17,by-16); }
+  // colour bar
+  const bx=w-pad.r+18, by=pad.t, bh=ph, bw=14; ctx.font=`10px ${C.mono}`; ctx.textBaseline='middle'; ctx.textAlign='left';
+  if(q==='sf'){ const n=SFB.length; SFB.forEach(([lim,c,lab],i)=>{ const y=by+bh-(i+1)*bh/n; ctx.fillStyle=`rgb(${c.join(',')})`; ctx.fillRect(bx,y,bw,bh/n); ctx.fillStyle=C.ink; ctx.fillText(lab,bx+bw+4,y+bh/n/2); }); }
+  else { const n=bands||60; for(let i=0;i<n;i++){ const t=i/(n-1); const c=rainbow(t); ctx.fillStyle=`rgb(${c.join(',')})`; ctx.fillRect(bx,by+bh-(i+1)*bh/n,bw,bh/n+0.5); }
+    ctx.fillStyle=C.ink; for(let i=0;i<=4;i++){ const v=mn+(mx-mn)*i/4; ctx.fillText(num(v,3),bx+bw+4,by+bh-i*bh/4); } }
+  ctx.strokeStyle=C.ink; ctx.lineWidth=1; ctx.strokeRect(bx+0.5,by+0.5,bw,bh);
+  ctx.fillStyle=C.ink; ctx.font=`600 11.5px ${C.cond}`; ctx.textAlign='left'; ctx.textBaseline='top'; ctx.fillText(`${(G.lab&&G.lab[q])||FQTY.find(z=>z[0]===q)[1]}${q==='sf'?'':' (MPa)'}`,pad.l,6);
+  ctx.font=`10.5px ${C.mono}`; ctx.fillStyle=C.muted; ctx.textAlign='right'; ctx.fillText(G.exag&&exag>1.05?`depth drawn ×${num(exag,2)}, deflection exaggerated`:'',w-pad.r,6);
+  // hover map
+  cv._hit=(px,py)=>{ const x=G.xr[0]+(px-ox)/sx; let y=G.yr[1]-(py-oy)/sy; if(G.exag&&G.defl) y=G.yr[1]-(py-SH(x)-oy)/sy; if(x<G.xr[0]||x>G.xr[1]||y<G.yr[0]||y>G.yr[1]) return null; const s=G.st(x,y); return s?valOf(s):null; };
+  // summary
+  const SF=best?best.sf:Infinity, mass=G.vol*M.rho/1e6;
+  const verdict=SF>=1.5?['good','Safe']:SF>=1?['warn','Marginal']:['crit','Fails'];
+  $('#fe-sumwrap').innerHTML=`<div class="chscore ${SF>=1?'ok':'bad'}" style="margin-top:6px"><div class="big" style="font-size:20px;color:var(--${verdict[0]})">${SF>=1?'✓':'✗'}</div><div><b>${verdict[1]}: safety factor ${num(SF,3)}</b><div class="small">Peak von Mises ${num(best?best.vm:0,4)} MPa vs allowable ${num(M.allow,4)} MPa · part mass ${num(mass,3)} kg${M.lam?' · composite: von Mises is only a rough guide; check plies in the laminate designer':''}${M.brittle?' · brittle material: use a larger safety factor (2–4)':''}</div></div></div>${G.extra?G.extra():''}<dl class="kv" style="margin-top:6px">${G.sum.map(([a,v])=>`<dt>${a}</dt><dd>${v}</dd>`).join('')}</dl>`;
+}
+
+/* ============ COST ESTIMATOR ============ */
+const COST_UI={src:'lam',proc:null,qty:100,rate:45,area:1,mass:2,shape:'plate',L:300,Wd:200,t:5};
+const CORE_COST={alhc:60,nomex:90,pvc:25,pmi:70,pet:12,balsa:12};
+// process models. per part: material×btf(+premium), labour h, machine $/h × h, tooling / life, consumables
+const PROCS={
+ comp:[
+  {k:'hand',n:'Hand lay-up (wet)',btf:1.15,prem:1,lab:1.6,labA:0.4,mach:0,machH:0,tool:2000,life:300,cons:6,vfMax:0.45,note:'Cheapest tooling, slowest, lowest fibre fraction and the most variable quality.'},
+  {k:'infuse',n:'Vacuum infusion',btf:1.12,prem:1,lab:0.9,labA:0.5,mach:0,machH:0,tool:6000,life:800,cons:28,vfMax:0.58,note:'Resin is pulled through dry fabric under vacuum: boats, wind blades.'},
+  {k:'auto',n:'Prepreg + autoclave',btf:1.25,prem:1.8,lab:1.1,labA:0.6,mach:300,machH:1.6,tool:25000,life:500,cons:32,vfMax:0.65,note:'Aerospace standard: best quality, but prepreg, consumables and autoclave time are expensive.'},
+  {k:'ooa',n:'Out-of-autoclave prepreg',btf:1.2,prem:1.6,lab:1.0,labA:0.6,mach:60,machH:2,tool:12000,life:600,cons:26,vfMax:0.6,note:'Oven cure under vacuum only; cheaper than autoclave with slightly more porosity.'},
+  {k:'afp',n:'Automated fibre placement',btf:1.05,prem:1.9,lab:0.15,labA:0.1,mach:450,machHk:0.12,tool:40000,life:2000,cons:30,vfMax:0.65,note:'A robot lays prepreg tows: little scrap and labour, very expensive machine. Wing skins, fuselage barrels.'},
+  {k:'rtm',n:'Resin transfer moulding (RTM)',btf:1.08,prem:1,lab:0.3,labA:0.15,mach:120,machH:0.5,tool:60000,life:20000,cons:3,vfMax:0.58,note:'Dry preform in a closed, heated steel mould: good surfaces both sides, mid-to-high volume.'},
+  {k:'fw',n:'Filament winding',btf:1.04,prem:1,lab:0.2,labA:0.05,mach:80,machHk:0.2,tool:3000,life:2000,cons:2,vfMax:0.65,note:'Only for tubes, shafts and pressure vessels wound on a mandrel.'},
+  {k:'pult',n:'Pultrusion',btf:1.03,prem:1,lab:0.05,labA:0,mach:100,machHk:0.05,tool:15000,life:100000,cons:0.5,vfMax:0.65,note:'Continuous constant-section profiles (rods, I-beams, ladder rails): cheapest per kg.'},
+  {k:'smc',n:'SMC compression moulding',btf:1.05,prem:0.6,lab:0.08,labA:0,mach:220,machH:0.05,tool:150000,life:200000,cons:0.5,vfMax:0.3,note:'Chopped-glass sheet pressed in a hot steel die: car body panels at high volume. Fibres are short, so strength is much lower.'}],
+ met:[
+  {k:'sand',n:'Sand casting',btf:1.4,lab:1.0,labK:0.05,mach:40,machH:0.3,tool:3000,life:2000,cons:0.4,note:'Low tooling, rough surface; needs machining of critical faces.'},
+  {k:'die',n:'High-pressure die casting',btf:1.15,lab:0.02,labK:0,mach:160,machH:0.02,tool:80000,life:100000,cons:0.1,maxTm:1400,note:'Only for low-melting alloys (Al, Mg, Zn, Cu). Fast, precise, very expensive dies.'},
+  {k:'forge',n:'Closed-die forging',btf:1.3,lab:0.1,labK:0.01,mach:220,machH:0.04,tool:30000,life:20000,cons:0.3,note:'Strong parts with aligned grain flow: crankshafts, con-rods, landing gear.'},
+  {k:'mach',n:'Machining from solid bar',btf:3,lab:0.25,labK:0,mach:85,rem:true,tool:500,life:1e9,cons:0.2,note:'No tooling, any shape, but most of the material ends up as chips.'},
+  {k:'stamp',n:'Sheet stamping',btf:1.35,lab:0.01,labK:0,mach:150,machH:0.003,tool:50000,life:500000,cons:0.05,note:'Car bodies and appliance panels: pennies per part at high volume.'},
+  {k:'laser',n:'Laser cutting + bending sheet',btf:1.25,lab:0.15,labK:0,mach:120,machH:0.08,tool:0,life:1,cons:0.2,note:'No tooling: ideal for prototypes and small batches of sheet parts.'},
+  {k:'lpbf',n:'Metal 3D printing (laser powder bed)',btf:1.1,prem:4,lab:2,labK:0,mach:110,print:20,tool:0,life:1,cons:5,note:'Complex shapes, no tooling, but powder costs 3–5× bar stock and builds run at ~20 cm³/h.'}],
+ poly:[
+  {k:'inj',n:'Injection moulding',btf:1.05,lab:0.005,labK:0,mach:70,machH:0.008,tool:30000,life:500000,cons:0.02,note:'The cheapest way to make millions of plastic parts once the mould is paid for.'},
+  {k:'thermo',n:'Thermoforming',btf:1.3,lab:0.02,labK:0,mach:50,machH:0.02,tool:5000,life:50000,cons:0.05,note:'Heated sheet sucked over a mould: trays, liners, packaging.'},
+  {k:'pmach',n:'Machining from plate',btf:3,lab:0.2,labK:0,mach:70,rem:true,remRate:8,tool:300,life:1e9,cons:0.1,note:'Prototypes and low volumes.'},
+  {k:'fdm',n:'FDM 3D printing',btf:1.1,prem:8,lab:0.2,labK:0,mach:3,print:30,tool:0,life:1,cons:0.2,note:'Filament costs far more than pellets; slow but no tooling.'}],
+ cer:[
+  {k:'press',n:'Pressing + sintering',btf:1.2,lab:0.1,labK:0.05,mach:40,machH:0.3,tool:10000,life:50000,cons:0.5,note:'Powder is pressed to shape and fired; parts shrink 15–20% in the kiln.'},
+  {k:'grind',n:'Diamond grinding from blank',btf:2,lab:0.5,labK:0,mach:120,rem:true,remRate:0.05,tool:500,life:1e9,cons:2,note:'Fired ceramic is so hard only diamond tools can shape it: slow and costly.'}]
+};
+function costFamily(src,m){ if(src==='lam'||src==='sw') return 'comp'; if(!m) return 'met'; const k=kind(m); if(m.c==='composite') return 'comp'; if(k==='met') return 'met'; if(k==='poly') return 'poly'; return 'cer'; }
+function costBasis(src){
+  const U_=COST_UI;
+  if(src==='lam'||src==='sw'){ lamInit(); const L=lamABD(LAM.plies); const A=U_.area; const fibreKg={},resinKg={v:0}; let lamKg=0;
+    LAM.plies.forEach(p=>{ const P=plyProps(p.f), rf=MAT[p.f], mt=MAT[LAM.matrix]; const vol=p.t/1000*A; const fk=vol*LAM.vf*rf.rho*1000, rk=vol*(1-LAM.vf)*mt.rho*1000; fibreKg[p.f]=(fibreKg[p.f]||0)+fk; resinKg.v+=rk; lamKg+=fk+rk; void P; });
+    const out={kind:'comp',A,lamKg,fibreKg,resinKg:resinKg.v,mass:lamKg,core:null,label:`${num(A,3)} m² laminate ${lamCode()}`};
+    if(src==='sw'){ const S=LAM.sw, C_=CORES[S.core]; const ck=C_.rho*S.c*A; out.core={kg:ck,n:C_.n,cost:ck*CORE_COST[S.core]+(C_.kind==='hc'?15*A*2:8*A*2)}; out.lamKg*=2; Object.keys(fibreKg).forEach(k=>fibreKg[k]*=2); out.resinKg*=2; out.mass=out.lamKg+ck; out.label=`${num(A,3)} m² sandwich: 2 × ${lamCode()} faces on ${S.c} mm ${C_.n.split(',')[0].toLowerCase()}`; }
+    return out; }
+  const s=spec(W.sel); if(!s) return null; const m=s.m; const mass=U_.mass; const kd=costFamily('spec',m);
+  if(kd==='comp') return {kind:'comp',m,mass,lamKg:mass,A:mass/(m.rho*4),core:null,label:`${num(mass,3)} kg part in ${m.n} (≈${num(mass/(m.rho*4),3)} m² at 4 mm)`};
+  return {kind:kd,m,mass,label:`${num(mass,3)} kg part in ${m.n}`};
+}
+function costEval(B,P,qty){
+  const rate=COST_UI.rate; const r={};
+  if(B.kind==='comp'){
+    if(B.fibreKg){ const mt=MAT[LAM.matrix]; const fib=Object.entries(B.fibreKg).reduce((s,[id,kg])=>s+kg*costOf(MAT[id]),0), res=B.resinKg*costOf(mt);
+      r.fibre=fib*P.btf*(P.prem<1?P.prem:1); r.resin=res*P.btf; if(P.prem>1) r.prepreg=(fib+res)*P.btf*(P.prem-1); }
+    else { const base=B.mass*costOf(B.m)*P.btf; r.material=base*(P.prem<1?P.prem:1); if(P.prem>1) r.prepreg=base*(P.prem-1); }
+    r.core=B.core?B.core.cost:0;
+    r.cons=P.cons*B.A*(B.core?1.3:1);
+    r.labour=rate*(P.lab*B.lamKg+(P.labA||0)*B.A+(B.core?0.3*B.A:0));
+    r.machine=P.mach*(P.machH!=null?P.machH*(1+B.A*0.2):(P.machHk||0)*B.lamKg);
+    r.tooling=P.tool*Math.ceil(qty/P.life)/qty*(1+0.15*Math.max(0,B.A-1));
+  } else { const m=B.m, c=costOf(m);
+    r.material=B.mass*c*P.btf*(P.prem||1); r.labour=rate*(P.lab+(P.labK||0)*B.mass);
+    let mh=P.machH||0; if(P.rem){ const rr=P.remRate||(m.ys>700||/ti|ni|in7|wasp|c276/.test(m.id)?0.5:(m.ys>250?2:6)); mh+=B.mass*(P.btf-1)/rr; } if(P.print){ mh+=B.mass/m.rho*1000/P.print; }
+    r.machine=P.mach*mh; r.tooling=P.tool*Math.ceil(qty/P.life)/qty; r.cons=P.cons*Math.max(1,B.mass);
+    r.energy=B.kind==='met'&&['sand','die','forge'].includes(P.k)?B.mass*P.btf*0.35:0; }
+  const tot=Object.values(r).reduce((a,b)=>a+b,0); return {parts:r,tot};
+}
+const CPCOL={fibre:'#3d3f46',prepreg:'#7a5aa8',resin:'#c9a84a',core:'#d1b26e',material:'#6b7f96',cons:'#4fa3a5',labour:'#d0682e',machine:'#b84040',tooling:'#5a8a3a',energy:'#e0b000'};
+const CPNAME={fibre:'Fibre',prepreg:'Prepreg premium',resin:'Resin',core:'Core + adhesive',material:'Material',cons:'Consumables',labour:'Labour',machine:'Machine time',tooling:'Tooling (amortised)',energy:'Energy'};
+function openCost(){ const ex=FW.wins.find(f=>f.o.type==='cost'); if(ex){ex.dirty=true;front(ex);return ex;} const w=Math.min(innerWidth-20,980),h=Math.min(innerHeight-90,640); return openFloat({type:'cost',w,h,x:Math.max(10,(innerWidth-w)/2),y:Math.max(60,(innerHeight-h)/2)}); }
+function renderCost(f){
+  const U_=COST_UI, b=f.body; const s=spec(W.sel);
+  b.innerHTML=`<div class="feagrid"><div class="feaside">
+    <label class="f" style="margin:0">What are you making?<select id="co-src" style="margin-top:3px"><option value="lam" ${U_.src==='lam'?'selected':''}>Composite panel (laminate designer)</option><option value="sw" ${U_.src==='sw'?'selected':''}>Sandwich panel (laminate designer)</option><option value="spec" ${U_.src==='spec'?'selected':''}>A part in the selected specimen's material${s?` (${esc(s.m.n)})`:''}</option></select></label>
+    <div id="co-geo"></div>
+    <label class="f" style="margin:0">Process<select id="co-p" style="margin-top:3px"></select></label><p class="tiny muted" id="co-pn" style="margin:0"></p>
+    <label class="f" style="margin:0">Production quantity <span class="mono" id="co-qv" style="float:right"></span><input type="range" id="co-q" min="0" max="6" step="0.05" value="${Math.log10(U_.qty)}"></label>
+    <label class="f" style="margin:0">Labour rate <span class="mono" id="co-rv" style="float:right"></span><input type="range" id="co-r" min="5" max="120" step="1" value="${U_.rate}"></label>
+    <p class="tiny muted" style="margin:0">Order-of-magnitude estimates from typical 2020s prices and cycle times. Use them to compare options, not to quote a job.</p></div>
+   <div class="feamain"><div id="co-sum"></div><h4 style="margin:6px 0 2px">Where the money goes (per part)</h4><div class="cobar" id="co-bar"></div><div class="legend" id="co-leg" style="margin:4px 0 0"></div>
+     <h4 style="margin:8px 0 2px">Cost per part vs quantity, every process</h4><canvas class="cv" id="co-q-cv" style="height:220px"></canvas><div class="legend" id="co-qleg" style="margin:2px 0 0"></div><div id="co-cmp"></div></div></div>`;
+  const geo=()=>{ const g=$('#co-geo'); if(U_.src==='spec'){ g.innerHTML=`<label class="f" style="margin:0">Finished part mass <span class="mono" id="co-mv" style="float:right"></span><input type="range" id="co-m" min="-2" max="3" step="0.01" value="${Math.log10(U_.mass)}"></label>`; $('#co-m').addEventListener('input',e=>{U_.mass=+Math.pow(10,+e.target.value).toPrecision(3);$('#co-mv').textContent=num(U_.mass,3)+' kg';costDraw();}); $('#co-mv').textContent=num(U_.mass,3)+' kg'; }
+    else { g.innerHTML=`<label class="f" style="margin:0">Panel area <span class="mono" id="co-av" style="float:right"></span><input type="range" id="co-a" min="-2" max="2" step="0.01" value="${Math.log10(U_.area)}"></label><div class="btns"><button class="btn" id="co-lam">Edit the ${U_.src==='sw'?'sandwich':'laminate'}…</button></div>`; $('#co-a').addEventListener('input',e=>{U_.area=+Math.pow(10,+e.target.value).toPrecision(3);$('#co-av').textContent=num(U_.area,3)+' m²';costDraw();}); $('#co-av').textContent=num(U_.area,3)+' m²'; $('#co-lam').addEventListener('click',()=>openLaminate(U_.src==='sw'?'sw':'lay')); } };
+  const procs=()=>{ const B=costBasis(U_.src); const fam=B?B.kind:'met'; const L=PROCS[fam].filter(p=>!(p.maxTm&&B&&B.m&&B.m.tm>p.maxTm)); if(!L.find(p=>p.k===U_.proc)) U_.proc=L[0].k; $('#co-p').innerHTML=L.map(p=>`<option value="${p.k}" ${p.k===U_.proc?'selected':''}>${p.n}</option>`).join(''); };
+  $('#co-src').addEventListener('change',e=>{U_.src=e.target.value;geo();procs();costDraw();});
+  $('#co-p').addEventListener('change',e=>{U_.proc=e.target.value;costDraw();});
+  $('#co-q').addEventListener('input',e=>{U_.qty=Math.max(1,Math.round(Math.pow(10,+e.target.value)));costDraw();});
+  $('#co-r').addEventListener('input',e=>{U_.rate=+e.target.value;costDraw();});
+  geo(); procs(); costDraw();
+}
+function costDraw(){
+  const U_=COST_UI; if(!$('#co-sum')) return; $('#co-qv').textContent=num(U_.qty)+' parts'; $('#co-rv').textContent='$'+U_.rate+'/h';
+  const B=costBasis(U_.src); if(!B){ $('#co-sum').innerHTML='<p class="small" style="color:var(--crit)">Select a specimen on the bench first.</p>'; return; }
+  const L=PROCS[B.kind].filter(p=>!(p.maxTm&&B.m&&B.m.tm>p.maxTm)); const P=L.find(p=>p.k===U_.proc)||L[0]; $('#co-pn').textContent=P.note;
+  const R=costEval(B,P,U_.qty); const per=R.tot, perKg=per/Math.max(B.mass,1e-6);
+  const warn=[]; if(B.kind==='comp'&&B.fibreKg&&LAM.vf>P.vfMax+0.001) warn.push(`${P.n} rarely reaches ${Math.round(LAM.vf*100)}% fibre; about ${Math.round(P.vfMax*100)}% is typical, so expect lower stiffness.`);
+  if(P.k==='smc'&&Object.keys(B.fibreKg||{}).some(id=>!/glass/.test(id))) warn.push('SMC normally uses chopped glass; continuous plies cannot be compression-moulded this way.');
+  $('#co-sum').innerHTML=`<div class="chscore ok"><div class="big" style="font-size:22px;color:var(--ink)">$</div><div><b>${'$'+num(per,3)} per part · $${num(perKg,3)}/kg · $${num(per*U_.qty,3)} for ${num(U_.qty)}</b><div class="small">${esc(B.label)} · ${num(B.mass,3)} kg · ${esc(P.n)}</div></div></div>${warn.map(t=>`<div class="flag warn" style="margin-top:4px"><div><b>Note</b><div class="small">${esc(t)}</div></div></div>`).join('')}`;
+  const parts=Object.entries(R.parts).filter(([,v])=>v>per*0.002);
+  $('#co-bar').innerHTML=parts.map(([k,v])=>`<i style="width:${v/per*100}%;background:${CPCOL[k]}" title="${CPNAME[k]}: $${num(v,3)}"></i>`).join('');
+  $('#co-leg').innerHTML=parts.sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<span><i style="background:${CPCOL[k]}"></i>${CPNAME[k]} $${num(v,3)} (${Math.round(v/per*100)}%)</span>`).join('');
+  // quantity curves
+  const qs=[]; for(let e=0;e<=6.001;e+=0.1) qs.push(Math.max(1,Math.round(Math.pow(10,e))));
+  const pal=TEST_COLS.concat(['#6b7f96','#c9a84a','#4fa3a5']);
+  const series=L.map((p,i)=>({name:p.n,color:pal[i%pal.length],width:p.k===P.k?3:1.5,dash:p.k===P.k?[]:[5,3],pts:qs.map(q=>[q,costEval(B,p,q).tot])}));
+  const all=series.flatMap(s=>s.pts.map(q=>q[1]));
+  drawChart($('#co-q-cv'),{xr:[1,1e6],yr:[Math.pow(10,Math.floor(Math.log10(Math.min(...all)))),Math.pow(10,Math.ceil(Math.log10(Math.max(...all))))],xlog:true,ylog:true,series,marks:[{x:U_.qty,label:'your quantity',color:C.ink}],points:[{x:U_.qty,y:per,color:C.ink,r:5}],xlabel:'parts made',ylabel:'$ per part',xunit:'parts',yunit:'$',padL:56,xfmt:v=>v>=1000?sci(v,1).replace(/^1\.0×|^1×/,''):num(v)});
+  $('#co-qleg').innerHTML=series.map(s=>`<span><i style="background:${s.color}"></i>${esc(s.name)}</span>`).join('');
+  // equal-stiffness comparison for composite panels
+  if(B.kind==='comp'&&B.fibreKg){ const L_=lamABD(LAM.plies), e=lamEff(L_); const h=B.core?null:L_.h; let rows='';
+    if(h){ const D=e.Efx*h*h*h; rows=[['al6061','laser'],['st1018','laser'],['ti64','laser']].filter(([id])=>MAT[id]).map(([id])=>{ const m=MAT[id]; const t=Math.cbrt(D/m.E); const kg=m.rho*t*B.A; const c=costEval({kind:'met',m,mass:kg},PROCS.met.find(p=>p.k==='laser'),U_.qty).tot; return `<tr><td style="text-align:left">${esc(m.n)}</td><td>${num(t,3)} mm</td><td>${num(kg,3)} kg</td><td>$${num(c,3)}</td></tr>`; }).join(''); }
+    $('#co-cmp').innerHTML=h?`<h4 style="margin:8px 0 2px">Same bending stiffness in metal sheet (laser cut)</h4><div class="scroll-x"><table class="chemtab"><tr><th style="text-align:left">Material</th><th>Thickness</th><th>Mass</th><th>Cost/part</th></tr><tr style="font-weight:700"><td style="text-align:left">Your composite</td><td>${num(h,3)} mm</td><td>${num(B.mass,3)} kg</td><td>$${num(per,3)}</td></tr>${rows}</table></div>`:'';
+  } else $('#co-cmp').innerHTML='';
+}
+Object.assign(GLOSS,{
+ vonmises:{t:'von Mises stress',sym:'σ_vM',unit:'MPa',cat:'Mechanical',
+  what:'A single equivalent stress that combines all the stress components at a point.',
+  means:'Ductile metals yield when the von Mises stress reaches the uniaxial yield strength, whatever the mix of tension and shear. Stress maps are usually coloured by it.',
+  formula:['σ_vM = √(σx² − σxσy + σy² + 3τxy²)   (plane stress)','Safety factor SF = σ_y / σ_vM,max','Pure shear: σ_vM = √3·τ'],
+  model:'The stress analyzer uses exact textbook solutions: Kirsch (hole in a plate, with Heywood finite-width correction), beam theory (Mc/I and parabolic shear), thin-wall pressure vessels and torsion (Tr/J).'},
+ kt:{t:'Stress concentration factor',sym:'K_t',unit:'—',cat:'Mechanical',
+  what:'The ratio of the peak stress at a notch or hole to the nominal stress far away.',
+  means:'A round hole in a wide plate triples the stress at its edge. Sharp corners are much worse. In composites the factor grows with anisotropy: a stiff 0° laminate can reach 6 or more.',
+  formula:['Infinite plate, round hole: K_t = 3','Finite width (Heywood): K_t,net = 2 + (1 − d/W)³','Orthotropic plate (Lekhnitskii): K_t∞ = 1 + √(2(√(Ex/Ey) − ν_xy) + Ex/G_xy)'],
+  model:'Laminates use the Lekhnitskii factor scaled onto the isotropic field shape: a reasonable picture, not an exact orthotropic solution.'},
+ pcost:{t:'Manufacturing cost',sym:'C',unit:'$ per part',cat:'Design',
+  what:'Material, labour, machine time, tooling and consumables needed to make one part.',
+  means:'Tooling is a fixed cost shared across all the parts, so the cheapest process changes with quantity: hand lay-up wins for one boat hull, SMC or injection moulding for a million car parts.',
+  formula:['C = C_m·m·(buy-to-fly) + labour·rate + machine $/h·time + tooling/N + consumables','Buy-to-fly = material bought / material in the finished part'],
+  model:'Each process has a typical buy-to-fly ratio, labour per kg or m², machine rate and cycle time, tooling cost and tool life. Prepreg processes add a premium over separate fibre and resin.'}
+});
+/* ============ STRESS ANALYZER v2: choose a shape, then analyse it (beam theory · 2D finite elements · exact axisymmetric solutions) ============ */
+const SHP=[
+ {k:'rect',fam:'beam',n:'Rectangular bar',d:'Solid bar or flat strap'},
+ {k:'round',fam:'beam',n:'Round bar',d:'Solid rod, pin or axle'},
+ {k:'tube',fam:'beam',n:'Round tube',d:'Bike frame, scaffold pole'},
+ {k:'box',fam:'beam',n:'Box section',d:'Rectangular hollow section'},
+ {k:'I',fam:'beam',n:'I-beam',d:'Floor beams, crane rails'},
+ {k:'T',fam:'beam',n:'T-section',d:'Stiffeners, concrete T-beams'},
+ {k:'C',fam:'beam',n:'Channel',d:'Truck chassis rails, purlins'},
+ {k:'hole',fam:'fem',n:'Plate with a hole',d:'Bolt or rivet hole under tension'},
+ {k:'notch',fam:'fem',n:'Notched bar',d:'U-notches on both edges'},
+ {k:'step',fam:'fem',n:'Stepped bar with fillet',d:'Shoulder on a shaft or bar'},
+ {k:'lbr',fam:'fem',n:'L-bracket',d:'Wall bracket with a load at the tip'},
+ {k:'lug',fam:'fem',n:'Lug with pin',d:'Clevis / pin joint'},
+ {k:'crack',fam:'fem',n:'Edge-cracked plate',d:'Fracture mechanics check'},
+ {k:'blank',fam:'fem',n:'Draw your own',d:'Paint and erase material'},
+ {k:'thick',fam:'axi',n:'Thick-walled cylinder',d:'Gun barrel, hydraulic cylinder'},
+ {k:'vessel',fam:'axi',n:'Thin pressure vessel',d:'Gas tank with domed ends'},
+ {k:'disc',fam:'axi',n:'Rotating disc',d:'Flywheel or turbine disc'},
+ {k:'shaft',fam:'axi',n:'Shaft in torsion',d:'Drive shaft, solid or hollow'}];
+const SFAM={beam:'Beams & members',fem:'Plates & brackets (finite elements)',axi:'Vessels & rotating parts'};
+const SA={stage:'pick',shape:null,tab:'map',qty:'vm',deform:true,vec:false,paint:'off',brush:1,
+ beam:{rect:{b:40,h:80},round:{d:60},tube:{D:60,t:4},box:{B:60,H:100,t:5},I:{b:100,h:200,tf:10,tw:6},T:{b:100,h:120,tf:10,tw:8},C:{b:60,h:150,tf:9,tw:6},L:2000,sup:'ss',P:5000,a:0.5,w:0,N:0,T:0,self:false,xs:null},
+ fem:{W:200,H:80,t:5,D:30,nd:14,nr:5,ratio:0.55,R:8,c:20,F:20000,res:84,fix:'left',fixT:'roll',load:'right',ldir:'n',edits:{}}};
+function shapeIcon(k){ // small pictograms drawn as SVG
+  const P={rect:'<rect x="12" y="8" width="16" height="24"/>',round:'<circle cx="20" cy="20" r="12"/>',tube:'<circle cx="20" cy="20" r="12"/><circle cx="20" cy="20" r="8"/>',box:'<rect x="11" y="7" width="18" height="26"/><rect x="14" y="10" width="12" height="20"/>',
+   I:'<path d="M8 7h24v4H22v18h10v4H8v-4h10V11H8z"/>',T:'<path d="M7 7h26v5H22v21h-4V12H7z"/>',C:'<path d="M11 7h20v4H15v18h16v4H11z"/>',
+   hole:'<rect x="3" y="11" width="34" height="18"/><circle cx="20" cy="20" r="5"/>',notch:'<path d="M3 11h14a3 3 0 0 0 6 0h14v18H23a3 3 0 0 0-6 0H3z"/>',step:'<path d="M3 9h17q3 0 3 4v2h14v10H23v2q0 4-3 4H3z"/>',
+   lbr:'<path d="M6 4h9v22q0 2 2 2h19v8H6z"/>',lug:'<path d="M3 11h22a9 9 0 0 1 0 18H3z"/><circle cx="25" cy="20" r="4"/>',crack:'<path d="M3 11h16v8h1v-8h17v18H3z"/>',blank:'<rect x="4" y="10" width="32" height="20" stroke-dasharray="3 2"/><path d="M14 20h12M20 14v12"/>',
+   thick:'<circle cx="20" cy="20" r="14"/><circle cx="20" cy="20" r="7"/>',vessel:'<path d="M10 10h20a10 10 0 0 1 0 20H10a10 10 0 0 1 0-20z"/>',disc:'<circle cx="20" cy="20" r="14"/><circle cx="20" cy="20" r="3"/><path d="M27 7a15 15 0 0 1 6 6"/>',shaft:'<rect x="3" y="14" width="34" height="12"/><path d="M8 14l4 12M16 14l4 12M24 14l4 12"/>'};
+  return `<svg viewBox="0 0 40 40" aria-hidden="true">${P[k]||''}</svg>`;
+}
+function openStress(){ const ex=FW.wins.find(f=>f.o.type==='fea'); if(ex){ex.dirty=true;front(ex);return ex;} const w=Math.min(innerWidth-20,1060),h=Math.min(innerHeight-80,690); return openFloat({type:'fea',w,h,x:Math.max(10,(innerWidth-w)/2),y:Math.max(50,(innerHeight-h)/2)}); }
+function renderFea(f){ if(SA.stage==='pick'||!SA.shape) return renderPick(f); const S=SHP.find(q=>q.k===SA.shape); if(S.fam==='beam') return renderBeam(f); if(S.fam==='fem') return renderFem(f); return renderAxi(f); }
+function renderPick(f){
+  f.body.innerHTML=`<div class="pickhead"><b>Step 1 · Choose the shape</b><span class="small muted">Then set its size, material, supports and loads. Each family uses the method engineers use for that kind of part.</span></div>`+
+   Object.entries(SFAM).map(([fam,n])=>`<div class="ig" style="margin:10px 0 4px">${n}</div><div class="pickgrid">${SHP.filter(s=>s.fam===fam).map(s=>`<button class="pick" data-k="${s.k}"><span class="pkic">${shapeIcon(s.k)}</span><span class="pkn">${esc(s.n)}</span><span class="pkd">${esc(s.d)}</span></button>`).join('')}</div>`).join('')+
+   `<p class="tiny muted" style="margin:10px 0 0">Beams: Euler–Bernoulli beam elements with full section properties. Plates: plane-stress finite elements (4-node quads) solved with conjugate gradients. Vessels and discs: exact Lamé and rotating-disc solutions.</p>`;
+  f.body.querySelector('.pickhead').parentNode.addEventListener('click',e=>{const b=e.target.closest('.pick');if(!b)return;SA.shape=b.dataset.k;SA.stage='an';SA.tab='map';SA.fem.edits={};femSetDefaults();renderFea(f);});
+}
+const backBtn=()=>`<button class="btn" data-back style="padding:2px 8px">← Change shape</button>`;
+function matBlock(){ const hasLam=typeof LAM!=='undefined'; return `<label class="f" style="margin:0">Material<select id="sa-src" style="margin-top:3px"><option value="spec" ${FEA.src==='spec'?'selected':''}>Selected bench specimen (at its temperature)</option>${hasLam?`<option value="lam" ${FEA.src==='lam'?'selected':''}>Laminate from the designer</option>`:''}</select></label><div class="small feamat" id="fe-mat"></div>`; }
+function matLine(M){ return M?`<b>${esc(M.n)}</b>${M.lam?'':` at ${fT(M.T)}`} · E ${num(M.E/1000,3)} GPa · allowable ${num(M.allow,3)} MPa (${M.lam?'first-ply failure in x':(M.brittle?'tensile strength (brittle)':'yield strength')})`:'<span style="color:var(--crit)">Select a specimen on the bench first.</span>'; }
+function slider(id,label,v,lo,hi,step,u,log){ return `<label class="f" style="margin:0">${label} <span class="mono" data-sv="${id}" style="float:right;text-transform:none">${num(v,3)} ${u}</span><input type="range" data-s="${id}" min="${log?Math.log10(lo):lo}" max="${log?Math.log10(hi):hi}" step="${log?0.01:step}" value="${log?Math.log10(Math.max(v,lo)):v}" data-log="${log?1:0}" data-u="${u}"></label>`; }
+function bindSliders(root,obj,cb){ root.addEventListener('input',e=>{ const s=e.target.dataset.s; if(!s) return; let v=+e.target.value; if(e.target.dataset.log==='1') v=+Math.pow(10,v).toPrecision(3); obj[s]=v; const l=root.querySelector(`[data-sv="${s}"]`); if(l) l.textContent=num(v,3)+' '+e.target.dataset.u; cb(s); }); }
+const colourCtl=(opts)=>`<div class="row" style="flex-wrap:wrap;gap:6px 12px;align-items:center"><label class="small inline">Colour by <select id="sa-q" style="width:auto;padding:2px 6px">${opts.map(([k,n])=>`<option value="${k}" ${k===SA.qty?'selected':''}>${n}</option>`).join('')}</select></label><label class="small inline"><input type="checkbox" id="sa-band" ${FEA.bands?'checked':''}> Contour bands</label>`;
+
+/* ================= BEAMS ================= */
+function secGeom(k,d){ // y from bottom; returns {h, wid(y), inside(x,y), xc(off), outline}
+  if(k==='rect') return {h:d.h,bw:d.b,wid:y=>d.b,ins:(x,y)=>Math.abs(x)<=d.b/2&&y>=0&&y<=d.h};
+  if(k==='round'){const r=d.d/2;return {h:d.d,bw:d.d,wid:y=>2*Math.sqrt(Math.max(0,r*r-(y-r)*(y-r))),ins:(x,y)=>Math.hypot(x,y-r)<=r};}
+  if(k==='tube'){const R=d.D/2,r=Math.max(0,R-d.t);return {h:d.D,bw:d.D,wid:y=>{const o=2*Math.sqrt(Math.max(0,R*R-(y-R)**2)),i=2*Math.sqrt(Math.max(0,r*r-(y-R)**2));return o-i;},ins:(x,y)=>{const q=Math.hypot(x,y-R);return q<=R&&q>=r;}};}
+  if(k==='box') return {h:d.H,bw:d.B,wid:y=>(y<d.t||y>d.H-d.t)?d.B:2*d.t,ins:(x,y)=>Math.abs(x)<=d.B/2&&y>=0&&y<=d.H&&!(Math.abs(x)<d.B/2-d.t&&y>d.t&&y<d.H-d.t)};
+  if(k==='I') return {h:d.h,bw:d.b,wid:y=>(y<d.tf||y>d.h-d.tf)?d.b:d.tw,ins:(x,y)=>y>=0&&y<=d.h&&((y<d.tf||y>d.h-d.tf)?Math.abs(x)<=d.b/2:Math.abs(x)<=d.tw/2)};
+  if(k==='T') return {h:d.h,bw:d.b,wid:y=>y>d.h-d.tf?d.b:d.tw,ins:(x,y)=>y>=0&&y<=d.h&&(y>d.h-d.tf?Math.abs(x)<=d.b/2:Math.abs(x)<=d.tw/2)};
+  if(k==='C') return {h:d.h,bw:d.b,wid:y=>(y<d.tf||y>d.h-d.tf)?d.b:d.tw,ins:(x,y)=>y>=0&&y<=d.h&&x>=-d.b/2&&x<=d.b/2&&((y<d.tf||y>d.h-d.tf)?true:x<=-d.b/2+d.tw)};
+}
+const SECDIM={rect:[['b','Width b',5,300],['h','Depth h',5,500]],round:[['d','Diameter d',3,400]],tube:[['D','Outer diameter D',6,500],['t','Wall thickness t',0.5,40]],box:[['B','Width B',10,400],['H','Depth H',10,600],['t','Wall thickness t',0.8,40]],
+ I:[['b','Flange width b',20,500],['h','Depth h',40,1000],['tf','Flange thickness',2,60],['tw','Web thickness',2,40]],T:[['b','Flange width b',20,500],['h','Depth h',20,800],['tf','Flange thickness',2,60],['tw','Web thickness',2,40]],C:[['b','Flange width b',15,300],['h','Depth h',30,800],['tf','Flange thickness',2,40],['tw','Web thickness',2,30]]};
+function secProps(k,d){
+  const g=secGeom(k,d), n=800, dy=g.h/n; let A=0,Sy=0; const ys=[],bs=[];
+  for(let i=0;i<n;i++){const y=(i+0.5)*dy,b=g.wid(y);ys.push(y);bs.push(b);A+=b*dy;Sy+=b*y*dy;}
+  const yc=Sy/A; let I=0; for(let i=0;i<n;i++) I+=bs[i]*(ys[i]-yc)**2*dy;
+  const Q=new Float64Array(n+1); for(let i=n-1;i>=0;i--) Q[i]=Q[i+1]+bs[i]*(ys[i]-yc)*dy; // first moment of area above y_i
+  // Iz and x-centroid by raster
+  const m=220; let A2=0,Sx=0; const pts=[]; const xw=g.bw;
+  for(let i=0;i<m;i++)for(let j=0;j<m;j++){const x=-xw/2+(i+0.5)/m*xw,y=(j+0.5)/m*g.h; if(g.ins(x,y)){A2++;Sx+=x;pts.push(x);}}
+  const xc=Sx/A2, da=xw*g.h/(m*m); let Iz=0; pts.forEach(x=>Iz+=(x-xc)**2*da);
+  let J,tmax=0,Am=0; if(k==='rect'){const a=Math.min(d.b,d.h),b=Math.max(d.b,d.h),r=a/b;J=(1/3-0.21*r*(1-r**4/12))*b*a**3;tmax=a;}
+  else if(k==='round'){J=Math.PI*d.d**4/32;tmax=d.d/2;} else if(k==='tube'){const di=Math.max(0,d.D-2*d.t);J=Math.PI*(d.D**4-di**4)/32;tmax=d.D/2;}
+  else if(k==='box'){Am=(d.B-d.t)*(d.H-d.t);const p=2*((d.B-d.t)+(d.H-d.t));J=4*Am*Am*d.t/p;}
+  else if(k==='T'){J=(d.b*d.tf**3+(d.h-d.tf)*d.tw**3)/3;tmax=Math.max(d.tf,d.tw);} else {J=(2*d.b*d.tf**3+(d.h-2*d.tf)*d.tw**3)/3;tmax=Math.max(d.tf,d.tw);}
+  const tauT=T=>{ if(k==='round'||k==='tube') return T*tmax/J; if(k==='box') return T/(2*Am*d.t); return T*tmax/J; };
+  const Qat=y=>Q[U.clamp(Math.floor(y/dy),0,n)];
+  let acc=0,yp=0; for(let i=0;i<n;i++){ acc+=bs[i]*dy; if(acc>=A/2){ yp=ys[i]-(acc-A/2)/Math.max(bs[i],1e-9); break; } }
+  let Zp=0; for(let i=0;i<n;i++) Zp+=bs[i]*Math.abs(ys[i]-yp)*dy;
+  let e_sc=null; if(k==='C'){ const bf=d.b-d.tw/2, hh=d.h-d.tf; e_sc=3*bf*bf*d.tf/(6*bf*d.tf+hh*d.tw); }
+  return {g,A,yc,I,Iz,xc,J,Ztop:I/(g.h-yc),Zbot:I/yc,Qat,tauT,h:g.h,rmin:Math.sqrt(Math.min(I,Iz)/A),yp,Zp,shapeF:Zp/Math.min(I/(g.h-yc),I/yc),e_sc,bmin:Math.min(...bs.filter(b=>b>0))};
+}
+const SUPS=[['ss','Simply supported (pin + roller)'],['cant','Cantilever (fixed at left)'],['ff','Fixed at both ends'],['fp','Fixed left, pinned right']];
+function beamSolve(sp,B,M){
+  const n=120,L=B.L,l=L/n,EI=M.E*sp.I; const nd=2*(n+1); const K=Array.from({length:nd},()=>new Float64Array(nd)); const F=new Float64Array(nd);
+  const w=B.w+(B.self?M.rho*sp.A*9.81e-6:0);
+  for(let e=0;e<n;e++){ const k=EI/(l*l*l), ke=[[12,6*l,-12,6*l],[6*l,4*l*l,-6*l,2*l*l],[-12,-6*l,12,-6*l],[6*l,2*l*l,-6*l,4*l*l]]; const dof=[2*e,2*e+1,2*e+2,2*e+3];
+    for(let i=0;i<4;i++)for(let j=0;j<4;j++) K[dof[i]][dof[j]]+=k*ke[i][j];
+    const fe=[-w*l/2,-w*l*l/12,-w*l/2,w*l*l/12]; for(let i=0;i<4;i++) F[dof[i]]+=fe[i]; }
+  const ip=Math.round(U.clamp(B.a,0,1)*n); F[2*ip]-=B.P;
+  const fixed=new Set(); const S=B.sup; if(S==='cant'||S==='ff'||S==='fp'){fixed.add(0);fixed.add(1);} if(S==='ss') fixed.add(0); if(S==='ss'||S==='ff'||S==='fp') fixed.add(2*n); if(S==='ff') fixed.add(2*n+1);
+  const free=[...Array(nd).keys()].filter(i=>!fixed.has(i)); const m=free.length; const A=free.map(i=>{const r=new Float64Array(m+1); free.forEach((j,c)=>r[c]=K[i][j]); r[m]=F[i]; return r;});
+  for(let c=0;c<m;c++){ let p=c; for(let r=c+1;r<m;r++) if(Math.abs(A[r][c])>Math.abs(A[p][c])) p=r; [A[c],A[p]]=[A[p],A[c]]; const piv=A[c][c]; for(let r=c+1;r<m;r++){ const f=A[r][c]/piv; if(f) for(let k=c;k<=m;k++) A[r][k]-=f*A[c][k]; } }
+  const x=new Float64Array(m); for(let r=m-1;r>=0;r--){ let s=A[r][m]; for(let k=r+1;k<m;k++) s-=A[r][k]*x[k]; x[r]=s/A[r][r]; }
+  const u=new Float64Array(nd); free.forEach((i,c)=>u[i]=x[c]);
+  const xs=[],v=[],Mo=[]; for(let i=0;i<=n;i++){xs.push(i*l);v.push(u[2*i]);}
+  for(let e=0;e<n;e++){ const v1=u[2*e],t1=u[2*e+1],v2=u[2*e+2],t2=u[2*e+3]; [0,1].forEach(xi=>{ const c=(1/(l*l))*((-6+12*xi)*v1+l*(-4+6*xi)*t1+(6-12*xi)*v2+l*(-2+6*xi)*t2); Mo.push([e*l+xi*l,EI*c]); }); }
+  // smooth M: average coincident ends, V by differentiation of M between element midpoints
+  const Mx=[]; for(let i=0;i<=n;i++){ const a=i>0?Mo[2*i-1][1]:null,b=i<n?Mo[2*i][1]:null; Mx.push([i*l,a==null?b:(b==null?a:(a+b)/2)]); }
+  const Vx=[]; for(let e=0;e<n;e++){ const V=(Mo[2*e+1][1]-Mo[2*e][1])/l; Vx.push([e*l,V],[(e+1)*l,V]); }
+  // reactions
+  const R={}; fixed.forEach(i=>{ let s=-F[i]; for(let j=0;j<nd;j++) s+=K[i][j]*u[j]; R[i]=s; });
+  return {xs,v,Mx,Vx,R,w,ip,n,l};
+}
+function beamField(sp,res,B){ // stresses at (x along beam, y from bottom)
+  const n=res.n,l=res.l; const Mat=x=>{const i=U.clamp(x/l,0,n);const i0=Math.floor(i),i1=Math.min(n,i0+1),f=i-i0;return res.Mx[i0][1]*(1-f)+res.Mx[i1][1]*f;};
+  const Vat=x=>{const e=U.clamp(Math.floor(x/l),0,n-1);return res.Vx[2*e][1];};
+  const tT=sp.tauT(B.T*1000), cmax=Math.max(sp.h-sp.yc,sp.yc);
+  return (x,y)=>{ const b=sp.g.wid(y); if(b<=0) return null; const s=B.N/sp.A-Mat(x)*(y-sp.yc)/sp.I; const tv=Vat(x)*sp.Qat(y)/(sp.I*b); const tt=tT*(SA.shape==='round'||SA.shape==='rect'?Math.abs(y-sp.yc)/cmax:1); return {sx:s,sy:0,txy:Math.abs(tv)+Math.abs(tt)}; };
+}
+function renderBeam(f){
+  const B=SA.beam, k=SA.shape, d=B[k], S=SHP.find(q=>q.k===k); SA.lastBeam=k;
+  f.body.innerHTML=`<div class="feagrid"><div class="feaside"><div class="row" style="justify-content:space-between"><b class="shapettl">${shapeIcon(k)} ${esc(S.n)}</b>${backBtn()}</div>
+     <div class="ig">1 · Cross-section (mm)</div><div id="bm-sec">${SECDIM[k].map(([p,n,lo,hi])=>slider(p,n,d[p],lo,hi,0.5,'mm')).join('')}</div>
+     <div class="ig">2 · Material</div>${matBlock()}
+     <div class="ig">3 · Supports & loads</div><label class="f" style="margin:0">Supports<select id="bm-sup" style="margin-top:3px">${SUPS.map(([q,n])=>`<option value="${q}" ${q===B.sup?'selected':''}>${n}</option>`).join('')}</select></label>
+     <div id="bm-ld">${slider('L','Span L',B.L,100,12000,10,'mm')}${slider('P','Point load P (down)',B.P,0,500000,1,'N')}${slider('a','Load position (fraction of span)',B.a,0,1,0.01,'')}${slider('w','Distributed load w',B.w,0,200,0.1,'N/mm')}${slider('N','Axial force N (− = compression)',B.N,-500000,500000,100,'N')}${slider('T','Torque T',B.T,0,20000,1,'N·m')}</div>
+     <label class="small inline"><input type="checkbox" id="bm-self" ${B.self?'checked':''}> Include self-weight</label></div>
+   <div class="feamain"><div class="wtabs" role="tablist">${[['map','Stress map'],['sec','Cross-section'],['dia','Diagrams'],['chk','Checks & properties']].map(([t,n])=>`<button role="tab" data-t="${t}" aria-selected="${SA.tab===t}">${n}</button>`).join('')}</div><div class="wtabpane" id="bm-pane" style="display:block;overflow:visible"></div></div></div>`;
+  f.body.querySelector('[data-back]').addEventListener('click',()=>{SA.stage='pick';renderFea(f);});
+  f.body.querySelector('.wtabs').addEventListener('click',e=>{const t=e.target.closest('[data-t]');if(!t)return;SA.tab=t.dataset.t;renderFea(f);});
+  $('#sa-src').addEventListener('change',e=>{FEA.src=e.target.value;beamDraw();});
+  $('#bm-sup').addEventListener('change',e=>{const was=B.sup;B.sup=e.target.value; if(B.sup==='cant'&&B.a===0.5){B.a=1;} else if(was==='cant'&&B.a===1){B.a=0.5;} renderFea(f);}); $('#bm-self').addEventListener('change',e=>{B.self=e.target.checked;beamDraw();});
+  bindSliders($('#bm-sec'),d,()=>{ if(k==='tube') d.t=Math.min(d.t,d.D/2-0.1); if(k==='box') d.t=Math.min(d.t,Math.min(d.B,d.H)/2-0.1); if(['I','C'].includes(k)) d.tf=Math.min(d.tf,d.h/2-0.5); if(k==='T') d.tf=Math.min(d.tf,d.h-1); if(['I','T','C'].includes(k)) d.tw=Math.min(d.tw,d.b); B.xs=null; beamDraw(); });
+  bindSliders($('#bm-ld'),B,()=>{B.xs=null;beamDraw();});
+  const pane=$('#bm-pane');
+  if(SA.tab==='map'||SA.tab==='sec'){ if(!['vm','sx','txy','sf'].includes(SA.qty)) SA.qty='vm';
+    pane.innerHTML=colourCtl([['vm','von Mises'],['sx','Bending + axial stress σx'],['txy','Shear stress τ'],['sf','Safety factor']])+`<label class="small inline"><input type="checkbox" id="sa-def" ${SA.deform?'checked':''}> Deflected shape</label></div><div class="feabox" style="height:${SA.tab==='map'?300:340}px"><canvas id="bm-cv"></canvas><div class="tip" hidden id="bm-tip"></div></div>${SA.tab==='sec'?`<label class="f" style="margin:4px 0 0">Section position <span class="mono" id="bm-xsv" style="float:right"></span><input type="range" id="bm-xs" min="0" max="1" step="0.005"></label>`:''}<div id="bm-sum"></div>`;
+    $('#sa-q').addEventListener('change',e=>{SA.qty=e.target.value;beamDraw();}); $('#sa-band').addEventListener('change',e=>{FEA.bands=e.target.checked;beamDraw();}); $('#sa-def').addEventListener('change',e=>{SA.deform=e.target.checked;beamDraw();});
+    if($('#bm-xs')) $('#bm-xs').addEventListener('input',e=>{B.xs=+e.target.value;beamDraw();});
+  } else if(SA.tab==='dia'){ pane.innerHTML=`<h4 style="margin:0 0 2px">Shear force V(x)</h4><canvas class="cv" id="bm-V" style="height:150px"></canvas><h4 style="margin:6px 0 2px">Bending moment M(x)</h4><canvas class="cv" id="bm-M" style="height:150px"></canvas><h4 style="margin:6px 0 2px">Deflection v(x)</h4><canvas class="cv" id="bm-def" style="height:150px"></canvas><div id="bm-sum"></div>`; }
+  else pane.innerHTML='<div id="bm-chk"></div><div id="bm-sum"></div>';
+  requestAnimationFrame(beamDraw);
+}
+function beamDraw(){
+  const B=SA.beam,k=SA.shape,M=feaMat(); if($('#fe-mat')) $('#fe-mat').innerHTML=matLine(M); if(!M) return;
+  const sp=secProps(k,B[k]); const res=beamSolve(sp,B,M); const st=beamField(sp,res,B);
+  // global worst point
+  let best=null; for(let i=0;i<=200;i++){ const x=i/200*B.L; for(let j=0;j<=40;j++){ const y=j/40*sp.h; const s=st(x,y); if(!s) continue; const vm=vmOf(s.sx,0,s.txy); if(!best||vm>best.vm) best={x,y,vm,...s}; } }
+  const vmax=Math.max(...res.v.map(Math.abs)), Kf={cant:2,ss:1,ff:0.5,fp:0.699}[B.sup], Pcr=Math.PI**2*M.E*Math.min(sp.I,sp.Iz)/Math.pow(Kf*B.L,2);
+  const lim=B.L/(B.sup==='cant'?180:250), SF=M.allow/Math.max(best?best.vm:1e-9,1e-9), mass=M.rho*sp.A*B.L/1e6;
+  const bSF=B.N<0?Pcr/(-B.N):Infinity;
+  const ok=SF>=1.5&&bSF>=2&&vmax<=lim, fail=SF<1||bSF<1;
+  const sum=`<div class="chscore ${fail?'bad':'ok'}" style="margin-top:6px"><div class="big" style="font-size:20px;color:var(--${fail?'crit':ok?'good':'warn'})">${fail?'✗':'✓'}</div><div><b>${fail?'Fails':ok?'Passes all checks':'Works, with warnings'}: stress SF ${num(SF,3)}${B.N<0?` · buckling SF ${num(bSF,3)}`:''} · deflection ${num(vmax,3)} mm (limit L/${B.sup==='cant'?180:250} = ${num(lim,3)})</b><div class="small">Peak von Mises ${num(best?best.vm:0,4)} MPa at x = ${num(best?best.x:0,4)} mm · ${num(mass,3)} kg</div></div></div>`;
+  if($('#bm-sum')) $('#bm-sum').innerHTML=sum;
+  if(SA.tab==='map') beamMap(sp,res,st,best,M);
+  if(SA.tab==='sec') beamSec(sp,res,st,best,M);
+  if(SA.tab==='dia'){ const xs=res.xs; drawChart($('#bm-V'),{xr:[0,B.L],yr:symR(res.Vx.map(q=>q[1])),series:[{pts:res.Vx,color:C.cold,width:2,fill:'auto',name:'V'}],xlabel:'x (mm)',ylabel:'N',xunit:'mm',yunit:'N',padL:62});
+    drawChart($('#bm-M'),{xr:[0,B.L],yr:symR(res.Mx.map(q=>q[1]/1000)),series:[{pts:res.Mx.map(q=>[q[0],q[1]/1000]),color:C.accent,width:2.2,fill:'auto',name:'M'}],xlabel:'x (mm)',ylabel:'N·m',xunit:'mm',yunit:'N·m',padL:62});
+    drawChart($('#bm-def'),{xr:[0,B.L],yr:symR(res.v),series:[{pts:xs.map((x,i)=>[x,res.v[i]]),color:C.good,width:2.2,name:'v'}],hmarks:[{y:-lim,label:'limit',color:C.crit}],xlabel:'x (mm)',ylabel:'mm',xunit:'mm',yunit:'mm',padL:62}); }
+  if(SA.tab==='chk'&&$('#bm-chk')){ const r=res.R; const reac=Object.entries(r).map(([i,v])=>`${+i%2?'moment':'force'} at ${+i<2?'left':'right'}: ${+i%2?num(v/1000,3)+' N·m':num(v,4)+' N'}`).join(' · ');
+    const rows=[['Area A',num(sp.A,4)+' mm²'],['Centroid from bottom',num(sp.yc,4)+' mm'],['Second moment I (bending)',sci(sp.I,3)+' mm⁴'],['I about the vertical axis',sci(sp.Iz,3)+' mm⁴'],['Section modulus Z (top / bottom)',`${sci(sp.Ztop,3)} / ${sci(sp.Zbot,3)} mm³`],['Torsion constant J',sci(sp.J,3)+' mm⁴'],['Radius of gyration (min)',num(sp.rmin,3)+' mm'],['Mass per metre',num(M.rho*sp.A/1000,3)+' kg/m'],
+      ['Max bending moment',num(Math.max(...res.Mx.map(q=>Math.abs(q[1])))/1000,4)+' N·m'],['Max shear force',num(Math.max(...res.Vx.map(q=>Math.abs(q[1]))),4)+' N'],['Max deflection',num(vmax,3)+' mm'],['Euler buckling load',`${num(Pcr/1000,4)} kN (K = ${Kf})`],['Max shear stress (V·Q/I·b)',num(Math.max(...[0,0.1,0.25,0.4,0.5,0.6,0.75,0.9,1].map(f=>{const s2=st(res.Vx.reduce((a,q)=>Math.abs(q[1])>Math.abs(a[1])?q:a)[0],sp.yc+(f-0.5)*0.999*sp.h);return s2?s2.txy:0;})),4)+' MPa'],['Plastic modulus Z<sub>p</sub> · shape factor',`${sci(sp.Zp,3)} mm³ · ${num(sp.shapeF,3)}`],['Plastic moment M<sub>p</sub> = σ<sub>y</sub>Z<sub>p</sub>',num(M.allow*sp.Zp/1000,4)+' N·m'],['Load factor at first yield',num(1/Math.max(1/SF,1e-9),3)+' × current loads'],['Load factor at plastic collapse',(()=>{const Mmax=Math.max(...res.Mx.map(q=>Math.abs(q[1])))||1e-9; let f=M.allow*sp.Zp/Mmax; const ptMid=B.P>0&&Math.abs(B.a-0.5)<0.01&&B.w===0&&!B.self, udl=B.P===0; if(B.sup==='fp'&&ptMid) f*=1.125; else if(B.sup==='fp'&&udl) f*=1.0+0.457; else if(B.sup==='ff'&&udl) f*=1.333; return num(f,3)+' × current loads'+((B.sup==='ff'||B.sup==='fp')&&!ptMid&&!udl?' (first-hinge estimate)':'');})()],...(sp.e_sc!=null?[['Shear centre (from web centreline)',num(sp.e_sc,3)+' mm outside the web']]:[]),['Torsional shear',num(sp.tauT(B.T*1000),3)+' MPa'],['Support reactions',reac||'—']];
+    const notes=[]; if(k==='C'&&B.P>0) notes.push(['warn','A channel loaded through its web twists: the load must pass through its shear centre, outside the web.']);
+    if(['I','T','C'].includes(k)&&B[k].b/2/B[k].tf>16) notes.push(['warn',`Flange outstand-to-thickness ratio ${num(B[k].b/2/B[k].tf,3)}: thin flanges can buckle locally before yielding.`]);
+    if(k==='tube'&&B.tube.D/B.tube.t>60) notes.push(['warn','Very thin tube (D/t > 60): local shell buckling and denting become critical.']);
+    if(['I','T','C','box','rect'].includes(k)&&sp.Iz<sp.I*0.15&&B.L>20*sp.rmin) notes.push(['warn','Much weaker about the other axis: long unbraced spans can fail by lateral–torsional buckling.']);
+    if(B.N<0&&bSF<3) notes.push(['crit',`Compression ${num(-B.N)} N is close to the Euler load (${num(Pcr)} N).`]);
+    if(vmax>lim) notes.push(['warn','Deflection exceeds the usual serviceability limit even if the stress is fine.']);
+    $('#bm-chk').innerHTML=`<dl class="kv">${rows.map(([a,v])=>`<dt>${a}</dt><dd>${v}</dd>`).join('')}</dl>${notes.length?`<ul class="notes" style="margin-top:6px">${notes.map(([c,t])=>`<li class="${c}">${esc(t)}</li>`).join('')}</ul>`:''}`; }
+}
+const symR=a=>{const m=Math.max(...a.map(Math.abs),1e-9)*1.15;return Math.min(...a)>=-1e-9?[0,m]:(Math.max(...a)<=1e-9?[-m,0]:[-m,m]);};
+function fieldColor(v,q,mn,mx){ if(q==='sf') return sfColor(v); let t=(v-mn)/Math.max(1e-12,mx-mn); if(FEA.bands){t=Math.min(11,Math.floor(t*12))/11;} return rainbow(t); }
+function colourBar(ctx,x,y,h,q,mn,mx){ const bw=14; ctx.font=`10px ${C.mono}`; ctx.textBaseline='middle'; ctx.textAlign='left';
+  if(q==='sf'){ const n=SFB.length; SFB.forEach(([lim,c,lab],i)=>{ const yy=y+h-(i+1)*h/n; ctx.fillStyle=`rgb(${c.join(',')})`; ctx.fillRect(x,yy,bw,h/n); ctx.fillStyle=C.ink; ctx.fillText(lab,x+bw+4,yy+h/n/2); }); }
+  else { const n=FEA.bands?12:60; for(let i=0;i<n;i++){ const c=rainbow(i/(n-1)); ctx.fillStyle=`rgb(${c.join(',')})`; ctx.fillRect(x,y+h-(i+1)*h/n,bw,h/n+0.5); } ctx.fillStyle=C.ink; for(let i=0;i<=4;i++) ctx.fillText(num(mn+(mx-mn)*i/4,3),x+bw+4,y+h-i*h/4); }
+  ctx.strokeStyle=C.ink; ctx.lineWidth=1; ctx.strokeRect(x+0.5,y+0.5,bw,h); }
+function qval(s,q,allow){ const vm=s.vm!=null?s.vm:vmOf(s.sx,s.sy||0,s.txy||0); return q==='vm'?vm:(q==='sf'?allow/Math.max(vm,1e-9):(q==='txy'?s.txy:(q==='sy'?s.sy:(q==='s1'?s.s1:(q==='u'?s.u:s.sx))))); }
+function beamMap(sp,res,st,best,M){
+  const cv=$('#bm-cv'); if(!cv) return; const {ctx,w,h}=fit(cv); ctx.clearRect(0,0,w,h); const B=SA.beam,q=SA.qty;
+  const pad={l:30,r:90,t:40,b:34}, pw=w-pad.l-pad.r, ph=h-pad.t-pad.b; const sx=pw/B.L, sy=Math.min(ph*0.5/sp.h,sx*60), ex=sy/sx;
+  const vmax=Math.max(...res.v.map(Math.abs),1e-9), ds=SA.deform?Math.min(ph*0.25/vmax,1e6):0;
+  const oy=pad.t+(ph-sp.h*sy)/2; const X=x=>pad.l+x*sx, Y=y=>oy+(sp.h-y)*sy; const vAt=x=>{const i=U.clamp(x/res.l,0,res.n);const i0=Math.floor(i),i1=Math.min(res.n,i0+1),f=i-i0;return res.v[i0]*(1-f)+res.v[i1]*f;};
+  const NX=Math.min(300,Math.round(pw/2)), NY=Math.max(12,Math.min(80,Math.round(sp.h*sy/3))); let mn=Infinity,mx=-Infinity; const V=[];
+  for(let j=0;j<NY;j++)for(let i=0;i<NX;i++){ const s=st((i+0.5)/NX*B.L,sp.h-(j+0.5)/NY*sp.h); if(!s){V.push(null);continue;} const v=qval(s,q,M.allow); V.push(v); if(v<mn)mn=v; if(v>mx)mx=v; }
+  if(q==='sx'){const a=Math.max(Math.abs(mn),Math.abs(mx),1e-9);mn=-a;mx=a;} else if(q!=='sf') mn=0;
+  const cw=pw/NX, chh=sp.h*sy/NY;
+  for(let i=0;i<NX;i++){ const x=(i+0.5)/NX*B.L, dv=-vAt(x)*ds; for(let j=0;j<NY;j++){ const v=V[j*NX+i]; if(v==null) continue; const c=fieldColor(v,q,mn,mx); ctx.fillStyle=`rgb(${c.join(',')})`; ctx.fillRect(pad.l+i*cw,oy+j*chh+dv,cw+0.6,chh+0.6); } }
+  if(SA.deform){ ctx.strokeStyle=C.muted; ctx.setLineDash([4,3]); ctx.strokeRect(X(0),Y(sp.h),B.L*sx,sp.h*sy); ctx.setLineDash([]); }
+  // supports
+  const sup=(x,type)=>{ const yb=Y(0)-vAt(x)*ds; ctx.fillStyle=C.ink; ctx.strokeStyle=C.ink; if(type==='fix'){ const xx=X(x); ctx.fillStyle=C.muted; ctx.fillRect(x===0?xx-12:xx+2,Y(sp.h)-14,10,sp.h*sy+28); } else { ctx.beginPath(); ctx.moveTo(X(x),yb+1); ctx.lineTo(X(x)-8,yb+13); ctx.lineTo(X(x)+8,yb+13); ctx.closePath(); ctx.fill(); if(type==='roll'){ctx.beginPath();ctx.arc(X(x)-4,yb+16,2.5,0,7);ctx.arc(X(x)+4,yb+16,2.5,0,7);ctx.fill();} } };
+  const S=B.sup; if(S==='cant'){sup(0,'fix');} if(S==='ss'){sup(0,'pin');sup(B.L,'roll');} if(S==='ff'){sup(0,'fix');sup(B.L,'fix');} if(S==='fp'){sup(0,'fix');sup(B.L,'roll');}
+  ctx.strokeStyle=C.crit; ctx.fillStyle=C.crit; ctx.lineWidth=2; ctx.font=`11px ${C.mono}`;
+  if(B.P>0){ const x=res.ip*res.l, yt=Y(sp.h)-vAt(x)*ds; ctx.beginPath(); ctx.moveTo(X(x),yt-30); ctx.lineTo(X(x),yt-3); ctx.stroke(); ctx.beginPath(); ctx.moveTo(X(x),yt-1); ctx.lineTo(X(x)-5,yt-9); ctx.lineTo(X(x)+5,yt-9); ctx.closePath(); ctx.fill(); ctx.textAlign='left'; ctx.textBaseline='bottom'; ctx.fillText(`P ${num(B.P)} N`,X(x)+6,yt-20); }
+  if(res.w>0){ ctx.lineWidth=1.2; for(let i=0;i<=16;i++){ const x=i/16*B.L, yt=Y(sp.h)-vAt(x)*ds; ctx.beginPath(); ctx.moveTo(X(x),yt-14); ctx.lineTo(X(x),yt-2); ctx.stroke(); } ctx.textAlign='left'; ctx.textBaseline='bottom'; ctx.fillText(`w ${num(res.w,3)} N/mm`,X(0)+4,Y(sp.h)-16); }
+  if(B.N){ const xr=X(B.L)+(S==='cant'?6:16), yc=Y(sp.yc)-vAt(B.L)*ds; ctx.lineWidth=2; const dir=B.N>0?1:-1; ctx.beginPath(); ctx.moveTo(xr+(dir>0?0:22),yc); ctx.lineTo(xr+(dir>0?22:0),yc); ctx.stroke(); ctx.textAlign='left'; ctx.textBaseline='top'; ctx.fillText(B.N>0?'tension':'compression',xr-4,yc+6); }
+  // worst point
+  if(best){ const bx=X(best.x), by=Y(best.y)-vAt(best.x)*ds; ctx.strokeStyle=C.ink; ctx.lineWidth=1.5; ctx.beginPath(); ctx.arc(bx,by,7,0,7); ctx.stroke(); ctx.font=`600 11px ${C.mono}`; ctx.fillStyle=C.ink; ctx.textAlign=bx>w-160?'right':'left'; ctx.textBaseline='top'; ctx.fillText(`max ${num(best.vm,3)} MPa`,bx+(bx>w-160?-10:10),by+8); }
+  colourBar(ctx,w-pad.r+16,pad.t,ph,q,mn,mx);
+  ctx.fillStyle=C.muted; ctx.font=`10.5px ${C.mono}`; ctx.textAlign='left'; ctx.textBaseline='top'; ctx.fillText(`side view · depth drawn ×${num(ex,2)}${SA.deform?' · deflection exaggerated':''} · click a point for Mohr's circle`,pad.l,4);
+  const tip=$('#bm-tip'); cv.onpointermove=e=>{ const r=cv.getBoundingClientRect(); const px=e.clientX-r.left,py=e.clientY-r.top; const x=(px-pad.l)/sx; if(x<0||x>B.L){tip.hidden=true;return;} const y=sp.h-(py+vAt(x)*ds-oy)/sy; const s=y>=0&&y<=sp.h?st(x,y):null; if(!s){tip.hidden=true;return;}
+    tip.hidden=false; tip.innerHTML=`<div class="mono tiny">x ${num(x,4)} mm · y ${num(y-sp.yc,3)} mm from neutral axis<br>σx ${num(s.sx,3)} · τ ${num(s.txy,3)} MPa<br><b>von Mises ${num(vmOf(s.sx,0,s.txy),3)} MPa</b> · deflection ${num(vAt(x),3)} mm</div>`; tip.style.left=Math.min(px+14,r.width-240)+'px'; tip.style.top=Math.max(4,py-60)+'px'; };
+  cv.onpointerleave=()=>tip.hidden=true;
+  cv.onclick=e=>{ const r=cv.getBoundingClientRect(); const px=e.clientX-r.left,py=e.clientY-r.top; const x=(px-pad.l)/sx; if(x<0||x>B.L) return; const y=sp.h-(py+vAt(x)*ds-oy)/sy; const s=y>=0&&y<=sp.h?st(x,y):null; if(s) sendToMohr(s,`the beam at x = ${num(x,4)} mm, ${num(y-sp.yc,3)} mm from the neutral axis`); };
+}
+function beamSec(sp,res,st,best,M){
+  const B=SA.beam,q=SA.qty; if(B.xs==null&&best) B.xs=best.x/B.L; const xs=(B.xs==null?0.5:B.xs)*B.L; const sl=$('#bm-xs'); if(sl){sl.value=B.xs;$('#bm-xsv').textContent=`x = ${num(xs,4)} mm`;}
+  const cv=$('#bm-cv'); const {ctx,w,h}=fit(cv); ctx.clearRect(0,0,w,h); const g=sp.g;
+  const pad=30, plotW=w*0.5; const s=Math.min((plotW-2*pad)/g.bw,(h-2*pad)/g.h); const ox=pad+plotW/2-pad, oy=pad+(h-2*pad-g.h*s)/2;
+  const X=x=>ox+x*s, Y=y=>oy+(g.h-y)*s; const N=Math.max(60,Math.min(220,Math.round(g.h*s/2))), Nx=Math.max(60,Math.min(220,Math.round(g.bw*s/2)));
+  let mn=Infinity,mx=-Infinity; const cells=[]; const tT=sp.tauT(B.T*1000);
+  const at=(x,y)=>{ const b=st(xs,y); if(!b) return null; let tt=0; if(B.T){ const r=Math.hypot(x-sp.xc,y-sp.yc); tt=(SA.shape==='round'||SA.shape==='tube')?tT*r/(SA.shape==='round'?B.round.d/2:B.tube.D/2):tT*Math.min(1,r/Math.max(sp.yc,sp.h-sp.yc)); } const tv=Math.max(0,b.txy-(SA.shape==='round'||SA.shape==='rect'?tT*Math.abs(y-sp.yc)/Math.max(sp.h-sp.yc,sp.yc):tT)); return {sx:b.sx,sy:0,txy:tv+tt}; };
+  for(let j=0;j<N;j++)for(let i=0;i<Nx;i++){ const x=-g.bw/2+(i+0.5)/Nx*g.bw, y=g.h-(j+0.5)/N*g.h; if(!g.ins(x,y)) continue; const v=at(x,y); if(!v) continue; const val=qval(v,q,M.allow); cells.push([i,j,val]); if(val<mn)mn=val; if(val>mx)mx=val; }
+  if(q==='sx'){const a=Math.max(Math.abs(mn),Math.abs(mx),1e-9);mn=-a;mx=a;} else if(q!=='sf') mn=0;
+  const cw=g.bw*s/Nx, chh=g.h*s/N; cells.forEach(([i,j,v])=>{ const c=fieldColor(v,q,mn,mx); ctx.fillStyle=`rgb(${c.join(',')})`; ctx.fillRect(X(-g.bw/2)+i*cw,Y(g.h)+j*chh,cw+0.6,chh+0.6); });
+  ctx.strokeStyle=C.ink; ctx.setLineDash([5,3]); ctx.beginPath(); ctx.moveTo(X(-g.bw/2)-14,Y(sp.yc)); ctx.lineTo(X(g.bw/2)+14,Y(sp.yc)); ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle=C.muted; ctx.font=`10px ${C.mono}`; ctx.textAlign='left'; ctx.textBaseline='bottom'; ctx.fillText('neutral axis',X(g.bw/2)+4,Y(sp.yc)-2);
+  // profile plots σ(y) and τ(y)
+  const px0=plotW+20, pw=w-px0-100, ph=g.h*s; const ys=[]; for(let j=0;j<=80;j++){ const y=j/80*g.h; const b=st(xs,y); if(b) ys.push([y,b.sx,b.txy]); }
+  const smax=Math.max(...ys.map(r=>Math.abs(r[1])),1e-9), tmax=Math.max(...ys.map(r=>r[2]),1e-9);
+  const half=pw/2-10; const cx1=px0+half/2, cx2=px0+half+20+half/2;
+  ctx.strokeStyle=C.line; [cx1,cx2].forEach(cx=>{ctx.beginPath();ctx.moveTo(cx,Y(0));ctx.lineTo(cx,Y(g.h));ctx.stroke();});
+  ctx.strokeStyle=C.accent; ctx.lineWidth=2; ctx.beginPath(); ys.forEach(([y,sx],i)=>{ const x=cx1+sx/smax*half/2; i?ctx.lineTo(x,Y(y)):ctx.moveTo(x,Y(y)); }); ctx.stroke();
+  ctx.strokeStyle=C.cold; ctx.beginPath(); ys.forEach(([y,,t],i)=>{ const x=cx2+t/tmax*half/2; i?ctx.lineTo(x,Y(y)):ctx.moveTo(x,Y(y)); }); ctx.stroke(); ctx.lineWidth=1;
+  ctx.fillStyle=C.ink; ctx.font=`600 11px ${C.cond}`; ctx.textAlign='center'; ctx.textBaseline='bottom'; ctx.fillText('σx through depth',cx1,Y(g.h)-14); ctx.fillText('shear τ through depth',cx2,Y(g.h)-14);
+  ctx.font=`10px ${C.mono}`; ctx.fillStyle=C.muted; ctx.textBaseline='top'; ctx.fillText(`±${num(smax,3)} MPa`,cx1,Y(0)+6); ctx.fillText(`max ${num(tmax,3)} MPa`,cx2,Y(0)+6);
+  colourBar(ctx,w-74,pad,h-2*pad,q,mn,mx);
+  ctx.fillStyle=C.muted; ctx.font=`10.5px ${C.mono}`; ctx.textAlign='left'; ctx.textBaseline='top'; ctx.fillText(`cross-section at x = ${num(xs,4)} mm (to scale)`,8,4);
+  cv.onpointermove=null;
+}
+
+/* ================= 2D FINITE ELEMENTS ================= */
+const FEMDIM={hole:[['D','Hole diameter',2,70]],notch:[['nd','Notch depth',2,35],['nr','Notch root radius',0.5,20]],step:[['ratio','Narrow / wide height',0.2,0.95],['R','Fillet radius',0.5,40]],lbr:[['R','Inner corner fillet radius',0,40]],lug:[['D','Pin hole diameter',5,60]],crack:[['c','Crack length',2,50]],blank:[]};
+const EDGES=[['left','Left'],['right','Right'],['top','Top'],['bottom','Bottom']];
+function femSetDefaults(){ const F=SA.fem, k=SA.shape; if(SA.shapePrev===k) return; SA.shapePrev=k; F.edits={};
+  Object.assign(F,{W:200,H:80,fix:'left',fixT:'roll',load:'right',ldir:'n',F:20000});
+  if(k==='lbr') Object.assign(F,{W:200,H:160,fix:'top',fixT:'clamp',load:'right',ldir:'s-',F:1000});
+  if(k==='lug') Object.assign(F,{W:200,H:80,fix:'left',fixT:'clamp',load:'pin',ldir:'n',F:20000});
+  if(k==='blank') Object.assign(F,{W:200,H:100,fix:'left',fixT:'clamp',load:'right',ldir:'s-',F:2000});
+}
+function femSolid(k,F){
+  const W=F.W,H=F.H,yc=H/2;
+  if(k==='hole') return (x,y)=>Math.hypot(x-W/2,y-yc)>F.D/2;
+  if(k==='notch'){ const d=Math.min(F.nd,H/2-2), r=Math.min(F.nr,d); return (x,y)=>{ for(const top of [1,0]){ const yb=top?H-d+r:d-r; const inSlot=Math.abs(x-W/2)<=r&&(top?y>=yb:y<=yb); if(inSlot||Math.hypot(x-W/2,y-yb)<=r) return false; } return true; }; }
+  if(k==='step'){ const h=H*F.ratio, R=F.R; return (x,y)=>{ const dy=Math.abs(y-yc); if(x<W/2) return true; if(dy<=h/2) return true; if(x<=W/2+R&&dy<=h/2+R){ return Math.hypot(x-(W/2+R),dy-(h/2+R))>=R; } return false; }; }
+  if(k==='lbr'){ const a=40, R=F.R; return (x,y)=>{ if(x<=a||y<=a) return true; if(x<=a+R&&y<=a+R) return Math.hypot(x-(a+R),y-(a+R))>=R; return false; }; }
+  if(k==='lug'){ const cx=W-H/2; return (x,y)=>{ if(x>cx&&Math.hypot(x-cx,y-yc)>H/2) return false; return Math.hypot(x-cx,y-yc)>F.D/2; }; }
+  if(k==='crack') return (x,y)=>!(Math.abs(x-W/2)<W/(F.res*1.0)*0.6&&y>H-F.c);
+  return ()=>true;
+}
+function femBuild(M){
+  const F=SA.fem, nx=Math.round(F.res), ny=Math.max(6,Math.round(nx*F.H/F.W)), hx=F.W/nx, hy=F.H/ny; const solidF=femSolid(SA.shape,F);
+  const cell=new Uint8Array(nx*ny); for(let j=0;j<ny;j++)for(let i=0;i<nx;i++){ const id=j*nx+i; const e=F.edits[id]; cell[id]=e!=null?e:(solidF((i+0.5)*hx,(j+0.5)*hy)?1:0); }
+  return {nx,ny,hx,hy,cell};
+}
+function Dmat(M){ if(M.lam){ const e=M.e, Ex=e.Ex*1000, Ey=e.Ey*1000, n12=e.nxy, n21=n12*Ey/Ex, G=e.Gxy*1000, d=1-n12*n21; return [Ex/d,n21*Ex/d,0,n21*Ex/d,Ey/d,0,0,0,G]; } const E=M.E,n=M.nu,c=E/(1-n*n); return [c,c*n,0,c*n,c,0,0,0,c*(1-n)/2]; }
+function q4K(hx,hy,D,t){ // 8x8 element stiffness, nodes BL,BR,TR,TL
+  const K=Array.from({length:8},()=>new Float64Array(8)); const g=1/Math.sqrt(3); const xi=[-1,1,1,-1], et=[-1,-1,1,1];
+  for(const a of [-g,g])for(const b of [-g,g]){ const Bm=[new Float64Array(8),new Float64Array(8),new Float64Array(8)];
+    for(let i=0;i<4;i++){ const dx=xi[i]*(1+b*et[i])/4*2/hx, dy=et[i]*(1+a*xi[i])/4*2/hy; Bm[0][2*i]=dx; Bm[1][2*i+1]=dy; Bm[2][2*i]=dy; Bm[2][2*i+1]=dx; }
+    const DB=[0,1,2].map(r=>{const o=new Float64Array(8);for(let c=0;c<8;c++)o[c]=D[r*3]*Bm[0][c]+D[r*3+1]*Bm[1][c]+D[r*3+2]*Bm[2][c];return o;});
+    const w=hx*hy/4*t; for(let i=0;i<8;i++)for(let j=0;j<8;j++) K[i][j]+=w*(Bm[0][i]*DB[0][j]+Bm[1][i]*DB[1][j]+Bm[2][i]*DB[2][j]); }
+  return K;
+}
+function femSolve(M){
+  const F=SA.fem, G=femBuild(M), {nx,ny,hx,hy}=G; let cell=G.cell; const NN=(nx+1)*(ny+1), nid=(i,j)=>j*(nx+1)+i;
+  const elN=e=>{const i=e%nx,j=(e/nx)|0;return [nid(i,j),nid(i+1,j),nid(i+1,j+1),nid(i,j+1)];};
+  // edge node sets
+  const onEdge=(n,ed)=>{const i=n%(nx+1),j=(n/(nx+1))|0;return ed==='left'?i===0:ed==='right'?i===nx:ed==='bottom'?j===0:j===ny;};
+  const used=new Uint8Array(NN); for(let e=0;e<nx*ny;e++) if(cell[e]) elN(e).forEach(n=>used[n]=1);
+  const fixN=[]; for(let n=0;n<NN;n++) if(used[n]&&onEdge(n,F.fix)) fixN.push(n);
+  if(!fixN.length) return {err:'The fixed edge has no material on it. Choose another edge or paint material there.'};
+  // connectivity from fixed nodes (drop floating islands)
+  const reach=new Uint8Array(nx*ny); const stack=[]; for(let e=0;e<nx*ny;e++) if(cell[e]&&elN(e).some(n=>onEdge(n,F.fix))){reach[e]=1;stack.push(e);}
+  while(stack.length){ const e=stack.pop(), i=e%nx, j=(e/nx)|0; [[1,0],[-1,0],[0,1],[0,-1]].forEach(([a,b])=>{const ii=i+a,jj=j+b; if(ii<0||jj<0||ii>=nx||jj>=ny) return; const q=jj*nx+ii; if(cell[q]&&!reach[q]){reach[q]=1;stack.push(q);}}); }
+  let dropped=0; cell=cell.map((c,e)=>{ if(c&&!reach[e]){dropped++;return 0;} return c; });
+  used.fill(0); for(let e=0;e<nx*ny;e++) if(cell[e]) elN(e).forEach(n=>used[n]=1);
+  // constraints
+  const fixed=new Uint8Array(2*NN); const fx=fixN.filter(n=>used[n]);
+  const normalX=F.fix==='left'||F.fix==='right';
+  if(F.fixT==='clamp') fx.forEach(n=>{fixed[2*n]=1;fixed[2*n+1]=1;}); else { fx.forEach(n=>fixed[2*n+(normalX?0:1)]=1); const mid=fx[Math.floor(fx.length/2)]; fixed[2*mid+(normalX?1:0)]=1; }
+  // loads
+  const Fv=new Float64Array(2*NN); let nominalArea=0;
+  if(F.load==='pin'){ const cx=F.W-F.H/2, cy=F.H/2, r=F.D/2; const bn=[]; for(let n=0;n<NN;n++){ if(!used[n]) continue; const i=n%(nx+1),j=(n/(nx+1))|0; const x=i*hx,y=j*hy; const d=Math.hypot(x-cx,y-cy); if(d<r+Math.max(hx,hy)*1.01&&x>cx-0.01) bn.push([n,Math.max(0,(x-cx)/Math.max(d,1e-9)),(x-cx)/Math.max(d,1e-9),(y-cy)/Math.max(d,1e-9)]); }
+    const tot=bn.reduce((s,q)=>s+q[1]*q[2],0)||1; bn.forEach(([n,wt,c,sn])=>{ Fv[2*n]+=F.F*wt*c/tot; Fv[2*n+1]+=F.F*wt*sn/tot; }); nominalArea=(F.H-F.D)*F.t; }
+  else { const ln=[]; for(let n=0;n<NN;n++) if(used[n]&&onEdge(n,F.load)) ln.push(n); if(!ln.length) return {err:'The loaded edge has no material on it.'};
+    const horiz=F.load==='top'||F.load==='bottom'; const len=horiz?hx:hy; const wts=ln.map(n=>{ const i=n%(nx+1),j=(n/(nx+1))|0; let c=0; if(horiz){ if(i>0&&cell[(F.load==='top'?ny-1:0)*nx+i-1]) c+=0.5; if(i<nx&&cell[(F.load==='top'?ny-1:0)*nx+i]) c+=0.5; } else { if(j>0&&cell[(j-1)*nx+(F.load==='right'?nx-1:0)]) c+=0.5; if(j<ny&&cell[j*nx+(F.load==='right'?nx-1:0)]) c+=0.5; } return c; });
+    const tot=wts.reduce((a,b)=>a+b,0)||1; nominalArea=tot*len*F.t; const sgn={left:-1,right:1,top:1,bottom:-1}[F.load];
+    ln.forEach((n,k)=>{ const f=F.F*wts[k]/tot; if(F.ldir==='n') Fv[2*n+(horiz?1:0)]+=sgn*f; else if(F.ldir==='c') Fv[2*n+(horiz?1:0)]-=sgn*f; else Fv[2*n+(horiz?0:1)]+=(F.ldir==='s+'?1:-1)*f; }); }
+  const D=Dmat(M), Ke=q4K(hx,hy,D,F.t);
+  const els=[]; for(let e=0;e<nx*ny;e++) if(cell[e]) els.push(elN(e));
+  const ndof=2*NN, diag=new Float64Array(ndof); els.forEach(ns=>{ for(let a=0;a<4;a++){ diag[2*ns[a]]+=Ke[2*a][2*a]; diag[2*ns[a]+1]+=Ke[2*a+1][2*a+1]; } });
+  const act=new Uint8Array(ndof); for(let n=0;n<NN;n++) if(used[n]){ if(!fixed[2*n]) act[2*n]=1; if(!fixed[2*n+1]) act[2*n+1]=1; }
+  const Ax=(p,out)=>{ out.fill(0); const ue=new Float64Array(8); for(const ns of els){ for(let a=0;a<4;a++){ue[2*a]=p[2*ns[a]];ue[2*a+1]=p[2*ns[a]+1];} for(let r=0;r<8;r++){ let s=0; const Kr=Ke[r]; for(let c=0;c<8;c++) s+=Kr[c]*ue[c]; out[2*ns[r>>1]+(r&1)]+=s; } } for(let i=0;i<ndof;i++) if(!act[i]) out[i]=0; };
+  const u=new Float64Array(ndof), r=new Float64Array(ndof), z=new Float64Array(ndof), p=new Float64Array(ndof), Ap=new Float64Array(ndof);
+  for(let i=0;i<ndof;i++){ r[i]=act[i]?Fv[i]:0; z[i]=act[i]?r[i]/diag[i]:0; p[i]=z[i]; }
+  let rz=0; for(let i=0;i<ndof;i++) rz+=r[i]*z[i]; const bn=Math.sqrt(r.reduce((s,v)=>s+v*v,0))||1; let it=0;
+  for(;it<6000;it++){ Ax(p,Ap); let pAp=0; for(let i=0;i<ndof;i++) pAp+=p[i]*Ap[i]; const al=rz/pAp; let rr=0; for(let i=0;i<ndof;i++){ u[i]+=al*p[i]; r[i]-=al*Ap[i]; rr+=r[i]*r[i]; } if(Math.sqrt(rr)/bn<1e-7) break; let rz2=0; for(let i=0;i<ndof;i++){ z[i]=act[i]?r[i]/diag[i]:0; rz2+=r[i]*z[i]; } const be=rz2/rz; rz=rz2; for(let i=0;i<ndof;i++) p[i]=z[i]+be*p[i]; }
+  // element stresses at centre + nodal averaging
+  const es=new Float64Array(nx*ny*3), ns_=new Float64Array(NN*3), cnt=new Float64Array(NN);
+  const xi=[-1,1,1,-1], et=[-1,-1,1,1], gq=1/Math.sqrt(3), GP=[[-gq,-gq],[gq,-gq],[gq,gq],[-gq,gq]];
+  const Bg=GP.map(([a,b])=>{ const B3=[new Float64Array(8),new Float64Array(8),new Float64Array(8)]; for(let i=0;i<4;i++){ const dx=xi[i]*(1+b*et[i])/4*2/hx, dy=et[i]*(1+a*xi[i])/4*2/hy; B3[0][2*i]=dx; B3[1][2*i+1]=dy; B3[2][2*i]=dy; B3[2][2*i+1]=dx; } return B3; });
+  const EX=[0,1,2,3].map(nd=>{ const s3=xi[nd]*Math.sqrt(3), t3=et[nd]*Math.sqrt(3); return GP.map(([a,b])=>0.25*(1+s3*Math.sign(a))*(1+t3*Math.sign(b))); }); // extrapolation weights gauss → node
+  for(let e=0;e<nx*ny;e++){ if(!cell[e]) continue; const ns=elN(e); const ue=[]; ns.forEach(n=>ue.push(u[2*n],u[2*n+1]));
+    const sg=Bg.map(B3=>{ const eps=[0,1,2].map(r=>{let v=0;for(let c=0;c<8;c++)v+=B3[r][c]*ue[c];return v;}); return [0,1,2].map(r=>D[r*3]*eps[0]+D[r*3+1]*eps[1]+D[r*3+2]*eps[2]); });
+    for(let r=0;r<3;r++) es[3*e+r]=(sg[0][r]+sg[1][r]+sg[2][r]+sg[3][r])/4;
+    ns.forEach((n,nd)=>{ for(let r=0;r<3;r++){ let v=0; for(let g=0;g<4;g++) v+=EX[nd][g]*sg[g][r]; ns_[3*n+r]+=v; } cnt[n]++; }); }
+  for(let n=0;n<NN;n++) if(cnt[n]) for(let r=0;r<3;r++) ns_[3*n+r]/=cnt[n];
+  let umax=0; for(let n=0;n<NN;n++) if(used[n]) umax=Math.max(umax,Math.hypot(u[2*n],u[2*n+1]));
+  // reaction check
+  let rx=0,ry=0; { const Ku=new Float64Array(ndof); const ue=new Float64Array(8); for(const ns of els){ for(let a=0;a<4;a++){ue[2*a]=u[2*ns[a]];ue[2*a+1]=u[2*ns[a]+1];} for(let r2=0;r2<8;r2++){ let s=0; for(let c=0;c<8;c++) s+=Ke[r2][c]*ue[c]; Ku[2*ns[r2>>1]+(r2&1)]+=s; } } for(let i=0;i<ndof;i++) if(fixed[i]&&used[i>>1]){ if(i%2) ry+=Ku[i]; else rx+=Ku[i]; } }
+  return {nx,ny,hx,hy,cell,u,es,ns:ns_,used,umax,it,dropped,nominalArea,els:els.length,ndof:act.reduce((a,b)=>a+b,0),rx,ry,fixed};
+}
+function nodeVal(R,n,q,M){ const sx=R.ns[3*n],sy=R.ns[3*n+1],t=R.ns[3*n+2]; const c=(sx+sy)/2, rr=Math.hypot((sx-sy)/2,t); const s1=c+rr; const vm=vmOf(sx,sy,t);
+  return q==='vm'?vm:q==='sx'?sx:q==='sy'?sy:q==='txy'?t:q==='s1'?s1:q==='u'?Math.hypot(R.u[2*n],R.u[2*n+1]):M.allow/Math.max(vm,1e-9); }
+function renderFem(f){
+  const F=SA.fem, k=SA.shape, S=SHP.find(q=>q.k===k);
+  f.body.innerHTML=`<div class="feagrid"><div class="feaside"><div class="row" style="justify-content:space-between"><b class="shapettl">${shapeIcon(k)} ${esc(S.n)}</b>${backBtn()}</div>
+    <div class="ig">1 · Geometry (mm)</div><div id="fm-geo">${slider('W','Length',F.W,40,600,5,'mm')}${slider('H','Height',F.H,20,400,5,'mm')}${slider('t','Thickness',F.t,0.5,50,0.5,'mm')}${(FEMDIM[k]||[]).map(([p,n,lo,hi])=>slider(p,n,F[p],lo,hi,p==='ratio'?0.01:0.5,p==='ratio'?'':'mm')).join('')}</div>
+    <div class="row" style="gap:4px;flex-wrap:wrap;margin-top:2px"><span class="small">Edit material:</span><div class="seg" id="fm-paint"><button data-p="off" aria-pressed="${SA.paint==='off'}">Off</button><button data-p="add" aria-pressed="${SA.paint==='add'}">Paint</button><button data-p="remove" aria-pressed="${SA.paint==='remove'}">Erase</button></div><button class="btn" id="fm-reset" style="padding:1px 8px">Reset</button></div>
+    <div class="ig">2 · Material</div>${matBlock()}
+    <div class="ig">3 · Supports & loads</div>
+    <div class="combo" style="grid-template-columns:1fr 1fr"><label class="f" style="margin:0">Fixed edge<select id="fm-fix">${EDGES.map(([e,n])=>`<option value="${e}" ${e===F.fix?'selected':''}>${n}</option>`).join('')}</select></label><label class="f" style="margin:0">Support<select id="fm-fixT"><option value="clamp" ${F.fixT==='clamp'?'selected':''}>Clamped</option><option value="roll" ${F.fixT==='roll'?'selected':''}>Rollers</option></select></label></div>
+    <div class="combo" style="grid-template-columns:1fr 1fr"><label class="f" style="margin:0">Loaded edge<select id="fm-load">${EDGES.map(([e,n])=>`<option value="${e}" ${e===F.load?'selected':''}>${n}</option>`).join('')}${k==='lug'?`<option value="pin" ${F.load==='pin'?'selected':''}>Pin in the hole</option>`:''}</select></label><label class="f" style="margin:0">Direction<select id="fm-dir"><option value="n" ${F.ldir==='n'?'selected':''}>Pull (tension)</option><option value="c" ${F.ldir==='c'?'selected':''}>Push (compression)</option><option value="s+" ${F.ldir==='s+'?'selected':''}>Shear +</option><option value="s-" ${F.ldir==='s-'?'selected':''}>Shear −</option></select></label></div>
+    <div id="fm-ld">${slider('F','Total load',F.F,10,500000,1,'N',true)}${slider('res','Mesh (elements along length)',F.res,24,110,2,'')}</div></div>
+   <div class="feamain"><div class="wtabs" role="tablist">${[['map','Stress map'],['chk','Results & checks']].map(([t,n])=>`<button role="tab" data-t="${t}" aria-selected="${SA.tab===t}">${n}</button>`).join('')}</div><div class="wtabpane" style="display:block;overflow:visible">
+    ${SA.tab==='map'?colourCtl([['vm','von Mises'],['s1','Max principal σ₁'],['sx','σx'],['sy','σy'],['txy','τxy'],['u','Displacement'],['sf','Safety factor']])+`<label class="small inline"><input type="checkbox" id="sa-def" ${SA.deform?'checked':''}> Deformed</label><label class="small inline"><input type="checkbox" id="sa-vec" ${SA.vec?'checked':''}> Principal stress arrows</label></div><div class="feabox" style="height:340px"><canvas id="fm-cv"></canvas><div class="tip" hidden id="fm-tip"></div></div>`:''}<div id="fm-sum"></div><div id="fm-chk"></div></div></div></div>`;
+  f.body.querySelector('[data-back]').addEventListener('click',()=>{SA.stage='pick';renderFea(f);});
+  f.body.querySelector('.wtabs').addEventListener('click',e=>{const t=e.target.closest('[data-t]');if(!t)return;SA.tab=t.dataset.t;renderFea(f);});
+  $('#sa-src').addEventListener('change',e=>{FEA.src=e.target.value;femRun();});
+  let tm; const later=()=>{clearTimeout(tm);tm=setTimeout(femRun,120);};
+  bindSliders($('#fm-geo'),F,()=>{F.edits={};later();}); bindSliders($('#fm-ld'),F,later);
+  [['fm-fix','fix'],['fm-fixT','fixT'],['fm-load','load'],['fm-dir','ldir']].forEach(([id,kk])=>$('#'+id).addEventListener('change',e=>{F[kk]=e.target.value;femRun();}));
+  $('#fm-paint').addEventListener('click',e=>{const b=e.target.closest('[data-p]');if(!b)return;SA.paint=b.dataset.p;$$('#fm-paint button').forEach(x=>x.setAttribute('aria-pressed',x===b));});
+  $('#fm-reset').addEventListener('click',()=>{F.edits={};femRun();});
+  if(SA.tab==='map'){ $('#sa-q').addEventListener('change',e=>{SA.qty=e.target.value;femDraw();}); $('#sa-band').addEventListener('change',e=>{FEA.bands=e.target.checked;femDraw();}); $('#sa-def').addEventListener('change',e=>{SA.deform=e.target.checked;femDraw();}); $('#sa-vec').addEventListener('change',e=>{SA.vec=e.target.checked;femDraw();}); }
+  if(!['vm','s1','sx','sy','txy','u','sf'].includes(SA.qty)) SA.qty='vm';
+  requestAnimationFrame(femRun);
+}
+function femRun(){ const M=feaMat(); if($('#fe-mat')) $('#fe-mat').innerHTML=matLine(M); if(!M) return; const t0=performance.now(); SA.femRes=femSolve(M); SA.femRes.ms=performance.now()-t0; SA.femM=M; femDraw(); }
+function femDraw(){
+  const R=SA.femRes, M=SA.femM, F=SA.fem; if(!R) return;
+  if(R.err){ if($('#fm-sum')) $('#fm-sum').innerHTML=`<p class="small" style="color:var(--crit)">${esc(R.err)}</p>`; return; }
+  const {nx,ny,hx,hy,cell}=R, NN=(nx+1)*(ny+1), q=SA.qty;
+  const onSup=n=>R.fixed[2*n]||R.fixed[2*n+1]; let supPk=0;
+  let mn=Infinity,mx=-Infinity,best=null; for(let n=0;n<NN;n++){ if(!R.used[n]) continue; const v=nodeVal(R,n,q,M); if(v<mn)mn=v; if(v>mx)mx=v; const vm=nodeVal(R,n,'vm',M); if(onSup(n)){ supPk=Math.max(supPk,vm); continue; } if(!best||vm>best.vm) best={n,vm}; }
+  if(['sx','sy','txy','s1'].includes(q)){ const a=Math.max(Math.abs(mn),Math.abs(mx),1e-9); if(mn<0){mn=-a;mx=a;} else mn=0; } else if(q!=='sf') mn=0; else { mn=0; }
+  const cv=$('#fm-cv');
+  if(cv){ const {ctx,w,h}=fit(cv); ctx.clearRect(0,0,w,h); const pad={l:24,r:90,t:30,b:26}; const pw=w-pad.l-pad.r, ph=h-pad.t-pad.b; const s=Math.min(pw/F.W,ph/F.H); const ox=pad.l+(pw-F.W*s)/2, oy=pad.t+(ph-F.H*s)/2;
+    const X=x=>ox+x*s, Y=y=>oy+(F.H-y)*s; const ds=SA.deform?Math.min(0.08*Math.max(F.W,F.H)/Math.max(R.umax,1e-12),1e7):0;
+    const P=n=>{ const i=n%(nx+1),j=(n/(nx+1))|0; return [X(i*hx+R.u[2*n]*ds),Y(j*hy+R.u[2*n+1]*ds)]; };
+    if(SA.deform){ // flat-shaded quads at deformed positions, 2x2 sub-quads with interpolated colour
+      for(let e=0;e<nx*ny;e++){ if(!cell[e]) continue; const i=e%nx,j=(e/nx)|0; const n=[j*(nx+1)+i,j*(nx+1)+i+1,(j+1)*(nx+1)+i+1,(j+1)*(nx+1)+i]; const v=n.map(z=>nodeVal(R,z,q,M)); const p=n.map(P);
+        for(let a=0;a<2;a++)for(let b=0;b<2;b++){ const L=(u,t)=>{const x=(1-u)*(1-t)*p[0][0]+u*(1-t)*p[1][0]+u*t*p[2][0]+(1-u)*t*p[3][0], y=(1-u)*(1-t)*p[0][1]+u*(1-t)*p[1][1]+u*t*p[2][1]+(1-u)*t*p[3][1];return [x,y];}; const u0=a/2,u1=(a+1)/2,t0=b/2,t1=(b+1)/2, uc=(u0+u1)/2, tc=(t0+t1)/2; const vv=(1-uc)*(1-tc)*v[0]+uc*(1-tc)*v[1]+uc*tc*v[2]+(1-uc)*tc*v[3];
+          const c=fieldColor(vv,q,mn,mx); ctx.fillStyle=`rgb(${c.join(',')})`; ctx.beginPath(); [[u0,t0],[u1,t0],[u1,t1],[u0,t1]].forEach(([u,t],z)=>{const [x,y]=L(u,t); z?ctx.lineTo(x,y):ctx.moveTo(x,y);}); ctx.closePath(); ctx.fill(); ctx.strokeStyle=ctx.fillStyle; ctx.lineWidth=0.6; ctx.stroke(); } } }
+    else { const k=4, off=femDraw._o||(femDraw._o=document.createElement('canvas')); off.width=nx*k; off.height=ny*k; const oc=off.getContext('2d'); const img=oc.createImageData(nx*k,ny*k);
+      for(let e=0;e<nx*ny;e++){ if(!cell[e]) continue; const i=e%nx,j=(e/nx)|0; const n=[j*(nx+1)+i,j*(nx+1)+i+1,(j+1)*(nx+1)+i+1,(j+1)*(nx+1)+i]; const v=n.map(z=>nodeVal(R,z,q,M));
+        for(let a=0;a<k;a++)for(let b=0;b<k;b++){ const u=(a+0.5)/k,t=(b+0.5)/k; const vv=(1-u)*(1-t)*v[0]+u*(1-t)*v[1]+u*t*v[2]+(1-u)*t*v[3]; const c=fieldColor(vv,q,mn,mx); const px=i*k+a, py=(ny-1-j)*k+(k-1-b); const o=(py*nx*k+px)*4; img.data[o]=c[0];img.data[o+1]=c[1];img.data[o+2]=c[2];img.data[o+3]=255; } }
+      oc.putImageData(img,0,0); ctx.imageSmoothingEnabled=false; ctx.drawImage(off,X(0),Y(F.H),F.W*s,F.H*s); }
+    // outline of undeformed boundary
+    ctx.strokeStyle=C.muted; ctx.lineWidth=1; ctx.setLineDash(SA.deform?[3,3]:[]); ctx.beginPath();
+    for(let j=0;j<ny;j++)for(let i=0;i<nx;i++){ const e=j*nx+i; if(!cell[e]) continue; const x0=X(i*hx),x1=X((i+1)*hx),y0=Y(j*hy),y1=Y((j+1)*hy);
+      if(i===0||!cell[e-1]){ctx.moveTo(x0,y0);ctx.lineTo(x0,y1);} if(i===nx-1||!cell[e+1]){ctx.moveTo(x1,y0);ctx.lineTo(x1,y1);} if(j===0||!cell[e-nx]){ctx.moveTo(x0,y0);ctx.lineTo(x1,y0);} if(j===ny-1||!cell[e+nx]){ctx.moveTo(x0,y1);ctx.lineTo(x1,y1);} }
+    ctx.stroke(); ctx.setLineDash([]);
+    // supports and loads
+    const edgePts=ed=>{ const pts=[]; for(let n=0;n<NN;n++){ if(!R.used[n]) continue; const i=n%(nx+1),j=(n/(nx+1))|0; if((ed==='left'&&i===0)||(ed==='right'&&i===nx)||(ed==='bottom'&&j===0)||(ed==='top'&&j===ny)) pts.push([i*hx,j*hy]); } return pts; };
+    ctx.strokeStyle=C.ink; ctx.fillStyle=C.ink; edgePts(F.fix).forEach(([x,y],z)=>{ if(z%2) return; const px=X(x),py=Y(y); const dx=F.fix==='left'?-1:F.fix==='right'?1:0, dy=F.fix==='bottom'?1:F.fix==='top'?-1:0;
+      if(F.fixT==='clamp'){ ctx.beginPath(); ctx.moveTo(px,py); ctx.lineTo(px+dx*8+dy*4,py+dy*8+dx*4); ctx.stroke(); } else { ctx.beginPath(); ctx.arc(px+dx*4,py+dy*4,2.5,0,7); ctx.fill(); } });
+    ctx.strokeStyle=C.crit; ctx.fillStyle=C.crit; ctx.lineWidth=1.6;
+    const arrow=(x0,y0,x1,y1)=>{ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.stroke();const a=Math.atan2(y1-y0,x1-x0);ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x1-6*Math.cos(a-0.4),y1-6*Math.sin(a-0.4));ctx.lineTo(x1-6*Math.cos(a+0.4),y1-6*Math.sin(a+0.4));ctx.closePath();ctx.fill();};
+    if(F.load==='pin'){ const cx=X(F.W-F.H/2), cy=Y(F.H/2); arrow(cx-10,cy,cx+F.D/2*s*0.8,cy); ctx.font=`11px ${C.mono}`; ctx.textAlign='center'; ctx.textBaseline='bottom'; ctx.fillText('pin',cx,cy-4); }
+    else { const pts=edgePts(F.load); const sgn={left:-1,right:1,top:1,bottom:-1}[F.load]; const horiz=F.load==='top'||F.load==='bottom'; pts.forEach(([x,y],z)=>{ if(z%Math.max(1,Math.round(pts.length/9))) return; const px=X(x),py=Y(y); let dx=0,dy=0; if(F.ldir==='n'||F.ldir==='c'){ const d=(F.ldir==='n'?1:-1)*sgn; if(horiz) dy=-d; else dx=d; } else { const d=F.ldir==='s+'?1:-1; if(horiz) dx=d; else dy=-d; }
+      const L=16; if(F.ldir==='c') arrow(px+dx*-L*-1,py+dy*-L*-1,px,py); else arrow(px+(F.ldir==='n'?dx*2:0),py+(F.ldir==='n'?dy*2:0),px+dx*L,py+dy*L); }); }
+    // principal arrows
+    if(SA.vec){ const step=Math.max(1,Math.round(nx/22)); for(let j=0;j<ny;j+=step)for(let i=0;i<nx;i+=step){ const e=j*nx+i; if(!cell[e]) continue; const sx=R.es[3*e],sy=R.es[3*e+1],t=R.es[3*e+2]; const c=(sx+sy)/2,rr=Math.hypot((sx-sy)/2,t); const s1=c+rr,s2=c-rr, th=0.5*Math.atan2(2*t,sx-sy); const ref=Math.max(Math.abs(mx),Math.abs(mn),1e-9)*(q==='vm'||q==='sf'||q==='u'?1:1);
+      const px=X((i+0.5)*hx), py=Y((j+0.5)*hy); const L=step*hx*s*0.45;
+      [[s1,th],[s2,th+Math.PI/2]].forEach(([sv,a])=>{ const len=Math.min(1,Math.sqrt(Math.abs(sv)/Math.max(best.vm,1e-9)))*L; if(len<1.5) return; ctx.strokeStyle=sv>=0?'#b00000':'#0040b0'; ctx.lineWidth=1.4; ctx.beginPath(); ctx.moveTo(px-Math.cos(a)*len,py+Math.sin(a)*len); ctx.lineTo(px+Math.cos(a)*len,py-Math.sin(a)*len); ctx.stroke(); }); void ref; } }
+    // worst point
+    if(best){ const [bx,by]=P(best.n); ctx.strokeStyle=C.ink; ctx.lineWidth=1.5; ctx.beginPath(); ctx.arc(bx,by,7,0,7); ctx.stroke(); ctx.font=`600 11px ${C.mono}`; ctx.fillStyle=C.ink; ctx.textAlign=bx>w-180?'right':'left'; ctx.textBaseline='bottom'; ctx.fillText(`max ${num(best.vm,3)} MPa`,bx+(bx>w-180?-9:9),by-8); }
+    colourBar(ctx,w-pad.r+16,pad.t,ph,q,mn,mx);
+    ctx.fillStyle=C.muted; ctx.font=`10.5px ${C.mono}`; ctx.textAlign='left'; ctx.textBaseline='top'; ctx.fillText(`${R.els} elements · ${R.ndof} unknowns${SA.deform?` · deformation ×${num(ds,2)}`:''}${SA.paint!=='off'?' · click or drag to '+(SA.paint==='add'?'paint':'erase'):" · click a point for Mohr's circle"}`,pad.l,4);
+    // hover + paint
+    const tip=$('#fm-tip'); const cellAt=(px,py)=>{ const x=(px-ox)/s, y=F.H-(py-oy)/s; const i=Math.floor(x/hx), j=Math.floor(y/hy); return (i<0||j<0||i>=nx||j>=ny)?null:{i,j,x,y}; };
+    let painting=false; const paint=c=>{ if(!c) return; const b=SA.brush; for(let a=-b+1;a<b;a++)for(let d=-b+1;d<b;d++){ const ii=c.i+a,jj=c.j+d; if(ii<0||jj<0||ii>=nx||jj>=ny) continue; F.edits[jj*nx+ii]=SA.paint==='add'?1:0; } };
+    cv.onclick=e=>{ if(SA.paint!=='off') return; const r=cv.getBoundingClientRect(); const c=cellAt(e.clientX-r.left,e.clientY-r.top); if(!c||!cell[c.j*nx+c.i]) return; const fx=c.x/hx-c.i, fy=c.y/hy-c.j; const n=[c.j*(nx+1)+c.i,c.j*(nx+1)+c.i+1,(c.j+1)*(nx+1)+c.i+1,(c.j+1)*(nx+1)+c.i]; const W4=[(1-fx)*(1-fy),fx*(1-fy),fx*fy,(1-fx)*fy]; const g=key=>n.reduce((sum,z,k)=>sum+W4[k]*nodeVal(R,z,key,M),0); sendToMohr({sx:g('sx'),sy:g('sy'),txy:g('txy')},`the plate at (${num(c.x,3)}, ${num(c.y,3)}) mm`); };
+    cv.onpointerdown=e=>{ if(SA.paint==='off') return; painting=true; const r=cv.getBoundingClientRect(); paint(cellAt(e.clientX-r.left,e.clientY-r.top)); femRun(); };
+    cv.onpointerup=()=>{painting=false;};
+    cv.onpointermove=e=>{ const r=cv.getBoundingClientRect(); const px=e.clientX-r.left,py=e.clientY-r.top; const c=cellAt(px,py);
+      if(painting&&SA.paint!=='off'){ paint(c); clearTimeout(femDraw._pt); femDraw._pt=setTimeout(femRun,60); return; }
+      if(!c||!cell[c.j*nx+c.i]){tip.hidden=true;return;} const fx=c.x/hx-c.i, fy=c.y/hy-c.j; const n=[c.j*(nx+1)+c.i,c.j*(nx+1)+c.i+1,(c.j+1)*(nx+1)+c.i+1,(c.j+1)*(nx+1)+c.i]; const W4=[(1-fx)*(1-fy),fx*(1-fy),fx*fy,(1-fx)*fy];
+      const g=key=>n.reduce((sum,z,k)=>sum+W4[k]*nodeVal(R,z,key,M),0);
+      tip.hidden=false; tip.innerHTML=`<div class="mono tiny">(${num(c.x,3)}, ${num(c.y,3)}) mm<br>σx ${num(g('sx'),3)} · σy ${num(g('sy'),3)} · τ ${num(g('txy'),3)} MPa<br>σ₁ ${num(g('s1'),3)} MPa · <b>von Mises ${num(g('vm'),3)}</b><br>displacement ${num(g('u')*1000,3)} µm</div>`; tip.style.left=Math.min(px+14,r.width-230)+'px'; tip.style.top=Math.max(4,py-70)+'px'; };
+    cv.onpointerleave=()=>{tip.hidden=true;painting=false;};
+  }
+  // summary
+  const SF=M.allow/Math.max(best?best.vm:1e-9,1e-9); const nom=F.F/Math.max(R.nominalArea,1e-9); const s1max=(()=>{let m=0;for(let n=0;n<NN;n++) if(R.used[n]&&!onSup(n)) m=Math.max(m,nodeVal(R,n,'s1',M));return m;})();
+  let nomTxt='nominal stress'; let nomV=nom; if(SA.shape==='lbr'){ nomV=6*F.F*(F.W-40)/(F.t*40*40); nomTxt='nominal bending stress at the corner (6M/th²)'; } const axial=F.load==='pin'||F.ldir==='n'||F.ldir==='c'||SA.shape==='lbr'; const Kt=s1max/nomV; const mass=(R.els*hx*hy*F.t)*M.rho/1e6;
+  let frac=''; if(SA.shape==='crack'&&M.k1c){ const a=F.c/1000, b=F.H/1000, ab=a/b; const fY=1.12-0.231*ab+10.55*ab**2-21.72*ab**3+30.39*ab**4; const sg=F.ldir==='n'&&(F.load==='left'||F.load==='right')?nom:0; const KI=fY*sg*Math.sqrt(Math.PI*a);
+    frac=`<div class="flag ${KI>=M.k1c?'crit':'good'}" style="margin-top:6px"><div><b>Fracture: K<sub>I</sub> = ${num(KI,3)} MPa√m vs K<sub>IC</sub> = ${num(M.k1c,3)}</b><div class="small">${KI>=M.k1c?'The crack grows unstably: the plate snaps at this load.':`Safe against fracture by ×${num(M.k1c/Math.max(KI,1e-9),3)}. Critical load ≈ ${num(F.F*M.k1c/Math.max(KI,1e-9))} N.`} Edge-crack formula K = Y·σ·√(πa), Y = ${num(fY,3)}. The stress map cannot resolve the crack-tip singularity: refining the mesh just raises the peak.</div></div></div>`; }
+  const sum=$('#fm-sum'); if(sum) sum.innerHTML=`<div class="chscore ${SF>=1?'ok':'bad'}" style="margin-top:6px"><div class="big" style="font-size:20px;color:var(--${SF>=1.5?'good':SF>=1?'warn':'crit'})">${SF>=1?'✓':'✗'}</div><div><b>${SF>=1.5?'Safe':SF>=1?'Marginal':'Yields / fails'}: safety factor ${num(SF,3)}</b><div class="small">Peak von Mises ${num(best?best.vm:0,4)} MPa vs allowable ${num(M.allow,4)} MPa · ${nomTxt} ${num(nomV,3)} MPa${axial?` · stress concentration K<sub>t</sub> ≈ ${num(Kt,3)}`:''} · max displacement ${num(R.umax*1000,3)} µm${supPk>(best?best.vm:0)*1.02?` · the support edge shows ${num(supPk,3)} MPa, an artificial spike from the idealised rigid support, excluded`:''}</div></div></div>${frac}`;
+  const chk=$('#fm-chk'); if(chk&&SA.tab==='chk'){ const rows=[['Mesh',`${R.nx} × ${R.ny} grid, ${R.els} four-node elements, ${R.ndof} unknowns`],['Solver',`preconditioned conjugate gradient, ${R.it} iterations, ${num(R.ms,3)} ms`],['Equilibrium check',`reactions ${num(R.rx,4)} N (x), ${num(R.ry,4)} N (y) vs applied ${num(F.F,4)} N`],['Nominal stress ('+nomTxt+')',num(nomV,4)+' MPa'],['Peak principal stress σ₁',num(s1max,4)+' MPa'],['Stress concentration K<sub>t</sub> = σ₁,max / σ_nom',axial?num(Kt,3):'— (not meaningful for shear loading)'],['Peak von Mises',num(best?best.vm:0,4)+' MPa'],['Max displacement',num(R.umax*1000,4)+' µm'],['Part mass',num(mass,3)+' kg']];
+    const notes=[]; if(R.dropped) notes.push(['warn',`${R.dropped} elements are not connected to the support and were ignored.`]); notes.push(['','Plane stress: thin plate, load in its own plane. Stresses at sharp corners and crack tips keep rising as the mesh is refined (a singularity); fillets give finite, mesh-independent peaks.']);
+    if(SA.shape==='hole'){ const r=F.D/F.H; notes.push(['',`Theory (Heywood) for this hole-to-width ratio: K<sub>t</sub> ≈ ${num((2+Math.pow(1-r,3))/(1-r),3)} on the gross section. The finite-element value approaches it as you refine the mesh, because the square cells only approximate the round hole.`]); }
+    if(M.lam) notes.push(['warn','Laminate modelled as an equivalent orthotropic plate: check individual plies in the laminate designer.']);
+    chk.innerHTML=`<dl class="kv" style="margin-top:6px">${rows.map(([a,v])=>`<dt>${a}</dt><dd>${v}</dd>`).join('')}</dl><ul class="notes" style="margin-top:6px">${notes.map(([c,t])=>`<li class="${c}">${t}</li>`).join('')}</ul>`; }
+}
+
+/* ================= VESSELS & ROTATING PARTS (exact solutions on the old field renderer) ================= */
+Object.assign(FEA,{thick:{a:50,b:100,pi:150,po:0},disc:{a:20,b:250,rpm:9000}});
+Object.assign(FDIM,{thick:[['a','Inner radius',5,800,1,'mm'],['b','Outer radius',6,1200,1,'mm'],['pi','Internal pressure',0.1,1500,0.1,'MPa','log'],['po','External pressure',0,500,0.5,'MPa']],disc:[['a','Bore radius (0 = solid)',0,500,1,'mm'],['b','Outer radius',20,1500,5,'mm'],['rpm','Speed',100,100000,10,'rpm','log']]});
+const _feaModel0=feaModel;
+feaModel=function(M){
+  if(FEA.geo==='thick'){ const P=FEA.thick, a=Math.min(P.a,P.b-1), b=P.b; const A=(P.pi*a*a-P.po*b*b)/(b*b-a*a), Bc=(P.pi-P.po)*a*a*b*b/(b*b-a*a); const sr=r=>A-Bc/(r*r), sq=r=>A+Bc/(r*r), sz=A;
+    const vm3=s=>Math.sqrt(0.5*((s.sx-s.sy)**2+(s.sy-sz)**2+(sz-s.sx)**2));
+    return {xr:[-b*1.08,b*1.08],yr:[-b*1.08,b*1.08],vol:Math.PI*(b*b-a*a)*1000,lab:{sx:'σr radial',sy:'σθ hoop'},vmf:vm3,
+      st:(x,y)=>{const r=Math.hypot(x,y);if(r<a||r>b)return null;return {sx:sr(r),sy:sq(r),txy:0};},
+      sum:[['Hoop stress at the bore',num(sq(a),4)+' MPa'],['Hoop stress at the outside',num(sq(b),4)+' MPa'],['Axial stress (closed ends)',num(sz,4)+' MPa'],['Thin-wall estimate p·r/t',num(P.pi*(a+b)/2/(b-a),4)+' MPa'],['Pressure at first yield (bore)',num(P.pi*M.allow/Math.max(1e-9,vm3({sx:sr(a),sy:sq(a)})),4)+' MPa'],['Burst pressure (Nadai: 2/√3·σ_UTS·ln(b/a))',num(2/Math.sqrt(3)*(M.uts||M.allow)*Math.log(b/a),4)+' MPa'],['Mass per metre',num(Math.PI*(b*b-a*a)*M.rho/1000,3)+' kg/m']],
+      extra:()=>`<h4 style="margin:6px 0 2px">Stress through the wall</h4><canvas class="cv" id="ax-ch" style="height:170px"></canvas>`,
+      chart:()=>{ const pts=[]; for(let i=0;i<=60;i++){const r=a+(b-a)*i/60;pts.push(r);} drawChart($('#ax-ch'),{xr:[a,b],yr:symR([...pts.map(sq),...pts.map(sr),sz]),series:[{name:'σθ hoop',color:C.accent,width:2.4,pts:pts.map(r=>[r,sq(r)])},{name:'σr radial',color:C.cold,width:2,pts:pts.map(r=>[r,sr(r)])},{name:'σz axial',color:C.good,width:1.6,dash:[4,3],pts:pts.map(r=>[r,sz])}],legend:[['hoop',C.accent],['radial',C.cold],['axial',C.good]],xlabel:'radius (mm)',ylabel:'MPa',xunit:'mm',yunit:'MPa',padL:56}); },
+      draw:(ctx,X,Y)=>{ ctx.strokeStyle=C.ink; ctx.lineWidth=1.4; [a,b].forEach(r=>{ctx.beginPath();ctx.arc(X(0),Y(0),Math.abs(X(r)-X(0)),0,7);ctx.stroke();}); ctx.fillStyle=C.cold; ctx.font=`11px ${C.mono}`; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(`p = ${num(P.pi,3)} MPa`,X(0),Y(0)); }}; }
+  if(FEA.geo==='disc'){ const P=FEA.disc, a=Math.min(P.a,P.b-1), b=P.b, nu=M.nu, rho=M.rho*1000, w=P.rpm*2*Math.PI/60, K=rho*w*w/1e6/1e6; // MPa per mm²
+    const sr=r=>a>0?(3+nu)/8*K*(a*a+b*b-a*a*b*b/(r*r)-r*r):(3+nu)/8*K*(b*b-r*r), sq=r=>a>0?(3+nu)/8*K*(a*a+b*b+a*a*b*b/(r*r)-(1+3*nu)/(3+nu)*r*r):K/8*((3+nu)*b*b-(1+3*nu)*r*r);
+    const pk=Math.max(vmOf(sr(a||1e-6),sq(a||1e-6),0),vmOf(sr(b),sq(b),0)); const burst=P.rpm*Math.sqrt((M.uts||M.allow)/Math.max(pk,1e-9)); const E=0.25*Math.PI*rho*0.01*(b**4-a**4)*1e-12*w*w; // J per cm thickness (approx, t=10 mm)
+    return {xr:[-b*1.08,b*1.08],yr:[-b*1.08,b*1.08],vol:Math.PI*(b*b-a*a)*10,lab:{sx:'σr radial',sy:'σθ hoop'},
+      st:(x,y)=>{const r=Math.hypot(x,y);if(r<a||r>b)return null;return {sx:sr(Math.max(r,1e-6)),sy:sq(Math.max(r,1e-6)),txy:0};},
+      sum:[['Rim speed',num(w*b/1000,4)+' m/s'],['Peak hoop stress',num(sq(a||1e-6),4)+' MPa at the '+(a>0?'bore':'centre')],['Burst speed (peak = UTS)',num(burst,4)+' rpm'],['Stored energy (10 mm thick disc)',num(E/1000,4)+' kJ'],['Effect of a bore',a>0?'a small hole doubles the centre stress of a solid disc':'solid disc: stress peaks at the centre']],
+      extra:()=>`<h4 style="margin:6px 0 2px">Stress vs radius</h4><canvas class="cv" id="ax-ch" style="height:170px"></canvas>`,
+      chart:()=>{ const rs=[]; for(let i=0;i<=60;i++) rs.push((a||0)+(b-(a||0))*i/60); drawChart($('#ax-ch'),{xr:[a||0,b],yr:symR([...rs.map(r=>sq(Math.max(r,1e-6))),...rs.map(r=>sr(Math.max(r,1e-6)))]),series:[{name:'σθ',color:C.accent,width:2.4,pts:rs.map(r=>[r,sq(Math.max(r,1e-6))])},{name:'σr',color:C.cold,width:2,pts:rs.map(r=>[r,sr(Math.max(r,1e-6))])}],legend:[['hoop',C.accent],['radial',C.cold]],xlabel:'radius (mm)',ylabel:'MPa',xunit:'mm',yunit:'MPa',padL:56}); },
+      draw:(ctx,X,Y)=>{ ctx.strokeStyle=C.ink; ctx.lineWidth=1.4; [a,b].forEach(r=>{if(r>0){ctx.beginPath();ctx.arc(X(0),Y(0),Math.abs(X(r)-X(0)),0,7);ctx.stroke();}}); const rr=Math.abs(X(b)-X(0))+10; ctx.strokeStyle=C.crit; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(X(0),Y(0),rr,-2.4,-1.3); ctx.stroke(); ctx.fillStyle=C.crit; ctx.font=`11px ${C.mono}`; ctx.textAlign='left'; ctx.textBaseline='bottom'; ctx.fillText(`${num(P.rpm)} rpm`,X(0)+4,Y(0)-rr-2); }}; }
+  return _feaModel0(M);
+};
+function renderAxi(f){
+  const k=SA.shape, S=SHP.find(q=>q.k===k); FEA.geo=k; const P=FEA[k]; if(!['vm','sx','sy','txy','sf'].includes(FEA.qty)) FEA.qty='vm';
+  const qopts=k==='shaft'?[['vm','von Mises'],['txy','Shear stress τ'],['sf','Safety factor']]:[['vm','von Mises'],['sx',k==='vessel'?'Axial stress':'Radial stress σr'],['sy','Hoop stress σθ'],['sf','Safety factor']];
+  f.body.innerHTML=`<div class="feagrid"><div class="feaside"><div class="row" style="justify-content:space-between"><b class="shapettl">${shapeIcon(k)} ${esc(S.n)}</b>${backBtn()}</div>
+    <div class="ig">1 · Geometry & loading</div><div id="fe-dims">${FDIM[k].map(([p,n,lo,hi,st,u,mode])=>{ const max=mode==='ofro'?P.ro*hi:hi; return slider(p,n,P[p],lo,max,st,u,mode==='log'); }).join('')}</div>
+    <div class="ig">2 · Material</div>${matBlock()}<p class="tiny muted" style="margin:4px 0 0">Exact closed-form solution: no mesh needed.</p></div>
+   <div class="feamain"><div class="row" style="flex-wrap:wrap;gap:6px 12px;align-items:center"><label class="small inline">Colour by <select id="fe-q" style="width:auto;padding:2px 6px">${qopts.map(([q,n])=>`<option value="${q}" ${q===FEA.qty?'selected':''}>${n}</option>`).join('')}</select></label><label class="small inline"><input type="checkbox" id="fe-band" ${FEA.bands?'checked':''}> Contour bands</label></div>
+    <div class="feabox" style="height:330px"><canvas id="fe-cv" aria-label="Colour-coded stress map"></canvas><div class="tip" hidden id="fe-tip"></div></div><div id="fe-sumwrap"></div></div></div>`;
+  f.body.querySelector('[data-back]').addEventListener('click',()=>{SA.stage='pick';renderFea(f);});
+  $('#sa-src').addEventListener('change',e=>{FEA.src=e.target.value;axiDraw();});
+  $('#fe-q').addEventListener('change',e=>{FEA.qty=e.target.value;axiDraw();}); $('#fe-band').addEventListener('change',e=>{FEA.bands=e.target.checked;axiDraw();});
+  bindSliders($('#fe-dims'),P,()=>{ if(k==='shaft') P.ri=Math.min(P.ri,P.ro*0.95); if(k==='thick') P.a=Math.min(P.a,P.b-1); if(k==='disc') P.a=Math.min(P.a,P.b-1); axiDraw(); });
+  const cv=$('#fe-cv'), tip=$('#fe-tip');
+  cv.addEventListener('pointermove',e=>{ const r=cv.getBoundingClientRect(); const x=e.clientX-r.left,y=e.clientY-r.top; const h=cv._hit; if(!h){tip.hidden=true;return;} const v=h(x,y); if(!v){tip.hidden=true;return;}
+    tip.hidden=false; tip.innerHTML=`<div class="mono tiny">${k==='shaft'?`τ ${num(v.txy,3)} MPa`:`σr/axial ${num(v.sx,3)} · σθ ${num(v.sy,3)} MPa`}<br><b>von Mises ${num(v.vm,3)} MPa</b> · SF ${isFinite(v.sf)?num(v.sf,3):'∞'}</div>`; tip.style.left=Math.min(x+14,r.width-230)+'px'; tip.style.top=Math.max(4,y-48)+'px'; });
+  cv.addEventListener('pointerleave',()=>tip.hidden=true);
+  requestAnimationFrame(axiDraw);
+}
+function axiDraw(){ feaDraw(); const M=feaMat(); if(!M) return; const G=feaModel(M); if(G.chart&&$('#ax-ch')) G.chart(); }
+Object.assign(GLOSS,{
+ fem:{t:'Finite element method',sym:'K·u = F',unit:'—',cat:'Mechanical',
+  what:'Splitting a part into many small elements whose behaviour is simple, then solving all of them together.',
+  means:'It works for shapes no formula covers: brackets, notches, fillets, odd holes. Engineers use it for almost every load-bearing part today.',
+  formula:['Element stiffness: K_e = ∫ Bᵀ D B dV','Assemble: K·u = F, apply supports, solve for the displacements u','Stress in each element: σ = D·B·u_e','von Mises from σx, σy, τxy'],
+  model:'Plates and brackets use four-node plane-stress quadrilaterals on a square grid, 2 × 2 Gauss integration, and a Jacobi-preconditioned conjugate-gradient solver. Element stresses are averaged at the nodes for smooth contours. Laminates are modelled as an orthotropic plate from their effective properties.'},
+ beamth:{t:'Beam theory',sym:'M, V, I',unit:'N·m · N · mm⁴',cat:'Mechanical',
+  what:'The standard model for long, slender members carrying bending loads.',
+  means:'The bending moment M causes stress that grows linearly away from the neutral axis; the shear force V causes a smaller shear stress that peaks at the neutral axis. The shape of the cross-section, through I, decides the stiffness.',
+  formula:['Bending stress: σ = −M·y / I','Shear stress: τ = V·Q / (I·b)','Deflection: EI·v″ = M','Euler buckling: P_cr = π²EI / (KL)²   (K = 2 cantilever, 1 pinned, 0.5 fixed, 0.7 fixed–pinned)'],
+  model:'Each beam is split into 120 Euler–Bernoulli elements, so propped and fixed beams (statically indeterminate) are solved as easily as simple ones. Section properties are computed numerically from the shape.'}
+});
+/* ============ STRENGTH OF MATERIALS TOOLKIT: Mohr's circle & failure theories · columns · thermal stress · impact · shaft design ============ */
+SHP.push({k:'mohr',fam:'tool',n:"Mohr's circle & failure theories",d:'Transform stresses; Tresca, von Mises, Rankine, Mohr–Coulomb'},
+ {k:'column',fam:'tool',n:'Column buckling',d:'Euler and Johnson, any section'},
+ {k:'thermal',fam:'tool',n:'Thermal stress',d:'Bar held between walls, with a gap'},
+ {k:'impact',fam:'tool',n:'Impact loading',d:'Weight dropped on a bar or beam'},
+ {k:'shaftd',fam:'tool',n:'Shaft design',d:'Bending + torsion, static and fatigue'});
+SFAM.tool='Strength-of-materials tools';
+const MOHR={sx:80,sy:-20,txy:40,th:0,from:''};
+const TL={column:{sec:'tube',L:1500,K:1,P:20000},thermal:{L:1000,d:20,dT:100,gap:0,sec:'round'},impact:{mode:'beam',W:200,h:50,L:1000,A:200},shaftd:{d:40,k:0,M:300,T:400,n:2,Kt:1.7,fin:'machined'}};
+const _renderFea1=renderFea;
+renderFea=function(f){ const S=SA.shape&&SHP.find(q=>q.k===SA.shape); if(SA.stage!=='pick'&&S&&S.fam==='tool') return renderTool(f); return _renderFea1(f); };
+function toolMat(){ const s=spec(W.sel); if(!s) return null; const p=s.p||propsAt(s.m,s.T,specState(s)); const k=kind(s.m);
+  const St=(p.ys!=null?p.ys:p.uts)||1, brittle=p.ys==null; const Sc=brittle?p.uts*(s.m.c==='ceramic'||k==='cer'||k==='glass'?8:3.5):St;
+  return {n:s.m.n,T:s.T,E:Math.max(1e-3,p.E)*1000,nu:s.m.nu||0.3,ys:St,uts:p.uts||St,brittle,St:brittle?p.uts:St,Sc,rho:p.rho,cte:p.cte||s.m.cte||10,m:s.m,p}; }
+function toolHead(k){ const S=SHP.find(q=>q.k===k); return `<div class="row" style="justify-content:space-between"><b class="shapettl">${shapeIcon(k)} ${esc(S.n)}</b>${backBtn()}</div>`; }
+const _shapeIcon0=shapeIcon;
+shapeIcon=function(k){ const X={mohr:'<circle cx="20" cy="22" r="11"/><path d="M4 22h32M20 6v32"/>',column:'<path d="M14 4h12M20 4q6 16 0 32M14 36h12"/>',thermal:'<path d="M4 6v28M36 6v28M4 20h32"/><path d="M14 14v12M26 14v12"/>',impact:'<rect x="14" y="3" width="12" height="9"/><path d="M20 13v8M4 30h32M8 30l-2 5M32 30l2 5"/>',shaftd:'<rect x="3" y="15" width="34" height="10"/><path d="M10 10v20M30 10v20"/>'}; return X[k]?`<svg viewBox="0 0 40 40" aria-hidden="true">${X[k]}</svg>`:_shapeIcon0(k); };
+function renderTool(f){ ({mohr:toolMohr,column:toolColumn,thermal:toolThermal,impact:toolImpact,shaftd:toolShaft})[SA.shape](f); const bb=f.body.querySelector('[data-back]'); if(bb) bb.addEventListener('click',()=>{SA.stage='pick';renderFea(f);}); }
+function kvHTML(rows){ return `<dl class="kv">${rows.filter(Boolean).map(([a,v])=>`<dt>${a}</dt><dd>${v}</dd>`).join('')}</dl>`; }
+function verdict(SF,label,extra,noNum){ const c=SF>=1.5?'good':SF>=1?'warn':'crit'; return `<div class="chscore ${SF>=1?'ok':'bad'}" style="margin-top:6px"><div class="big" style="font-size:20px;color:var(--${c})">${SF>=1?'✓':'✗'}</div><div><b>${label}${noNum?'':`: safety factor ${isFinite(SF)?num(SF,3):'∞'}`}</b>${extra?`<div class="small">${extra}</div>`:''}</div></div>`; }
+function matNote(M){ return M?`<div class="small feamat">${esc(M.n)} at ${fT(M.T)} · E ${num(M.E/1000,3)} GPa · ${M.brittle?`brittle: S<sub>t</sub> ${num(M.St,3)}, S<sub>c</sub> ≈ ${num(M.Sc,3)} MPa`:`yield ${num(M.ys,3)} MPa`} · α ${num(M.cte,3)} µm/m·K</div>`:'<div class="small" style="color:var(--crit)">Select a specimen on the bench: it supplies the material.</div>'; }
+
+/* ---------- Mohr's circle ---------- */
+function principal(sx,sy,t){ const c=(sx+sy)/2, R=Math.hypot((sx-sy)/2,t); return {c,R,s1:c+R,s2:c-R,thp:0.5*Math.atan2(2*t,sx-sy)}; }
+function theories(sx,sy,t,M){
+  const P=principal(sx,sy,t), ps=[P.s1,P.s2,0].sort((a,b)=>b-a), sA=ps[0], sC=ps[2];
+  const vm=vmOf(sx,sy,t), tres=sA-sC; const out=[];
+  out.push(['von Mises (distortion energy)',M.ys/Math.max(vm,1e-9),'ductile metals: the standard choice']);
+  out.push(['Tresca (max shear)',M.ys/Math.max(tres,1e-9),'ductile, slightly conservative']);
+  out.push(['Rankine (max normal stress)',Math.min(sA>0?M.St/sA:Infinity,sC<0?M.Sc/(-sC):Infinity),'brittle materials in tension']);
+  let mc; if(sC>=0) mc=M.St/Math.max(sA,1e-9); else if(sA<=0) mc=M.Sc/Math.max(-sC,1e-9); else mc=1/(sA/M.St-sC/M.Sc);
+  out.push(['Mohr–Coulomb (brittle)',mc,'cast iron, ceramics, concrete, rock']);
+  return {P,vm,tres,out,sA,sC,ps};
+}
+function toolMohr(f){
+  const M=toolMat();
+  f.body.innerHTML=`<div class="feagrid"><div class="feaside">${toolHead('mohr')}
+    <div class="ig">Stress state at a point (MPa)</div><div id="mo-in">${slider('sx','σx',MOHR.sx,-600,600,1,'MPa')}${slider('sy','σy',MOHR.sy,-600,600,1,'MPa')}${slider('txy','τxy',MOHR.txy,-400,400,1,'MPa')}${slider('th','Rotate the element θ',MOHR.th,-90,90,1,'°')}</div>
+    <div class="row" style="gap:4px;flex-wrap:wrap">${[['Uniaxial tension',[100,0,0]],['Pure shear',[0,0,80]],['Biaxial (vessel)',[50,100,0]],['Shaft: bending + torsion',[120,0,70]],['Compression + shear',[-150,0,60]]].map(([n,v])=>`<button class="chip" data-pre="${v.join(',')}">${n}</button>`).join('')}</div>
+    ${MOHR.from?`<p class="tiny muted" style="margin:0">Loaded from ${esc(MOHR.from)}.</p>`:''}
+    <div class="ig">Material</div>${matNote(M)}</div>
+   <div class="feamain"><div class="mohrgrid"><div class="feabox" style="height:310px"><canvas id="mo-c"></canvas></div><div class="feabox" style="height:310px"><canvas id="mo-e"></canvas></div></div><div id="mo-out"></div>
+    <h4 style="margin:8px 0 2px">Failure envelopes in principal-stress space</h4><div class="feabox" style="height:300px"><canvas id="mo-env"></canvas></div><div class="legend" id="mo-leg"></div></div></div>`;
+  const root=$('#mo-in'); bindSliders(root,MOHR,()=>{MOHR.from='';mohrDraw();});
+  f.body.querySelectorAll('[data-pre]').forEach(b=>b.addEventListener('click',()=>{const v=b.dataset.pre.split(',').map(Number);MOHR.sx=v[0];MOHR.sy=v[1];MOHR.txy=v[2];MOHR.from='';toolMohr(f);f.body.querySelector('[data-back]').addEventListener('click',()=>{SA.stage='pick';renderFea(f);});}));
+  requestAnimationFrame(mohrDraw);
+}
+function mohrDraw(){
+  const M=toolMat()||{ys:250,St:250,Sc:250,brittle:false}; const {sx,sy,txy}=MOHR, th=MOHR.th*Math.PI/180; const T=theories(sx,sy,txy,M), P=T.P;
+  const c2=Math.cos(2*th), s2=Math.sin(2*th); const sxp=P.c+(sx-sy)/2*c2+txy*s2, syp=P.c-(sx-sy)/2*c2-txy*s2, tp=-(sx-sy)/2*s2+txy*c2;
+  // circle
+  { const cv=$('#mo-c'); const {ctx,w,h}=fit(cv); ctx.clearRect(0,0,w,h); const lo=Math.min(T.sC,P.s2,0)-P.R*0.15-5, hi=Math.max(T.sA,P.s1,0)+P.R*0.15+5; const span=Math.max(hi-lo,1); const tmax=Math.max(P.R,Math.abs(T.sA)/2,Math.abs(T.sC)/2,1)*1.25;
+    const sc=Math.min((w-50)/span,(h-50)/(2*tmax)); const X=s=>30+(s-lo)*sc, Y=t=>h/2+t*sc;
+    ctx.strokeStyle=C.line; ctx.beginPath(); ctx.moveTo(20,h/2); ctx.lineTo(w-8,h/2); ctx.moveTo(X(0),10); ctx.lineTo(X(0),h-10); ctx.stroke();
+    ctx.fillStyle=C.muted; ctx.font=`10.5px ${C.mono}`; ctx.textAlign='right'; ctx.textBaseline='bottom'; ctx.fillText('σ (MPa) →',w-8,h/2-3); ctx.textAlign='left'; ctx.textBaseline='top'; ctx.fillText('τ (clockwise +) ↓',X(0)+4,10);
+    // 3D circles
+    const circ=(a,b,col,dash,wd)=>{ctx.strokeStyle=col;ctx.lineWidth=wd||1.2;ctx.setLineDash(dash||[]);ctx.beginPath();ctx.arc(X((a+b)/2),Y(0),Math.abs(a-b)/2*sc,0,7);ctx.stroke();ctx.setLineDash([]);};
+    circ(P.s1,0,C.muted,[4,3]); circ(P.s2,0,C.muted,[4,3]); circ(P.s1,P.s2,C.accent,[],2.4);
+    ctx.fillStyle=C['accent-soft']; ctx.beginPath(); ctx.arc(X(P.c),Y(0),P.R*sc,0,7); ctx.fill();
+    // X and Y faces
+    const pt=(s,t,col,lab,r)=>{ctx.fillStyle=col;ctx.beginPath();ctx.arc(X(s),Y(t),r||4.5,0,7);ctx.fill();ctx.fillStyle=C.ink;ctx.font=`600 11px ${C.mono}`;ctx.textAlign='left';ctx.textBaseline='bottom';ctx.fillText(lab,X(s)+6,Y(t)-3);};
+    ctx.strokeStyle=C.ink; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(X(sx),Y(txy)); ctx.lineTo(X(sy),Y(-txy)); ctx.stroke();
+    ctx.strokeStyle=C.cold; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(X(sxp),Y(tp)); ctx.lineTo(X(syp),Y(-tp)); ctx.stroke();
+    pt(sx,txy,C.ink,'x'); pt(sy,-txy,C.ink,'y'); pt(sxp,tp,C.cold,"x′"); pt(syp,-tp,C.cold,"y′");
+    pt(P.s1,0,C.crit,'σ₁',3.5); pt(P.s2,0,C.crit,'σ₂',3.5); pt(P.c,-P.R,C.good,'τmax',3.5); pt(P.c,0,C.muted,'C',2.5);
+  }
+  // element
+  { const cv=$('#mo-e'); const {ctx,w,h}=fit(cv); ctx.clearRect(0,0,w,h); const cx=w/2, cy=h/2, a=Math.min(w,h)*0.18; const ang=-th; const big=Math.max(Math.abs(sxp),Math.abs(syp),Math.abs(tp),1);
+    ctx.save(); ctx.translate(cx,cy); ctx.rotate(ang); ctx.fillStyle=C['cold-soft']; ctx.strokeStyle=C.ink; ctx.lineWidth=1.5; ctx.fillRect(-a,-a,2*a,2*a); ctx.strokeRect(-a,-a,2*a,2*a);
+    const arr=(x0,y0,x1,y1,col)=>{ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.stroke();const g=Math.atan2(y1-y0,x1-x0);ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x1-7*Math.cos(g-0.4),y1-7*Math.sin(g-0.4));ctx.lineTo(x1-7*Math.cos(g+0.4),y1-7*Math.sin(g+0.4));ctx.closePath();ctx.fill();};
+    const L=v=>8+Math.abs(v)/big*a*0.9;
+    [[1,0],[-1,0]].forEach(([d])=>{ const l=L(sxp); if(Math.abs(sxp)>0.5){ if(sxp>0) arr(d*a,0,d*(a+l),0,C.crit); else arr(d*(a+l),0,d*a,0,C.cold);} });
+    [[1],[-1]].forEach(([d])=>{ const l=L(syp); if(Math.abs(syp)>0.5){ if(syp>0) arr(0,-d*a,0,-d*(a+l),C.crit); else arr(0,-d*(a+l),0,-d*a,C.cold);} });
+    if(Math.abs(tp)>0.5){ const l=L(tp)*0.8, s=Math.sign(tp); arr(a+6,s*l/2,a+6,-s*l/2,C.good); arr(-a-6,-s*l/2,-a-6,s*l/2,C.good); arr(-s*l/2,-a-6,s*l/2,-a-6,C.good); arr(s*l/2,a+6,-s*l/2,a+6,C.good); }
+    ctx.restore(); ctx.fillStyle=C.ink; ctx.font=`11px ${C.mono}`; ctx.textAlign='left'; ctx.textBaseline='top';
+    ctx.fillText(`θ = ${MOHR.th}°`,6,6); ctx.fillText(`σx′ = ${num(sxp,3)}`,6,22); ctx.fillText(`σy′ = ${num(syp,3)}`,6,36); ctx.fillText(`τx′y′ = ${num(tp,3)}`,6,50);
+    ctx.fillStyle=C.muted; ctx.textAlign='right'; ctx.textBaseline='bottom'; ctx.fillText(`principal at θp = ${num(T.P.thp*180/Math.PI,3)}°`,w-6,h-4); }
+  $('#mo-out').innerHTML=`<div class="lamsplit" style="grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);margin-top:6px"><div>${kvHTML([['σ₁, σ₂ (in plane)',`${num(P.s1,4)}, ${num(P.s2,4)} MPa`],['σ₃ (out of plane)','0 (plane stress)'],['Principal angle θp',num(P.thp*180/Math.PI,3)+'°'],['Max in-plane shear',num(P.R,4)+' MPa'],['Absolute max shear',num((T.sA-T.sC)/2,4)+' MPa'],['von Mises stress',num(T.vm,4)+' MPa'],['Hydrostatic (mean) stress',num((P.s1+P.s2)/3,4)+' MPa']])}</div>
+    <div><table class="chemtab"><tr><th style="text-align:left">Failure theory</th><th>SF</th><th style="text-align:left">Use for</th></tr>${T.out.map(([n,sf,u])=>`<tr><td style="text-align:left">${n}</td><td style="color:var(--${sf>=1.5?'good':sf>=1?'warn':'crit'});font-weight:700">${isFinite(sf)&&sf>0?num(sf,3):'∞'}</td><td style="text-align:left;font-family:var(--f-body)">${u}</td></tr>`).join('')}</table>
+    <p class="tiny muted" style="margin:4px 0 0">${M.brittle?'Brittle material: use Rankine or Mohr–Coulomb.':'Ductile material: use von Mises (Tresca is up to 15% more conservative).'}</p></div></div>`;
+  // envelopes
+  { const cv=$('#mo-env'); const {ctx,w,h}=fit(cv); ctx.clearRect(0,0,w,h); const m=Math.max(M.ys,M.St,M.Sc*0.5,Math.abs(P.s1),Math.abs(P.s2))*1.25; const cx=w/2, cy=h/2, sc=(Math.min(w,h)/2-24)/m; const X=v=>cx+v*sc, Y=v=>cy-v*sc;
+    ctx.strokeStyle=C.line2; niceTicks(-m,m,6).forEach(v=>{ctx.beginPath();ctx.moveTo(X(v),Y(-m));ctx.lineTo(X(v),Y(m));ctx.moveTo(X(-m),Y(v));ctx.lineTo(X(m),Y(v));ctx.stroke();});
+    ctx.strokeStyle=C.line; ctx.beginPath(); ctx.moveTo(X(-m),cy); ctx.lineTo(X(m),cy); ctx.moveTo(cx,Y(-m)); ctx.lineTo(cx,Y(m)); ctx.stroke();
+    ctx.fillStyle=C.muted; ctx.font=`10px ${C.mono}`; ctx.textAlign='right'; ctx.textBaseline='bottom'; ctx.fillText('σ₁ →',X(m),cy-2); ctx.textAlign='left'; ctx.textBaseline='top'; ctx.fillText('↑ σ₂',cx+3,Y(m));
+    const S=M.ys, St=M.St, Sc=M.Sc; const poly=(pts,col,dash,wd)=>{ctx.strokeStyle=col;ctx.lineWidth=wd||1.8;ctx.setLineDash(dash||[]);ctx.beginPath();pts.forEach(([a,b],i)=>i?ctx.lineTo(X(a),Y(b)):ctx.moveTo(X(a),Y(b)));ctx.closePath();ctx.stroke();ctx.setLineDash([]);};
+    const vmP=[]; for(let i=0;i<=72;i++){const a=i/72*2*Math.PI;const u=Math.cos(a),v=Math.sin(a);const k=S/Math.sqrt(u*u-u*v+v*v);vmP.push([u*k,v*k]);}
+    poly(vmP,C.accent,[],2.4); poly([[S,0],[S,S],[0,S],[-S,0],[-S,-S],[0,-S]],C.cold,[5,3]); poly([[St,St],[-Sc,St],[-Sc,-Sc],[St,-Sc]],C.good,[2,3]); poly([[St,St],[-0,St],[-Sc,0],[-Sc,-Sc],[0,-Sc],[St,0]],C.warn,[7,3]);
+    ctx.fillStyle=C.ink; ctx.beginPath(); ctx.arc(X(P.s1),Y(P.s2),5,0,7); ctx.fill(); ctx.strokeStyle=C.ink; ctx.setLineDash([2,3]); ctx.beginPath(); ctx.moveTo(cx,cy); const k=Math.max(Math.abs(P.s1),Math.abs(P.s2),1e-9); ctx.lineTo(X(P.s1/k*m),Y(P.s2/k*m)); ctx.stroke(); ctx.setLineDash([]); }
+  $('#mo-leg').innerHTML=`<span><i style="background:var(--accent)"></i>von Mises</span><span><i style="background:var(--cold)"></i>Tresca</span><span><i style="background:var(--good)"></i>Rankine</span><span><i style="background:var(--warn)"></i>Mohr–Coulomb</span><span><i style="background:var(--ink)"></i>your stress state (load line dotted)</span>`;
+}
+function sendToMohr(s,where){ MOHR.sx=+num(s.sx,4)||0; MOHR.sy=+num(s.sy||0,4)||0; MOHR.txy=+num(s.txy||0,4)||0; MOHR.th=0; MOHR.from=where; const f=FW.wins.find(q=>q.o.type==='mohr'); if(f){f.dirty=true;front(f);} else { const w=Math.min(innerWidth-20,920),h=Math.min(innerHeight-90,640); openFloat({type:'mohr',w,h,x:Math.max(10,innerWidth-w-30),y:70}); } toast("Stress state sent to Mohr's circle"); }
+function renderMohrFloat(f){ const prev=SA.shape; SA.shape='mohr'; toolMohr(f); SA.shape=prev; const bb=f.body.querySelector('[data-back]'); if(bb) bb.remove(); }
+
+/* ---------- column buckling ---------- */
+function toolColumn(f){
+  const M=toolMat(), P=TL.column, d=SA.beam[P.sec];
+  f.body.innerHTML=`<div class="feagrid"><div class="feaside">${toolHead('column')}
+    <label class="f" style="margin:0">Cross-section<select id="co-sec" style="margin-top:3px">${['rect','round','tube','box','I','T','C'].map(k=>`<option value="${k}" ${k===P.sec?'selected':''}>${SHP.find(q=>q.k===k).n}</option>`).join('')}</select></label>
+    <div id="co-dims">${SECDIM[P.sec].map(([p,n,lo,hi])=>slider(p,n,d[p],lo,hi,0.5,'mm')).join('')}</div>
+    <label class="f" style="margin:0">End conditions<select id="co-K" style="margin-top:3px">${[[2,'Fixed – free (flagpole), K = 2'],[1,'Pinned – pinned, K = 1'],[0.7,'Fixed – pinned, K = 0.7'],[0.5,'Fixed – fixed, K = 0.5']].map(([k,n])=>`<option value="${k}" ${+k===+P.K?'selected':''}>${n}</option>`).join('')}</select></label>
+    <div id="co-ld">${slider('L','Length',P.L,50,12000,10,'mm')}${slider('P','Axial compressive load',P.P,10,5000000,1,'N',true)}</div>
+    <div class="ig">Material</div>${matNote(M)}</div>
+   <div class="feamain"><div class="lamsplit" style="grid-template-columns:minmax(0,1fr) 170px"><div class="feabox" style="height:300px"><canvas id="co-ch"></canvas></div><div class="feabox" style="height:300px"><canvas id="co-shape"></canvas></div></div><div id="co-out"></div></div></div>`;
+  const re=()=>colDraw();
+  $('#co-sec').addEventListener('change',e=>{P.sec=e.target.value;toolColumn(f);f.body.querySelector('[data-back]').addEventListener('click',()=>{SA.stage='pick';renderFea(f);});});
+  $('#co-K').addEventListener('change',e=>{P.K=+e.target.value;re();});
+  bindSliders($('#co-dims'),d,re); bindSliders($('#co-ld'),P,re); requestAnimationFrame(re);
+}
+function colDraw(){
+  const M=toolMat(); if(!M){$('#co-out').innerHTML=matNote(null);return;} const P=TL.column, sp=secProps(P.sec,SA.beam[P.sec]); const Imin=Math.min(sp.I,sp.Iz), r=Math.sqrt(Imin/sp.A);
+  const sl=P.K*P.L/r, Cc=Math.PI*Math.sqrt(2*M.E/M.ys), sE=Math.PI**2*M.E/(sl*sl), sJ=M.ys-(M.ys*sl/(2*Math.PI))**2/M.E; const scr=sl>=Cc?sE:Math.max(0,sJ); const Pcr=scr*sp.A; const SF=Pcr/P.P, s=P.P/sp.A;
+  const pts=[],pj=[]; const xm=Math.max(250,sl*1.3); for(let i=1;i<=200;i++){const x=i/200*xm; pts.push([x,Math.min(Math.PI**2*M.E/(x*x),M.ys*3)]); if(x<=Cc) pj.push([x,M.ys-(M.ys*x/(2*Math.PI))**2/M.E]);}
+  drawChart($('#co-ch'),{xr:[0,xm],yr:[0,M.ys*1.4],series:[{pts,color:C.muted,width:1.5,dash:[5,3],name:'Euler'},{pts:pts.filter(q=>q[0]>=Cc),color:C.accent,width:2.4,name:'Euler (long)'},{pts:pj,color:C.cold,width:2.4,name:'Johnson (intermediate)'}],hmarks:[{y:M.ys,label:'yield / crushing',color:C.crit},{y:s,label:'your stress P/A',color:C.ink}],marks:[{x:Cc,label:'transition Cc',color:C.muted}],points:[{x:sl,y:scr,color:C.accent,r:5},{x:sl,y:s,color:C.ink,r:4}],xlabel:'slenderness KL/r',ylabel:'critical stress MPa',xunit:'',yunit:'MPa',padL:52});
+  { const cv=$('#co-shape'); const {ctx,w,h}=fit(cv); ctx.clearRect(0,0,w,h); const x0=w/2, top=24, bot=h-24, Lp=bot-top, amp=Math.min(30,w*0.2)*(SF<1?1:Math.min(1,0.4/SF+0.2)); const K=P.K;
+    const shape=t=>K===2?amp*(1-Math.cos(Math.PI*t/2)):K===1?amp*Math.sin(Math.PI*t):K===0.5?amp*0.5*(1-Math.cos(2*Math.PI*t)):amp*6.75*t*t*(1-t);
+    ctx.strokeStyle=C.line; ctx.setLineDash([3,3]); ctx.beginPath(); ctx.moveTo(x0,top); ctx.lineTo(x0,bot); ctx.stroke(); ctx.setLineDash([]);
+    ctx.strokeStyle=SF<1?C.crit:C.accent; ctx.lineWidth=4; ctx.beginPath(); for(let i=0;i<=40;i++){const t=i/40; const y=bot-t*Lp; i?ctx.lineTo(x0+shape(t),y):ctx.moveTo(x0+shape(t),y);} ctx.stroke(); ctx.lineWidth=1;
+    ctx.fillStyle=C.ink; const fixd=y=>{ctx.fillRect(x0-18,y-3,36,6);}, pin=(y,up)=>{ctx.beginPath();ctx.moveTo(x0,y);ctx.lineTo(x0-8,y+(up?-12:12));ctx.lineTo(x0+8,y+(up?-12:12));ctx.closePath();ctx.fill();};
+    if(K===1) pin(bot,false); else fixd(bot+3); if(K===1||K===0.7) pin(top,true); if(K===0.5) fixd(top-3);
+    ctx.strokeStyle=C.crit; ctx.fillStyle=C.crit; ctx.lineWidth=2; const tx=x0+shape(1); ctx.beginPath(); ctx.moveTo(tx,4); ctx.lineTo(tx,top-(K===1||K===0.7?14:6)); ctx.stroke(); ctx.font=`11px ${C.mono}`; ctx.textAlign='left'; ctx.textBaseline='top'; ctx.fillText('P',tx+5,2); ctx.fillStyle=C.muted; ctx.textBaseline='bottom'; ctx.fillText(`K = ${K}`,4,h-4); }
+  $('#co-out').innerHTML=verdict(SF,SF>=1?'Stable':'Buckles',`Critical load ${num(Pcr/1000,4)} kN (${sl>=Cc?'Euler, long column':'Johnson, intermediate column: yielding and buckling interact'}) vs applied ${num(P.P/1000,4)} kN`)+
+    kvHTML([['Area / least radius of gyration',`${num(sp.A,4)} mm² / ${num(r,3)} mm`],['Effective length KL',num(P.K*P.L,4)+' mm'],['Slenderness KL/r',num(sl,4)],['Transition slenderness Cc = π√(2E/σy)',num(Cc,4)],['Euler stress π²E/(KL/r)²',num(sE,4)+' MPa'],['Johnson stress',sl<Cc?num(sJ,4)+' MPa':'— (long column)'],['Direct compressive stress P/A',num(s,4)+' MPa'],['Buckles about',sp.Iz<sp.I?'the vertical (weak) axis':'the horizontal axis'],['Mass',num(M.rho*sp.A*P.L/1e6,3)+' kg']]);
+}
+
+/* ---------- thermal stress ---------- */
+function toolThermal(f){
+  const M=toolMat(), P=TL.thermal;
+  f.body.innerHTML=`<div class="feagrid"><div class="feaside">${toolHead('thermal')}
+    <div id="th-in">${slider('L','Bar length',P.L,10,10000,10,'mm')}${slider('d','Bar diameter',P.d,2,200,1,'mm')}${slider('dT','Temperature change ΔT',P.dT,-300,800,1,'K')}${slider('gap','Expansion gap',P.gap,0,20,0.05,'mm')}</div>
+    <p class="tiny muted" style="margin:0">A round bar is held between two rigid walls. Heating makes it want to grow by α·ΔT·L; the walls stop it, so it is squeezed.</p>
+    <div class="ig">Material</div>${matNote(M)}</div>
+   <div class="feamain"><div class="feabox" style="height:140px"><canvas id="th-x"></canvas></div><h4 style="margin:6px 0 2px">Stress vs temperature change</h4><canvas class="cv" id="th-ch" style="height:220px"></canvas><div id="th-out"></div></div></div>`;
+  bindSliders($('#th-in'),P,thDraw); requestAnimationFrame(thDraw);
+}
+function thDraw(){
+  const M=toolMat(); if(!M){$('#th-out').innerHTML=matNote(null);return;} const P=TL.thermal, a=M.cte*1e-6; const A=Math.PI*P.d*P.d/4, I=Math.PI*P.d**4/64, r=P.d/4;
+  const free=a*P.dT*P.L; const sig=dT=>{ const fr=a*dT*P.L; if(dT>=0) return fr>P.gap?-M.E*(fr-P.gap)/P.L:0; return -M.E*fr/P.L; };
+  const s=sig(P.dT); const Pb=Math.PI**2*M.E*I/Math.pow(0.5*P.L,2), sb=Pb/A; const dTy=(M.ys*P.L/M.E+P.gap)/(a*P.L), dTb=(sb*P.L/M.E+P.gap)/(a*P.L);
+  const SFy=M.ys/Math.max(Math.abs(s),1e-9), SFb=s<0?sb/Math.max(-s,1e-9):Infinity; const SF=Math.min(SFy,SFb);
+  const pts=[]; for(let t=-300;t<=800;t+=5) pts.push([t,sig(t)]);
+  drawChart($('#th-ch'),{xr:[-300,800],yr:[-Math.max(M.ys*1.3,Math.abs(s)*1.1),Math.max(M.ys*1.3,Math.abs(s)*1.1)],series:[{pts,color:C.accent,width:2.4,name:'σ'}],hmarks:[{y:-M.ys,label:'compressive yield',color:C.crit},{y:M.ys,label:'tensile yield',color:C.crit},{y:-sb,label:'buckling',color:C.warn}],marks:[{x:P.dT,label:'now',color:C.ink}],points:[{x:P.dT,y:s,color:C.ink,r:5}],xlabel:'ΔT (K)',ylabel:'MPa',xunit:'K',yunit:'MPa',padL:56});
+  { const cv=$('#th-x'); const {ctx,w,h}=fit(cv); ctx.clearRect(0,0,w,h); const x0=40,x1=w-40, cy=h/2, bh=Math.max(10,Math.min(36,P.d*0.6)); const g=glowInfo(293+Math.max(0,P.dT)); const gp=Math.min(30,P.gap/P.L*(x1-x0)*20);
+    ctx.fillStyle=C.muted; ctx.fillRect(x0-14,cy-40,14,80); ctx.fillRect(x1,cy-40,14,80); const grow=Math.max(-12,Math.min(gp,free/P.L*(x1-x0)*20));
+    const col=P.dT>0?`rgb(${[0,1,2].map(i=>Math.round(U.lerp(160,g.rgb[i],Math.min(1,P.dT/600)))).join(',')})`:'rgb(150,190,230)'; ctx.fillStyle=col; ctx.fillRect(x0,cy-bh/2,(x1-x0)-gp+grow,bh); ctx.strokeStyle=C.ink; ctx.strokeRect(x0,cy-bh/2,(x1-x0)-gp+grow,bh);
+    if(s<0&&-s>sb){ ctx.strokeStyle=C.crit; ctx.lineWidth=3; ctx.beginPath(); for(let i=0;i<=40;i++){const x=x0+(x1-x0)*i/40;ctx.lineTo(x,cy+bh*1.4*Math.sin(Math.PI*i/40)**2);} ctx.stroke(); ctx.lineWidth=1; }
+    ctx.fillStyle=C.ink; ctx.font=`11px ${C.mono}`; ctx.textAlign='center'; ctx.textBaseline='top'; ctx.fillText(`free expansion ${num(free,3)} mm · gap ${num(P.gap,3)} mm · σ = ${num(s,4)} MPa`,w/2,6); }
+  $('#th-out').innerHTML=verdict(SF,Math.abs(s)<1e-9?'No stress (the gap is not closed)':(SFb<SFy?'Thermal buckling governs':'Thermal stress'),`σ = −E·(α·ΔT·L − gap)/L = ${num(s,4)} MPa`)+kvHTML([['Free expansion α·ΔT·L',num(free,4)+' mm'],['Thermal stress (fully restrained)',num(-M.E*a*P.dT,4)+' MPa'],['ΔT to yield',num(dTy,4)+' K'],['ΔT to buckle (fixed–fixed)',num(dTb,4)+' K'],['Euler load of the bar',num(Pb/1000,4)+' kN'],['Expansion coefficient used',num(M.cte,3)+' µm/m·K at '+fT(M.T)]]);
+}
+
+/* ---------- impact loading ---------- */
+function toolImpact(f){
+  const M=toolMat(), P=TL.impact, sp0=SA.beam;
+  f.body.innerHTML=`<div class="feagrid"><div class="feaside">${toolHead('impact')}
+    <label class="f" style="margin:0">Struck member<select id="im-m" style="margin-top:3px"><option value="beam" ${P.mode==='beam'?'selected':''}>Simply supported beam, hit at mid-span</option><option value="bar" ${P.mode==='bar'?'selected':''}>Vertical bar, hit on a collar at its end</option></select></label>
+    <div id="im-in">${slider('W','Falling weight',P.W,1,50000,1,'N',true)}${slider('h','Drop height',P.h,0,2000,1,'mm')}${slider('L','Length / span',P.L,50,8000,10,'mm')}${P.mode==='bar'?slider('A','Bar cross-section area',P.A,1,20000,1,'mm²',true):''}</div>
+    ${P.mode==='beam'?`<p class="tiny muted" style="margin:0">Beam section: the ${esc(SHP.find(q=>q.k===(SA.lastBeam||'I')).n.toLowerCase())} as last set up in the beam analysis.</p>`:''}
+    <div class="ig">Material</div>${matNote(M)}</div>
+   <div class="feamain"><h4 style="margin:0 0 2px">Impact factor vs drop height</h4><canvas class="cv" id="im-ch" style="height:240px"></canvas><div id="im-out"></div></div></div>`;
+  $('#im-m').addEventListener('change',e=>{P.mode=e.target.value;toolImpact(f);f.body.querySelector('[data-back]').addEventListener('click',()=>{SA.stage='pick';renderFea(f);});});
+  bindSliders($('#im-in'),P,imDraw); requestAnimationFrame(imDraw);
+}
+function imDraw(){
+  const M=toolMat(); if(!M){$('#im-out').innerHTML=matNote(null);return;} const P=TL.impact; let dst,sst,what;
+  if(P.mode==='beam'){ const k=SA.lastBeam||'I'; const sp=secProps(k,SA.beam[k]); dst=P.W*P.L**3/(48*M.E*sp.I); sst=P.W*P.L/4*Math.max(sp.h-sp.yc,sp.yc)/sp.I; what='beam'; }
+  else { dst=P.W*P.L/(M.E*P.A); sst=P.W/P.A; what='bar'; }
+  const n=h=>1+Math.sqrt(1+2*h/Math.max(dst,1e-12)); const N=n(P.h), sd=N*sst, dd=N*dst, SF=M.ys/Math.max(sd,1e-9); const hmax=Math.max(10,P.h*2);
+  const pts=[]; for(let i=0;i<=100;i++){const h=i/100*hmax; pts.push([h,n(h)]);}
+  drawChart($('#im-ch'),{xr:[0,hmax],yr:[0,n(hmax)*1.1],series:[{pts,color:C.accent,width:2.4,name:'n'}],hmarks:[{y:2,label:'sudden load (h = 0): ×2',color:C.cold},{y:M.ys/Math.max(sst,1e-9),label:'factor that reaches yield',color:C.crit}],points:[{x:P.h,y:N,color:C.ink,r:5}],xlabel:'drop height (mm)',ylabel:'impact factor',xunit:'mm',yunit:'×',padL:48});
+  $('#im-out').innerHTML=verdict(SF,SF>=1?'Survives the impact elastically':'Yields on impact',`Dynamic stress ${num(sd,4)} MPa = ${num(N,3)} × static ${num(sst,4)} MPa`)+kvHTML([['Static deflection under the weight',num(dst,4)+' mm'],['Impact factor n = 1 + √(1 + 2h/δst)',num(N,4)],['Peak dynamic deflection',num(dd,4)+' mm'],['Energy absorbed W·(h + δ)',num(P.W*(P.h+dd)/1000,4)+' J'],['Max drop height before yielding',num(Math.max(0,((M.ys/sst-1)**2-1)/2*dst),4)+' mm'],['Lesson','a stiffer member gets a smaller δst, so a bigger impact factor: flexible members absorb shocks better']]);
+}
+
+/* ---------- shaft design ---------- */
+function toolShaft(f){
+  const M=toolMat(), P=TL.shaftd;
+  f.body.innerHTML=`<div class="feagrid"><div class="feaside">${toolHead('shaftd')}
+    <div id="sd-in">${slider('M','Bending moment (rotating)',P.M,0,20000,1,'N·m')}${slider('T','Torque (steady)',P.T,0,20000,1,'N·m')}${slider('d','Diameter',P.d,5,300,0.5,'mm')}${slider('k','Bore ratio d_i/d (0 = solid)',P.k,0,0.9,0.01,'')}${slider('n','Required safety factor',P.n,1,5,0.1,'')}${slider('Kt','Stress concentration at the shoulder K_t',P.Kt,1,3.5,0.05,'')}</div>
+    <label class="f" style="margin:0">Surface finish<select id="sd-fin" style="margin-top:3px">${FINISH.map(([k,n,ka])=>`<option value="${k}" ${k===P.fin?'selected':''}>${n} (k_a ${ka})</option>`).join('')}</select></label>
+    <div class="ig">Material</div>${matNote(M)}</div>
+   <div class="feamain"><h4 style="margin:0 0 2px">Safety factor vs diameter</h4><canvas class="cv" id="sd-ch" style="height:240px"></canvas><div class="legend" style="margin:2px 0 0"><span><i style="background:var(--accent)"></i>static (von Mises)</span><span><i style="background:var(--cold)"></i>fatigue (DE-Goodman)</span></div><div id="sd-out"></div></div></div>`;
+  bindSliders($('#sd-in'),P,sdDraw); $('#sd-fin').addEventListener('change',e=>{P.fin=e.target.value;sdDraw();}); requestAnimationFrame(sdDraw);
+}
+function sdDraw(){
+  const M=toolMat(); if(!M){$('#sd-out').innerHTML=matNote(null);return;} const P=TL.shaftd, ka=FINISH.find(q=>q[0]===P.fin)[2];
+  const FM=fatigueModel(M.m,{uts:M.uts},ka); const Se=FM.Se!=null?ka*FM.Se:FM.S(1e8); const q=0.85, Kf=1+q*(P.Kt-1), Kfs=1+q*(P.Kt*0.8-1);
+  const sx=d=>32*P.M*1000/(Math.PI*d**3*(1-P.k**4)), tx=d=>16*P.T*1000/(Math.PI*d**3*(1-P.k**4));
+  const SFs=d=>M.ys/Math.max(vmOf(Kf*sx(d),0,Kfs*tx(d)),1e-9), SFf=d=>1/Math.max(Kf*sx(d)/Se+Math.sqrt(3)*Kfs*tx(d)/M.uts,1e-12);
+  const solve=g=>{let lo=1,hi=1000;for(let i=0;i<60;i++){const m=(lo+hi)/2;if(g(m)<P.n)lo=m;else hi=m;}return hi;}; const dS=solve(SFs), dF=solve(SFf);
+  const ds=[]; for(let d=Math.max(3,Math.min(dS,dF,P.d)*0.4);d<=Math.max(dS,dF,P.d)*2;d*=1.03) ds.push(d);
+  drawChart($('#sd-ch'),{xr:[ds[0],ds[ds.length-1]],yr:[0,Math.max(P.n*3,4)],series:[{pts:ds.map(d=>[d,Math.min(SFs(d),99)]),color:C.accent,width:2.4,name:'static'},{pts:ds.map(d=>[d,Math.min(SFf(d),99)]),color:C.cold,width:2.4,name:'fatigue'}],hmarks:[{y:P.n,label:`required n = ${P.n}`,color:C.ink}],marks:[{x:P.d,label:'your d',color:C.ink},{x:Math.max(dS,dF),label:'minimum d',color:C.crit}],xlabel:'diameter (mm)',ylabel:'safety factor',xunit:'mm',yunit:'',padL:44});
+  const sf=Math.min(SFs(P.d),SFf(P.d));
+  $('#sd-out').innerHTML=verdict(sf>=P.n?2:(sf>=1?1.2:0.5),sf>=P.n?`Diameter OK (needs ≥ ${num(Math.max(dS,dF),3)} mm)`:`Too thin: needs ≥ ${num(Math.max(dS,dF),3)} mm`,`Static SF ${num(SFs(P.d),3)} · fatigue SF ${num(SFf(P.d),3)} · required ${P.n}`,true)+
+    kvHTML([['Bending stress 32M/πd³',num(sx(P.d),4)+' MPa'],['Torsional stress 16T/πd³',num(tx(P.d),4)+' MPa'],['Fatigue notch factors K_f / K_fs (q = 0.85)',`${num(Kf,3)} / ${num(Kfs,3)}`],['Endurance limit used S_e',num(Se,4)+' MPa'+(FM.Se==null?' (no true limit: strength at 10⁸ cycles)':'')],['Minimum diameter, static',num(dS,4)+' mm'],['Minimum diameter, fatigue',num(dF,4)+' mm'],['Mass per metre',num(M.rho*Math.PI/4*(P.d**2)*(1-P.k**2)/1000,4)+' kg/m'],['Hollow shaft benefit',P.k>0?`${Math.round((1-(1-P.k**2))*100)}% lighter for ${Math.round((1-(1-P.k**4))*100)}% less strength`:'try a bore: material near the centre carries little stress']]);
+}
+Object.assign(GLOSS,{
+ mohr:{t:"Mohr's circle",sym:'σ₁, σ₂, τmax',unit:'MPa',cat:'Mechanical',
+  what:'A graphical way to see how the normal and shear stresses on a plane change as the plane rotates.',
+  means:'Every point on the circle is the stress on one plane through the point. The ends of the horizontal diameter are the principal stresses (no shear); the top and bottom are the planes of maximum shear.',
+  formula:['Centre C = (σx + σy)/2','Radius R = √[((σx − σy)/2)² + τxy²]','σ₁,₂ = C ± R  ·  tan 2θp = 2τxy/(σx − σy)','Rotating the element by θ moves the point 2θ round the circle'],
+  model:"Click a point on a beam or plate stress map to send its stress state to Mohr's circle."},
+ theories:{t:'Failure theories',sym:'SF',unit:'—',cat:'Mechanical',
+  what:'Rules that predict when a combined stress state causes yielding or fracture, using strengths measured in a simple tensile test.',
+  means:'Ductile metals fail by shear (von Mises, Tresca). Brittle materials fail by the largest tensile stress and are much stronger in compression (Rankine, Mohr–Coulomb).',
+  formula:['von Mises: σ_vM = √(σ₁² − σ₁σ₂ + σ₂²) < S_y','Tresca: max(|σ₁ − σ₂|, |σ₁|, |σ₂|) < S_y','Rankine: σ₁ < S_t and σ₃ > −S_c','Mohr–Coulomb: σ₁/S_t − σ₃/S_c < 1'],
+  model:'Brittle materials (no yield point) take S_c ≈ 3.5 × S_t for metals and 8 × S_t for ceramics and glasses.'},
+ column:{t:'Column buckling',sym:'P_cr',unit:'N',cat:'Mechanical',
+  what:'A slender member in compression suddenly bows sideways at a critical load far below its crushing strength.',
+  means:'Long columns follow Euler (stiffness controls, so high-strength steel does not help). Intermediate columns follow Johnson, where yielding and buckling interact.',
+  formula:['Euler: P_cr = π²EI/(KL)²','Slenderness λ = KL/r, r = √(I/A)','Transition C_c = π√(2E/σ_y)','Johnson: σ_cr = σ_y − (σ_y·λ/2π)²/E  for λ < C_c'],
+  model:'Uses the least second moment of area of the chosen section, so I-beams and channels buckle about their weak axis.'},
+ impact:{t:'Impact loading',sym:'n',unit:'—',cat:'Mechanical',
+  what:'A load that arrives with speed: a falling weight, a collision, a dropped tool.',
+  means:'Even a load placed suddenly (zero drop height) doubles the stress. The energy is absorbed as strain energy, so a more flexible member sees a lower peak stress.',
+  formula:['Impact factor n = 1 + √(1 + 2h/δ_st)','σ_dyn = n·σ_st,  δ_dyn = n·δ_st','Energy: W(h + δ_dyn) = ½·k·δ_dyn²'],
+  model:'Assumes the member stays elastic, the mass of the member is negligible and no energy is lost in the collision: an upper-bound estimate.'},
+ shaftd:{t:'Shaft design',sym:'d',unit:'mm',cat:'Mechanical',
+  what:'Sizing a rotating shaft that carries bending (from gears, pulleys) and torque at the same time.',
+  means:'Rotation makes the bending stress fully reversed, so fatigue usually governs, especially at shoulders and keyways.',
+  formula:['σ = 32M/πd³,  τ = 16T/πd³','Static (von Mises): S_y/n = √((K_f σ)² + 3(K_fs τ)²)','DE-Goodman fatigue: 1/n = K_f σ/S_e + √3·K_fs τ/S_ut','K_f = 1 + q(K_t − 1)'],
+  model:'Endurance limit from the fatigue model of the selected material, with the chosen surface finish.'},
+ plastic:{t:'Plastic collapse',sym:'M_p, Z_p',unit:'N·m · mm³',cat:'Mechanical',
+  what:'The moment a section carries when it has yielded right through: M_p = σ_y·Z_p.',
+  means:'A ductile beam does not fail at first yield. It keeps carrying load until enough plastic hinges form to make a mechanism. The shape factor Z_p/Z shows the reserve: 1.5 for a rectangle, about 1.1–1.15 for an I-beam.',
+  formula:['Plastic neutral axis divides the area in half','Z_p = Σ |y − y_p| dA','Simply supported, central load: P_c = 4M_p/L','Fixed–fixed, central load: P_c = 8M_p/L'],
+  model:'Collapse loads use the classical mechanism for each support case.'}
+});
 /* ============ CLASSIC SHELL: menu bar, status bar, theme, help windows ============ */
 const MENU={open:null};
 function themeSet(t){ if(t==='auto') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme',t); try{localStorage.setItem('crucible.theme',t);}catch(e){} }
@@ -5152,7 +6138,7 @@ function menuDefs(){
    ['Specimen',[op('heat','Heat / cool','H'),op('work','Roll / anneal','R'),op('alloy','Alloy','A'),op('composite','Make composite','C'),'-',{h:'Testing'},op('test','Tensile test','T'),op('fatigue','Fatigue test','F'),op('creep','Creep test','K')]],
    ['View',[{n:'Materials library',ck:!libMin,act:()=>{const b=libMin?$('#lib-open'):$('#lib-close'); if(b&&getComputedStyle(b).display!=='none') b.click(); else $('#lib-toggle').click();}},{n:'Operations panel',ck:!DK.min,act:()=>{DK.min=!DK.min;INS.dirty=true;}},'-',{h:'Status panels'},
      ...ST.order.map(k=>({n:WIDGETS[k].n,ck:ST.on.has(k),act:()=>{ST.on.has(k)?ST.on.delete(k):ST.on.add(k);stSave();renderStatus();}}))]],
-   ['Tools',[{n:'Material selector…',sc:'M',act:()=>openSelector('sel')},{n:'Design challenges…',sc:'G',act:()=>openSelector('chal')},{n:'Laminate & sandwich designer…',sc:'L',act:()=>openLaminate()},{n:'Compare specimens…',act:()=>{if(!W.items.length){toast('Put some specimens on the bench first');return;}openFloat({type:'compare'});}},'-',{n:'Parameter encyclopedia…',sc:'I',act:()=>openInfo()}]],
+   ['Tools',[{n:'Material selector…',sc:'M',act:()=>openSelector('sel')},{n:'Design challenges…',sc:'G',act:()=>openSelector('chal')},{n:'Laminate & sandwich designer…',sc:'L',act:()=>openLaminate()},{n:'Stress analyzer…',sc:'S',act:()=>openStress()},{n:"Mohr's circle…",act:()=>sendToMohr({sx:MOHR.sx,sy:MOHR.sy,txy:MOHR.txy},'')},{n:'Cost estimator…',sc:'$',act:()=>openCost()},{n:'Compare specimens…',act:()=>{if(!W.items.length){toast('Put some specimens on the bench first');return;}openFloat({type:'compare'});}},'-',{n:'Parameter encyclopedia…',sc:'I',act:()=>openInfo()}]],
    ['Window',[...(FW.wins.length?FW.wins.map(f=>({n:f.el.querySelector('.ft').textContent+(f.o.type==='w'&&f.o.lock?' (locked)':''),act:()=>front(f)})):[{n:'No floating windows',dis:true}]),'-',{n:'Pop out a status panel',dis:true},
      ...ST.order.map(k=>({n:'   '+WIDGETS[k].n,act:()=>openFloat({type:'w',key:k,lock:null})})),'-',{n:'Close all floating windows',dis:!FW.wins.length,act:()=>FW.wins.slice().forEach(closeFloat)}]],
    ['Help',[{n:'Parameter encyclopedia',sc:'I',act:()=>openInfo()},{n:'Keyboard shortcuts',act:()=>openFloat({type:'help',key:'keys',w:420,h:440})},'-',{n:"About Eros' Metallurgy Lab",act:()=>openFloat({type:'help',key:'about',w:440,h:380})}]]
@@ -5177,7 +6163,7 @@ function dropOut(e){ if(!e.target.closest('#mdrop')&&!e.target.closest('#menubar
 function closeDrop(keep){ const d=$('#mdrop'); if(d) d.remove(); $$('#menubar .mb').forEach(b=>{b.classList.remove('open');b.setAttribute('aria-expanded','false');}); if(!keep) MENU.open=null; removeEventListener('pointerdown',dropOut); }
 function renderHelp(f){
   if(f.o.key==='about'){ f.body.innerHTML=`<div style="display:flex;gap:14px;align-items:flex-start"><span class="tbicon" style="width:42px;height:42px"></span><div><h3 class="ih3" style="font-family:var(--f-display);margin:0 0 4px;font-size:22px">Eros' Metallurgy Lab</h3><p class="small" style="margin:0 0 8px">A materials-science workbench: ${MATS.length} materials, heat treatment, cold rolling and annealing, alloys, composites, tensile, fatigue and creep testing, phase diagrams, X-ray diffraction and an Ashby material selector with design challenges.</p><p class="tiny muted" style="margin:0">Property models are simplified teaching models (homologous-temperature scaling, Hall–Petch, Basquin, Norton, JMAK, Halpin–Tsai…). Use them to build intuition, not to certify a design.</p></div></div>`; return; }
-  const K=[['H','Heat / cool'],['R','Roll / anneal'],['A','Alloy'],['C','Make composite'],['T','Tensile test'],['F','Fatigue test'],['K','Creep test'],['D','Duplicate specimen'],['X','Add / remove from comparison'],['Del','Remove specimen'],['M','Material selector'],['G','Design challenges'],['L','Laminate & sandwich designer'],['I','Parameter encyclopedia'],['Esc','Hide the operations panel'],['Shift-click','Tick cards to compare'],['Right-click','Specimen menu'],['Double-click','Heat / cool']];
+  const K=[['H','Heat / cool'],['R','Roll / anneal'],['A','Alloy'],['C','Make composite'],['T','Tensile test'],['F','Fatigue test'],['K','Creep test'],['D','Duplicate specimen'],['X','Add / remove from comparison'],['Del','Remove specimen'],['M','Material selector'],['G','Design challenges'],['L','Laminate & sandwich designer'],['S','Stress analyzer'],['$','Cost estimator'],['I','Parameter encyclopedia'],['Esc','Hide the operations panel'],['Shift-click','Tick cards to compare'],['Right-click','Specimen menu'],['Double-click','Heat / cool']];
   f.body.innerHTML=`<table class="chemtab">${K.map(([k,n])=>`<tr><td style="font-family:var(--f-mono)"><b>${k}</b></td><td style="text-align:left;font-family:var(--f-body)">${n}</td></tr>`).join('')}</table>`;
 }
 function statusBar(){
