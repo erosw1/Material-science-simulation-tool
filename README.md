@@ -1,1 +1,2 @@
 [Open Here](https://erosw1.github.io/Material-science-simulation-tool/)
+The Material Science Simulation Tool is an interactive web application designed for exploring material behaviors, thermal properties, and structural mechanics directly in the browser. It features dynamic models for temperature gradients, phase diagrams, microstructural evolution, alloying simulations, and composite material mechanics to help engineers and students visualize complex metallurgical and thermal concepts in real time.
